@@ -17,7 +17,6 @@
         h1 { font-size: 1.2rem; color: #fff; display: flex; align-items: center; gap: 8px; }
         h1::before { content: ''; width: 3px; height: 16px; background: var(--blue); display: inline-block; }
 
-        /* Score & Status Bar */
         .status-container { display: none; grid-template-columns: 100px 1fr; gap: 10px; margin-bottom: 10px; align-items: center; }
         .score-circle { height: 70px; width: 70px; border-radius: 50%; border: 4px solid; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; background: rgba(0,0,0,0.3); }
         .score-label { font-size: 0.6rem; text-transform: uppercase; margin-top: -2px; }
@@ -46,8 +45,12 @@
         .badge.fail { color: var(--red); border-color: var(--red); }
 
         .blurb { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 5px; }
-        .record-box { background: #0d1117; border: 1px solid var(--border); padding: 6px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: #7dd3fc; word-break: break-all; margin-top: 4px; }
-        .copy-btn { position: absolute; right: 4px; top: 4px; background: #21262d; border: 1px solid var(--border); color: #8b949e; padding: 2px 4px; font-size: 0.55rem; border-radius: 2px; cursor: pointer; }
+        
+        /* New Record Chip Styling */
+        .record-group { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+        .selector-label { font-size: 0.65rem; color: var(--blue); font-weight: 800; text-transform: uppercase; margin-top: 4px; }
+        .record-box { background: #0d1117; border: 1px solid var(--border); padding: 6px 35px 6px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: #7dd3fc; word-break: break-all; min-height: 28px; display: flex; align-items: center; }
+        .copy-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: #21262d; border: 1px solid var(--border); color: #8b949e; padding: 2px 4px; font-size: 0.55rem; border-radius: 2px; cursor: pointer; }
         
         .host-notice { color: var(--blue); font-size: 0.65rem; font-weight: 700; margin-bottom: 4px; display: block; }
         #loading { display: none; font-size: 0.75rem; color: var(--blue); margin-bottom: 10px; text-align: center; }
@@ -65,7 +68,7 @@
         <button id="runBtn" onclick="runAudit()">ANALYZE</button>
     </div>
 
-    <div id="loading">Scanning...</div>
+    <div id="loading">Scanning Infrastructure...</div>
 
     <div class="status-container" id="statContainer">
         <div class="score-circle" id="scoreCircle">
@@ -85,25 +88,37 @@
         el.value = text; document.body.appendChild(el);
         el.select(); document.execCommand('copy');
         document.body.removeChild(el);
-        btn.innerText = "DONE";
-        setTimeout(() => { btn.innerText = "COPY"; }, 1500);
+        const old = btn.innerText;
+        btn.innerText = "COPIED";
+        setTimeout(() => { btn.innerText = old; }, 1200);
+    }
+
+    function createRecordBox(val) {
+        if (!val) return '';
+        const cleanVal = val.replace(/"/g, '');
+        return `<div class="record-box">
+            <span>${cleanVal}</span>
+            <button class="copy-btn" onclick="copyToClipboard('${cleanVal.replace(/'/g, "\\'")}', this)">COPY</button>
+        </div>`;
     }
 
     function detectProvider(nsRecords) {
         const text = nsRecords.join(' ').toLowerCase();
         if (text.includes('cloudflare')) return "Cloudflare";
         if (text.includes('awsdns')) return "AWS Route 53";
-        if (text.includes('googledomains') || text.includes('google')) return "Google DNS";
+        if (text.includes('google')) return "Google DNS";
         if (text.includes('domaincontrol')) return "GoDaddy";
         if (text.includes('azure-dns')) return "Microsoft Azure";
         return "Third-Party Provider";
     }
 
     async function fetchDNS(name, type) {
-        const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(name)}&type=${type}`, {
-            headers: { 'Accept': 'application/dns-json' }
-        });
-        return res.json();
+        try {
+            const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(name)}&type=${type}`, {
+                headers: { 'Accept': 'application/dns-json' }
+            });
+            return res.json();
+        } catch (e) { return { Answer: [] }; }
     }
 
     async function runAudit() {
@@ -132,66 +147,92 @@
             }));
             const foundDkim = dkimResults.filter(x => x !== null);
 
-            // SCORING LOGIC
+            // Scoring
             const spf = (spfData.Answer || []).find(r => r.data.includes('v=spf1'))?.data.replace(/"/g,'');
             if(spf) score += 30;
-            if(spf && spf.includes('-all')) score += 5; // Bonus for Hard Fail
+            if(spf?.includes('-all')) score += 5;
 
             const dmarc = (dmarcData.Answer || []).find(r => r.data.includes('v=DMARC1'))?.data.replace(/"/g,'');
             if(dmarc) score += 20;
-            if(dmarc && (dmarc.includes('p=quarantine') || dmarc.includes('p=reject'))) score += 15;
-
+            if(dmarc && !dmarc.includes('p=none')) score += 15;
             if(foundDkim.length > 0) score += 30;
 
-            // Render Results
-            renderCard("SPF", spf, !!spf, "Authenticates sender IP.");
-            renderCard("DMARC", dmarc, dmarc && !dmarc.includes('p=none'), "Prevents domain impersonation.");
-            renderCard("DKIM", foundDkim.map(d => `[${d.s}]: ${d.val}`).join('\n'), foundDkim.length > 0, "Ensures email integrity.");
-            
+            // Render SPF
+            renderCard("SPF", "Authenticates sender IP.", !!spf, [spf]);
+
+            // Render DMARC
+            renderCard("DMARC", "Prevents domain impersonation.", (dmarc && !dmarc.includes('p=none')), [dmarc]);
+
+            // Render DKIM (Individual Selectors)
+            let dkimHtml = `<div class="record-group">`;
+            foundDkim.forEach(d => {
+                dkimHtml += `<div class="selector-label">Selector: ${d.s}</div>${createRecordBox(d.val)}`;
+                currentAuditData.push({ title: `DKIM (${d.s})`, status: 'PASS', record: d.val });
+            });
+            dkimHtml += `</div>`;
+            renderCardRaw("DKIM", "Ensures email integrity.", foundDkim.length > 0, dkimHtml);
+
+            // Small Row: MX & NS
+            const mxList = (mxData.Answer || []).map(r => r.data);
             const nsList = (nsData.Answer || []).map(r => r.data);
             const provider = detectProvider(nsList);
-            const resultsDiv = document.getElementById('results');
-            const row = document.createElement('div'); row.className = 'small-row';
-            row.innerHTML = renderSmallCard("MX Records", (mxData.Answer || []).map(r => r.data).join('\n'), "Mail routing.") +
-                            renderSmallCard("Nameservers", nsList.join('\n'), "DNS Hosting.", provider);
-            resultsDiv.appendChild(row);
 
-            // UI Updates
-            const container = document.getElementById('statContainer');
-            const master = document.getElementById('masterStatus');
-            const circle = document.getElementById('scoreCircle');
+            const grid = document.getElementById('results');
+            const row = document.createElement('div'); row.className = 'small-row';
             
-            container.style.display = 'grid';
+            row.innerHTML = renderSmallCard("MX Records", mxList, "Mail routing.") +
+                            renderSmallCard("Nameservers", nsList, "DNS Hosting.", provider);
+            grid.appendChild(row);
+
+            // UI Wrap
+            const container = document.getElementById('statContainer');
             document.getElementById('scoreVal').innerText = score;
+            const circle = document.getElementById('scoreCircle');
             circle.style.borderColor = score > 80 ? 'var(--green)' : (score > 50 ? 'orange' : 'var(--red)');
             circle.style.color = circle.style.borderColor;
 
-            master.className = score > 80 ? 'master-pass' : 'master-fail';
-            master.innerHTML = score > 80 ? `✓ CONFIGURATION STRONG<br><span style="font-size:0.7rem">Domain is protected.</span>` 
-                                         : `⚠ CONFIGURATION WEAK<br><span style="font-size:0.7rem">Domain is vulnerable to spoofing.</span>`;
+            document.getElementById('masterStatus').className = score > 80 ? 'master-pass' : 'master-fail';
+            document.getElementById('masterStatus').innerHTML = score > 80 ? `✓ CONFIGURATION STRONG<br><span style="font-size:0.7rem">Domain is secure.</span>` : `⚠ ATTENTION REQUIRED<br><span style="font-size:0.7rem">Security gaps found.</span>`;
             
+            container.style.display = 'grid';
             document.getElementById('exportBtn').style.display = 'block';
 
         } catch (e) { console.error(e); } finally { document.getElementById('loading').style.display = 'none'; }
     }
 
-    function renderCard(title, record, isPass, blurb) {
-        currentAuditData.push({ title, status: isPass ? 'PASS' : 'FAIL', record: record || 'NONE' });
+    function renderCard(title, blurb, isPass, records) {
+        let recHtml = '<div class="record-group">';
+        records.forEach(r => {
+            if(r) {
+                recHtml += createRecordBox(r);
+                currentAuditData.push({ title, status: isPass ? 'PASS' : 'FAIL', record: r });
+            }
+        });
+        recHtml += '</div>';
+        renderCardRaw(title, blurb, isPass, recHtml);
+    }
+
+    function renderCardRaw(title, blurb, isPass, rawHtml) {
         document.getElementById('results').innerHTML += `
             <div class="card ${isPass ? 'pass' : 'fail'}">
                 <div class="card-header"><span class="title">${title}</span><span class="badge ${isPass ? 'pass' : 'fail'}">${isPass ? 'PASS' : 'FAIL'}</span></div>
                 <div class="blurb">${blurb}</div>
-                ${record ? `<div class="record-box">${record}<button class="copy-btn" onclick="copyToClipboard('${record.replace(/'/g, "\\'")}', this)">COPY</button></div>` : ''}
+                ${rawHtml}
             </div>`;
     }
 
-    function renderSmallCard(title, record, blurb, provider = null) {
-        currentAuditData.push({ title, status: record ? 'FOUND' : 'MISSING', record: record || 'NONE' });
+    function renderSmallCard(title, records, blurb, provider = null) {
+        let recHtml = '<div class="record-group">';
+        records.forEach(r => {
+            recHtml += createRecordBox(r);
+            currentAuditData.push({ title, status: 'FOUND', record: r });
+        });
+        recHtml += '</div>';
         return `
-            <div class="card ${record ? 'pass' : 'fail'}">
+            <div class="card ${records.length ? 'pass' : 'fail'}">
                 <div class="card-header"><span class="title">${title}</span></div>
                 ${provider ? `<span class="host-notice">Host: ${provider}</span>` : ''}
-                <div class="record-box" style="font-size:0.65rem">${record || 'Missing'}<button class="copy-btn" onclick="copyToClipboard('${record.replace(/'/g, "\\'")}', this)">COPY</button></div>
+                ${recHtml}
             </div>`;
     }
 
