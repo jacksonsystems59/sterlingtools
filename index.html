@@ -20,15 +20,6 @@
         h1 { font-size: 1.2rem; color: #fff; display: flex; align-items: center; gap: 8px; font-weight: 800; }
         h1::before { content: ''; width: 3px; height: 16px; background: var(--blue); display: inline-block; }
 
-        /* THEME PICKER */
-        .theme-picker { position: fixed; bottom: 15px; right: 15px; display: flex; gap: 8px; align-items: center; background: rgba(0,0,0,0.7); padding: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); z-index: 9999; backdrop-filter: blur(10px); }
-        .picker-label { font-size: 0.6rem; color: #fff; text-transform: uppercase; font-weight: 900; }
-        .color-sq { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); transition: transform 0.1s; }
-        .color-sq:hover { transform: translateY(-3px); }
-        .sq-standard { background: #38bdf8; }
-        .sq-linux { background: #00ff41; }
-        .sq-macos { background: #5e5e5e; }
-
         /* TOP BARS */
         .util-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-bottom: 12px; }
         .bar { background: #1a1f29; border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; font-size: 0.8rem; border-left: 3px solid var(--blue); }
@@ -50,7 +41,7 @@
         #runBtn { background: var(--blue); color: #fff; min-width: 100px; }
         #exportBtn { background: #21262d; color: #c9d1d9; border: 1px solid var(--border); }
 
-        /* MASTER STATUS & PULSE */
+        /* MASTER STATUS PULSE */
         .status-container { display: none; grid-template-columns: 80px 1fr; gap: 10px; margin-bottom: 10px; align-items: center; }
         .score-circle { height: 60px; width: 60px; border-radius: 50%; border: 3px solid; display: flex; align-items: center; justify-content: center; font-weight: 900; background: rgba(0,0,0,0.3); font-size: 1.2rem; }
         #masterStatus { padding: 10px; border-radius: 6px; font-weight: 800; font-size: 0.85rem; border: 1px solid; flex-grow: 1; }
@@ -67,9 +58,8 @@
             50% { box-shadow: 0 0 35px rgba(0, 255, 102, 0.6); background: rgba(0, 255, 102, 0.2); } 
             100% { box-shadow: 0 0 5px rgba(0, 255, 102, 0.2); background: rgba(0, 255, 102, 0.05); } 
         }
-        .master-fail { background: rgba(255, 51, 51, 0.05); color: var(--red); border-color: var(--red); }
 
-        /* CARDS & RESULTS */
+        /* CARDS & BADGES */
         .results-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
         .small-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; border-left: 3px solid var(--blue); position: relative; backdrop-filter: var(--glass); }
@@ -84,6 +74,9 @@
 
         .record-box { background: #0d1117; border: 1px solid var(--border); padding: 6px 35px 6px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: #7dd3fc; margin-top: 4px; word-break: break-all; min-height: 26px; display: flex; align-items: center; }
         .copy-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: #21262d; border: 1px solid var(--border); color: #8b949e; padding: 2px 4px; font-size: 0.55rem; border-radius: 2px; cursor: pointer; }
+
+        .theme-picker { position: fixed; bottom: 15px; right: 15px; display: flex; gap: 8px; align-items: center; background: rgba(0,0,0,0.7); padding: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); z-index: 9999; backdrop-filter: blur(10px); }
+        .color-sq { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); }
 
         footer { text-align: center; margin-top: 20px; padding: 10px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.65rem; text-transform: uppercase; margin-bottom: 40px; }
     </style>
@@ -129,20 +122,17 @@
     <footer>&copy; 2026 Sterling Tech</footer>
 
     <div class="theme-picker">
-        <span class="picker-label">Theme:</span>
-        <div class="color-sq sq-standard" onclick="setTheme('standard')"></div>
-        <div class="color-sq sq-linux" onclick="setTheme('linux')"></div>
-        <div class="color-sq sq-macos" onclick="setTheme('macos')"></div>
+        <div class="color-sq" style="background:#38bdf8" onclick="setTheme('standard')"></div>
+        <div class="color-sq" style="background:#5e5e5e" onclick="setTheme('macos')"></div>
     </div>
 
 <script>
     const themes = {
         standard: { b: '#38bdf8', g: '#fbbf24', bg: '#0b0e14', txt: '#e2e8f0', gls: 'none' },
-        linux: { b: '#00ff41', g: '#ffb000', bg: '#0d0d0d', txt: '#00ff41', gls: 'none' },
         macos: { b: '#007aff', g: '#fbbf24', bg: '#1c1c1e', txt: '#ffffff', gls: 'blur(12px)' }
     };
 
-    const names = ["MERCURY", "MARS", "JUPITER", "VADER", "RIPLEY", "SPOCK", "HADES", "ZEUS", "KRAKEN", "CHIEF", "GERALT", "CORTANA"];
+    const names = ["MERCURY", "MARS", "JUPITER", "VADER", "RIPLEY", "SPOCK", "HADES", "ZEUS", "KRAKEN", "CHIEF"];
     let history = new Set();
 
     function initApp() {
@@ -175,15 +165,16 @@
         document.getElementById('loading').style.display = 'block';
         
         try {
-            const [spfD, mxD, nsD, rdap] = await Promise.all([
-                fetchDNS(domain, 'TXT'), fetchDNS(domain, 'MX'), fetchDNS(domain, 'NS'), fetchRDAP(domain)
+            const [spfD, dkimD, mxD, nsD, rdap] = await Promise.all([
+                fetchDNS(domain, 'TXT'), fetchDNS(`selector1._domainkey.${domain}`, 'TXT'), fetchDNS(domain, 'MX'), fetchDNS(domain, 'NS'), fetchRDAP(domain)
             ]);
 
             const spf = (spfD.Answer || []).find(r => r.data.includes('v=spf1'))?.data.replace(/"/g,'') || "NOT FOUND";
+            const dkim = (dkimD.Answer || []).find(r => r.data.includes('v=DKIM1'))?.data.replace(/"/g,'') || "NOT FOUND";
             const mxL = (mxD.Answer || []).map(r => r.data);
             const nsL = (nsD.Answer || []).map(r => r.data);
 
-            // THE TENANT LOOKUP LOGIC
+            // Provider Detection for Badge
             let tenant = "PRIVATE";
             if (mxL.join(' ').includes('outlook')) {
                 const match = mxL.join(' ').match(/([a-zA-Z0-9-]+)\.mail\.protection\.outlook\.com/);
@@ -194,7 +185,10 @@
                 <div class="card special"><span class="title">Domain Lifecycle</span><div class="explanation">Expiry tracking.</div>
                     <div class="days-badge">${rdap.days} DAYS REMAINING</div>
                 </div>
-                <div class="card"><span class="title">SPF Record</span><div class="explanation">Authorized senders.</div>${createBox(spf)}</div>
+                <div class="small-row">
+                    <div class="card"><span class="title">SPF Record</span><div class="explanation">Auth.</div>${createBox(spf)}</div>
+                    <div class="card"><span class="title">DKIM Record</span><div class="explanation">Sign.</div>${createBox(dkim)}</div>
+                </div>
                 <div class="small-row">
                     <div class="card"><span class="title">MX Records</span><div class="provider-badge">${tenant}</div>${mxL.map(createBox).join('')}</div>
                     <div class="card"><span class="title">Nameservers</span><div class="provider-badge">DNS</div>${nsL.map(createBox).join('')}</div>
