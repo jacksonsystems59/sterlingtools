@@ -10,13 +10,14 @@
             --bg-card: #0d1117;
             --bg-input: #161b22;
             --text-main: #c9d1d9;
-            --accent: #238636; /* Success Green */
-            --danger: #da3633; /* Red */
-            --warning: #d29922; /* Gold */
+            --accent: #238636;
+            --danger: #da3633;
+            --warning: #d29922;
             --border: #30363d;
+            --blue: #58a6ff;
         }
 
-        body { background: var(--bg-body); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; margin: 0; padding: 40px; }
+        body { background: var(--bg-body); color: var(--text-main); font-family: -apple-system, sans-serif; margin: 0; padding: 40px; }
         .container { max-width: 900px; margin: 0 auto; }
         
         .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -24,23 +25,24 @@
         
         input { flex-grow: 1; background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 6px; outline: none; }
         button { background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; }
-        .export-btn { background: #21262d; border: 1px solid var(--border); margin-left: 10px; }
+        .export-btn { background: #21262d; border: 1px solid var(--border); }
 
         .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; position: relative; overflow: hidden; }
         .card-status-bar { height: 4px; width: 100%; position: absolute; top: 0; left: 0; }
         .content { padding: 20px; }
 
-        .badge { font-size: 11px; padding: 2px 8px; border-radius: 12px; font-weight: bold; margin-left: 10px; text-transform: uppercase; }
-        .badge-passed { background: rgba(35, 134, 54, 0.2); color: #3fb950; border: 1px solid var(--accent); }
-        .badge-failed { background: rgba(218, 54, 51, 0.2); color: #f85149; border: 1px solid var(--danger); }
-        .badge-missing { background: rgba(248, 81, 73, 0.1); color: #f85149; border: 1px dashed var(--danger); }
+        .badge { font-size: 11px; padding: 2px 8px; border-radius: 12px; font-weight: bold; margin-left: 10px; text-transform: uppercase; border: 1px solid transparent; }
+        .badge-passed { background: rgba(35, 134, 54, 0.2); color: #3fb950; border-color: var(--accent); }
+        .badge-failed { background: rgba(218, 54, 51, 0.2); color: #f85149; border-color: var(--danger); }
+        .badge-missing { background: rgba(248, 81, 73, 0.1); color: #f85149; border-style: dashed; }
 
         .record-val { background: #010409; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 13px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #161b22; }
-        .copy-link { color: #58a6ff; font-size: 11px; cursor: pointer; text-decoration: none; }
+        .copy-link { color: var(--blue); font-size: 11px; cursor: pointer; user-select: none; }
         .copy-link:hover { text-decoration: underline; }
 
         .passed-bar { background: var(--accent); }
         .failed-bar { background: var(--danger); }
+        .loading { text-align: center; padding: 20px; font-style: italic; color: var(--blue); }
     </style>
 </head>
 <body>
@@ -63,29 +65,44 @@
     let currentResults = [];
 
     async function fetchDns(domain, type) {
-        const r = await fetch(`https://dns.google/resolve?name=${domain}&type=${type}`);
-        const d = await r.json();
-        return d.Answer || [];
+        try {
+            const r = await fetch(`https://dns.google/resolve?name=${domain}&type=${type}`);
+            const d = await r.json();
+            return d.Answer || [];
+        } catch (e) { return []; }
     }
 
     async function runAudit() {
         const domain = document.getElementById('domainInput').value.trim();
         if(!domain) return;
         const grid = document.getElementById('resultsGrid');
-        grid.innerHTML = "Auditing infrastructure...";
+        grid.innerHTML = `<div class="loading">Analyzing infrastructure for ${domain}...</div>`;
         currentResults = [];
 
-        const data = {
-            spf: await fetchDns(domain, 'TXT'),
-            dmarc: await fetchDns(`_dmarc.${domain}`, 'TXT'),
-            mx: await fetchDns(domain, 'MX'),
-            ns: await fetchDns(domain, 'NS')
-        };
+        // Run all lookups
+        const [spfRecords, mxRecords, nsRecords] = await Promise.all([
+            fetchDns(domain, 'TXT'),
+            fetchDns(domain, 'MX'),
+            fetchDns(domain, 'NS')
+        ]);
 
-        renderCard("SPF Record", auditSPF(data.spf));
-        renderCard("DMARC Record", auditDMARC(data.dmarc));
-        renderCard("MX Records", auditMX(data.mx));
-        renderCard("Nameservers", auditNS(data.ns));
+        const dmarcRecords = await fetchDns(`_dmarc.${domain}`, 'TXT');
+
+        // DKIM Guessing Logic
+        const selectors = ['google', 'default', 'k1', 'mail', 'mandrill', 'microsoft'];
+        let foundDkim = [];
+        for (let s of selectors) {
+            const res = await fetchDns(`${s}._domainkey.${domain}`, 'TXT');
+            if (res.length > 0) foundDkim.push({ selector: s, data: res[0].data });
+        }
+
+        grid.innerHTML = ""; // Clear loading
+
+        renderCard("SPF Record", auditSPF(spfRecords));
+        renderCard("DMARC Record", auditDMARC(dmarcRecords));
+        renderCard("DKIM Records", auditDKIM(foundDkim));
+        renderCard("MX Records", auditMX(mxRecords));
+        renderCard("Nameservers", auditNS(nsRecords));
 
         document.getElementById('exportBtn').style.display = 'block';
     }
@@ -93,19 +110,24 @@
     function auditSPF(records) {
         const rec = records.find(r => r.data.includes("v=spf1"));
         if (!rec) return { status: "NOT FOUND", state: "missing", val: "No SPF record found." };
-        const passed = rec.data.includes("-all") || rec.data.includes("~all");
+        const passed = rec.data.includes("~all") || rec.data.includes("-all");
         return { status: passed ? "FOUND - PASSED" : "FOUND - FAILED", state: passed ? "passed" : "failed", val: rec.data };
     }
 
     function auditDMARC(records) {
         const rec = records.find(r => r.data.includes("v=DMARC1"));
         if (!rec) return { status: "NOT FOUND", state: "missing", val: "No DMARC record found." };
-        const passed = rec.data.includes("p=reject") || rec.data.includes("p=quarantine");
+        const passed = !rec.data.includes("p=none");
         return { status: passed ? "FOUND - PASSED" : "FOUND - FAILED", state: passed ? "passed" : "failed", val: rec.data };
     }
 
+    function auditDKIM(found) {
+        if (found.length === 0) return { status: "NOT FOUND", state: "missing", val: "No common DKIM selectors found." };
+        return { status: "FOUND - PASSED", state: "passed", val: found.map(d => `[${d.selector}]: ${d.data}`).join(' | ') };
+    }
+
     function auditMX(records) {
-        if (!records.length) return { status: "NOT FOUND", state: "missing", val: "No MX records." };
+        if (!records.length) return { status: "NOT FOUND", state: "missing", val: "No MX records detected." };
         return { status: "FOUND - PASSED", state: "passed", val: records.map(r => r.data).join(', ') };
     }
 
@@ -116,8 +138,6 @@
 
     function renderCard(title, result) {
         const grid = document.getElementById('resultsGrid');
-        if(grid.innerHTML === "Auditing infrastructure...") grid.innerHTML = "";
-        
         currentResults.push({ title, status: result.status, record: result.val });
 
         const card = document.createElement('div');
@@ -127,8 +147,8 @@
             <div class="content">
                 <strong>${title}</strong> <span class="badge badge-${result.state}">${result.status}</span>
                 <div class="record-val">
-                    <span id="txt_${title}">${result.val}</span>
-                    <span class="copy-link" onclick="copyText('txt_${title}')">COPY</span>
+                    <span id="txt_${title.replace(/\s/g, '')}">${result.val}</span>
+                    <span class="copy-link" onclick="copyText('txt_${title.replace(/\s/g, '')}')">COPY</span>
                 </div>
             </div>
         `;
@@ -138,19 +158,17 @@
     function copyText(id) {
         const text = document.getElementById(id).innerText;
         navigator.clipboard.writeText(text);
-        alert("Copied to clipboard!");
+        alert("Copied!");
     }
 
     function exportResults() {
-        let csv = "Record Type,Status,Value\n";
-        currentResults.forEach(r => {
-            csv += `"${r.title}","${r.status}","${r.record.replace(/"/g, '""')}"\n`;
-        });
+        let csv = "Type,Status,Value\n";
+        currentResults.forEach(r => csv += `"${r.title}","${r.status}","${r.record.replace(/"/g, '""')}"\n`);
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.setAttribute('href', url);
-        a.setAttribute('download', 'dns-audit.csv');
+        a.href = url;
+        a.download = `DNS_Audit_${new Date().toISOString().slice(0,10)}.csv`;
         a.click();
     }
 </script>
