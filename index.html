@@ -3,179 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sterling DNS Auditor | Jackson Tech</title>
+    <title>Sterling DNS Auditor | Red/Green Edition</title>
     <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0b0e14; color: #e2e8f0; min-height: 100vh; padding: 24px; }
+        
+        /* Brand Colors */
         :root {
-            --bg-body: #06090f;
-            --bg-card: #0d1117;
-            --bg-input: #161b22;
-            --text-main: #c9d1d9;
-            --accent: #238636;
-            --danger: #da3633;
-            --warning: #d29922;
-            --border: #30363d;
-            --blue: #58a6ff;
+            --bright-green: #00ff66;
+            --dark-green: #064e3b;
+            --bright-red: #ff3333;
+            --dark-red: #7f1d1d;
+            --accent-blue: #38bdf8;
+            --bg-card: #161b22;
         }
 
-        body { background: var(--bg-body); color: var(--text-main); font-family: -apple-system, sans-serif; margin: 0; padding: 40px; }
-        .container { max-width: 900px; margin: 0 auto; }
+        h1 { font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 4px; border-left: 4px solid var(--accent-blue); padding-left: 12px; }
+        .subtitle { font-size: 0.85rem; color: #94a3b8; margin-bottom: 25px; }
+
+        .input-row { display: flex; gap: 8px; margin-bottom: 25px; background: var(--bg-card); padding: 15px; border-radius: 10px; border: 1px solid #30363d; }
+        input { flex: 1; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 12px; color: #fff; font-size: 1rem; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--accent-blue); box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2); }
         
-        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .search-area { display: flex; gap: 10px; background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 30px; }
+        button { background: var(--accent-blue); color: #000; border: none; border-radius: 6px; padding: 10px 25px; font-size: 1rem; font-weight: 700; cursor: pointer; }
+        button:hover { background: #fff; }
+
+        /* Status Cards */
+        .card { background: var(--bg-card); border: 1px solid #30363d; border-radius: 10px; padding: 20px; margin-bottom: 15px; position: relative; }
+        .card.pass { border-left: 6px solid var(--bright-green); }
+        .card.fail { border-left: 6px solid var(--bright-red); }
+
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .section-title { font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        /* Badges */
+        .badge { font-size: 0.75rem; font-weight: 900; padding: 4px 12px; border-radius: 4px; text-transform: uppercase; }
+        .badge.pass { background: var(--dark-green); color: var(--bright-green); border: 1px solid var(--bright-green); }
+        .badge.fail { background: var(--dark-red); color: var(--bright-red); border: 1px solid var(--bright-red); }
+
+        .record-label { font-size: 0.7rem; color: #8b949e; margin-bottom: 5px; font-weight: 600; }
+        .record-block { background: #0d1117; padding: 12px; border-radius: 6px; border: 1px solid #30363d; position: relative; font-family: 'Consolas', monospace; font-size: 0.9rem; color: #7dd3fc; word-break: break-all; margin-bottom: 10px; }
         
-        input { flex-grow: 1; background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 6px; outline: none; }
-        button { background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; }
-        .export-btn { background: #21262d; border: 1px solid var(--border); }
+        .copy-btn { position: absolute; right: 8px; top: 8px; background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 3px 8px; font-size: 0.7rem; border-radius: 4px; cursor: pointer; }
+        .copy-btn:hover { background: #30363d; color: #fff; }
 
-        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; position: relative; overflow: hidden; }
-        .card-status-bar { height: 4px; width: 100%; position: absolute; top: 0; left: 0; }
-        .content { padding: 20px; }
+        .note { font-size: 0.85rem; margin-top: 8px; }
+        .note.good { color: var(--bright-green); font-weight: 600; }
+        .note.bad { color: var(--bright-red); font-weight: 600; }
 
-        .badge { font-size: 11px; padding: 2px 8px; border-radius: 12px; font-weight: bold; margin-left: 10px; text-transform: uppercase; border: 1px solid transparent; }
-        .badge-passed { background: rgba(35, 134, 54, 0.2); color: #3fb950; border-color: var(--accent); }
-        .badge-failed { background: rgba(218, 54, 51, 0.2); color: #f85149; border-color: var(--danger); }
-        .badge-missing { background: rgba(248, 81, 73, 0.1); color: #f85149; border-style: dashed; }
-
-        .record-val { background: #010409; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 13px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #161b22; }
-        .copy-link { color: var(--blue); font-size: 11px; cursor: pointer; user-select: none; margin-left: 10px; }
-        .copy-link:hover { text-decoration: underline; }
-
-        .passed-bar { background: var(--accent); }
-        .failed-bar { background: var(--danger); }
-        .loading { text-align: center; padding: 20px; font-style: italic; color: var(--blue); }
+        #summaryBar { margin-bottom: 20px; font-weight: 700; font-size: 1.1rem; }
+        .spinner { display: inline-block; width: 18px; height: 18px; border: 3px solid #30363d; border-top-color: var(--accent-blue); border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 10px; vertical-align: middle; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header-flex">
-        <h1>Sterling DNS Auditor</h1>
-        <button class="export-btn" id="exportBtn" style="display:none;" onclick="exportResults()">Export CSV</button>
+    <h1>Sterling DNS Auditor</h1>
+    <p class="subtitle">Email Security & Infrastructure Diagnostic Tool</p>
+
+    <div class="input-row">
+        <input type="text" id="domainInput" placeholder="jacksontech.co.uk" autofocus>
+        <button id="checkBtn">RUN AUDIT</button>
     </div>
 
-    <div class="search-area">
-        <input type="text" id="domainInput" placeholder="Enter domain (e.g. jacksontech.co.uk)">
-        <button onclick="runAudit()">Audit Domain</button>
+    <div id="loading" style="display:none; margin-bottom:20px;">
+        <span class="spinner"></span> <span style="color: var(--accent-blue)">Performing deep scan...</span>
     </div>
 
-    <div id="resultsGrid"></div>
-</div>
+    <div id="results">
+        <div id="summaryBar"></div>
+        <div id="spfCard"></div>
+        <div id="dkimCard"></div>
+        <div id="dmarcCard"></div>
+        <div id="mxCard"></div>
+        <div id="nsCard"></div>
+    </div>
 
 <script>
-    let currentResults = [];
+    const btn = document.getElementById('checkBtn');
+    const input = document.getElementById('domainInput');
 
-    async function fetchDns(domain, type) {
-        try {
-            const r = await fetch(`https://dns.google/resolve?name=${domain}&type=${type}`);
-            const d = await r.json();
-            return d.Answer || [];
-        } catch (e) { return []; }
-    }
+    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-    async function runAudit() {
-        const domain = document.getElementById('domainInput').value.trim();
-        if(!domain) return;
-        const grid = document.getElementById('resultsGrid');
-        grid.innerHTML = `<div class="loading">Auditing ${domain}...</div>`;
-        currentResults = [];
-
-        const [spfRecords, mxRecords, nsRecords, dmarcRecords] = await Promise.all([
-            fetchDns(domain, 'TXT'),
-            fetchDns(domain, 'MX'),
-            fetchDns(domain, 'NS'),
-            fetchDns(`_dmarc.${domain}`, 'TXT')
-        ]);
-
-        // Extended DKIM Selector List from your image
-        const selectors = ['google', 'selector1', 'selector2', 'default', 'mail', 'dkim', 'k1', 'smtp', 'mimecast', 'proofpoint'];
-        let foundDkim = [];
-        
-        // Scan selectors in parallel
-        const dkimPromises = selectors.map(async s => {
-            const res = await fetchDns(`${s}._domainkey.${domain}`, 'TXT');
-            if (res.length > 0) return { selector: s, data: res[0].data };
-            return null;
+    async function dns(name, type) {
+        const r = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(name)}&type=${type}`, {
+            headers: { 'Accept': 'application/dns-json' }
         });
-        foundDkim = (await Promise.all(dkimPromises)).filter(x => x !== null);
-
-        grid.innerHTML = "";
-
-        renderCard("SPF Record", auditSPF(spfRecords));
-        renderCard("DMARC Record", auditDMARC(dmarcRecords));
-        renderCard("DKIM Records", auditDKIM(foundDkim));
-        renderCard("MX Records", auditMX(mxRecords));
-        renderCard("Nameservers", auditNS(nsRecords));
-
-        document.getElementById('exportBtn').style.display = 'block';
+        return r.json();
     }
 
-    function auditSPF(records) {
-        const rec = records.find(r => r.data.includes("v=spf1"));
-        if (!rec) return { status: "NOT FOUND", state: "failed", val: "No SPF record found." };
-        const passed = rec.data.includes("~all") || rec.data.includes("-all");
-        return { status: passed ? "FOUND - PASSED" : "FOUND - FAILED", state: passed ? "passed" : "failed", val: rec.data };
-    }
-
-    function auditDMARC(records) {
-        const rec = records.find(r => r.data.includes("v=DMARC1"));
-        if (!rec) return { status: "NOT FOUND", state: "failed", val: "No DMARC record found." };
-        const passed = (rec.data.includes("p=quarantine") || rec.data.includes("p=reject"));
-        return { status: passed ? "FOUND - PASSED" : "FOUND - FAILED", state: passed ? "passed" : "failed", val: rec.data };
-    }
-
-    function auditDKIM(found) {
-        if (!found.length) return { status: "NOT FOUND", state: "failed", val: "Common selectors checked: none found." };
-        return { status: "FOUND - PASSED", state: "passed", val: found.map(d => `[${d.selector}]: ${d.data}`).join(' | ') };
-    }
-
-    function auditMX(records) {
-        if (!records.length) return { status: "NOT FOUND", state: "failed", val: "No MX records detected." };
-        return { status: "FOUND - PASSED", state: "passed", val: records.map(r => r.data).join(' \n ') };
-    }
-
-    function auditNS(records) {
-        // Handle nameservers specifically as they return data in trailing-dot format
-        if (!records.length) return { status: "NOT FOUND", state: "failed", val: "No NS records detected." };
-        return { status: "FOUND - PASSED", state: "passed", val: records.map(r => r.data.replace(/\.$/, '')).join(', ') };
-    }
-
-    function renderCard(title, result) {
-        const grid = document.getElementById('resultsGrid');
-        currentResults.push({ title, status: result.status, record: result.val });
-
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-            <div class="card-status-bar ${result.state === 'passed' ? 'passed-bar' : 'failed-bar'}"></div>
-            <div class="content">
-                <strong>${title}</strong> <span class="badge badge-${result.state === 'passed' ? 'passed' : 'failed'}">${result.status}</span>
-                <div class="record-val">
-                    <span id="txt_${title.replace(/\s/g, '')}">${result.val}</span>
-                    <span class="copy-link" onclick="copyText('txt_${title.replace(/\s/g, '')}')">COPY</span>
+    function createCard(title, status, content, isPass) {
+        return `
+            <div class="card ${isPass ? 'pass' : 'fail'}">
+                <div class="card-header">
+                    <span class="section-title">${title}</span>
+                    <span class="badge ${isPass ? 'pass' : 'fail'}">${status}</span>
                 </div>
-            </div>
-        `;
-        grid.appendChild(card);
+                ${content}
+            </div>`;
     }
 
-    function copyText(id) {
-        const text = document.getElementById(id).innerText;
-        navigator.clipboard.writeText(text);
-        const original = document.querySelector(`[onclick="copyText('${id}')"]`);
-        original.innerText = "COPIED!";
-        setTimeout(() => original.innerText = "COPY", 2000);
+    function recordBox(val) {
+        return `<div class="record-block">
+            ${esc(val)}
+            <button class="copy-btn" onclick="navigator.clipboard.writeText('${val.replace(/'/g, "\\'")}'); this.innerText='OK!'">COPY</button>
+        </div>`;
     }
 
-    function exportResults() {
-        let csv = "Type,Status,Value\n";
-        currentResults.forEach(r => csv += `"${r.title}","${r.status}","${r.record.replace(/"/g, '""')}"\n`);
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Audit_${document.getElementById('domainInput').value}.csv`;
-        a.click();
+    async function run() {
+        let domain = input.value.trim().toLowerCase();
+        if (!domain) return;
+        
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('results').style.display = 'none';
+        
+        try {
+            const [spfData, dmarcData, mxData, nsData] = await Promise.all([
+                dns(domain, 'TXT'),
+                dns('_dmarc.' + domain, 'TXT'),
+                dns(domain, 'MX'),
+                dns(domain, 'NS')
+            ]);
+
+            // SPF Logic
+            let spf = (spfData.Answer || []).find(r => r.data.includes('v=spf1'))?.data.replace(/"/g,'') || null;
+            let spfPass = spf && spf.includes('-all'); // Strict Green only for hard fail
+            let spfContent = spf ? `<div class="record-label">Active Record</div>${recordBox(spf)}` : '';
+            spfContent += spfPass ? `<p class="note good">✓ Hard Fail enabled.</p>` : `<p class="note bad">✗ Insecure: Missing or using Soft Fail (~all).</p>`;
+            document.getElementById('spfCard').innerHTML = createCard("SPF (Sender Policy Framework)", spfPass ? "PASSED" : "FAILED", spfContent, spfPass);
+
+            // DMARC Logic
+            let dmarc = (dmarcData.Answer || []).find(r => r.data.includes('v=DMARC1'))?.data.replace(/"/g,'') || null;
+            let dmarcPass = dmarc && (dmarc.includes('p=reject') || dmarc.includes('p=quarantine'));
+            let dmarcContent = dmarc ? `<div class="record-label">Active Record</div>${recordBox(dmarc)}` : '';
+            dmarcContent += dmarcPass ? `<p class="note good">✓ Enforcement active.</p>` : `<p class="note bad">✗ Policy is missing or set to p=none.</p>`;
+            document.getElementById('dmarcCard').innerHTML = createCard("DMARC Enforcement", dmarcPass ? "PASSED" : "FAILED", dmarcContent, dmarcPass);
+
+            // MX & NS Logic
+            let mxs = (mxData.Answer || []).map(r => r.data).join('<br>');
+            document.getElementById('mxCard').innerHTML = createCard("MX Records", mxs ? "FOUND" : "MISSING", mxs ? recordBox(mxs) : '', !!mxs);
+            
+            let nss = (nsData.Answer || []).map(r => r.data).join('<br>');
+            document.getElementById('nsCard').innerHTML = createCard("Nameservers", nss ? "FOUND" : "MISSING", nss ? recordBox(nss) : '', !!nss);
+
+            document.getElementById('summaryBar').innerHTML = (spfPass && dmarcPass) 
+                ? `<span style="color:var(--bright-green)">✓ DOMAIN SECURE</span>` 
+                : `<span style="color:var(--bright-red)">⚠ SECURITY VULNERABILITIES DETECTED</span>`;
+
+            document.getElementById('results').style.display = 'block';
+        } catch (e) {
+            alert("Error fetching data. Check your connection.");
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
     }
+
+    btn.addEventListener('click', run);
+    input.addEventListener('keydown', e => { if(e.key==='Enter') run(); });
 </script>
 </body>
 </html>
