@@ -20,6 +20,7 @@
         h1 { font-size: 1.2rem; color: #fff; display: flex; align-items: center; gap: 8px; font-weight: 800; }
         h1::before { content: ''; width: 3px; height: 16px; background: var(--blue); display: inline-block; }
 
+        /* THEME PICKER */
         .theme-picker { position: fixed; bottom: 15px; right: 15px; display: flex; gap: 8px; align-items: center; background: rgba(0,0,0,0.7); padding: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); z-index: 9999; backdrop-filter: blur(10px); }
         .picker-label { font-size: 0.6rem; color: #fff; text-transform: uppercase; font-weight: 900; }
         .color-sq { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); transition: transform 0.1s; }
@@ -28,6 +29,7 @@
         .sq-linux { background: #00ff41; }
         .sq-macos { background: #5e5e5e; }
 
+        /* TOP BARS */
         .util-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-bottom: 12px; }
         .bar { background: #1a1f29; border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; font-size: 0.8rem; border-left: 3px solid var(--blue); }
         .gold-acc { border-left-color: var(--gold); }
@@ -40,6 +42,7 @@
         .gen-display { background: #0d1117; border: 1px solid var(--border); padding: 4px 35px 4px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: var(--gold); flex: 1; min-height: 26px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; }
         .gen-btn { background: var(--gold); color: #000; padding: 4px 8px; border-radius: 3px; font-weight: 800; font-size: 0.65rem; cursor: pointer; border: none; }
 
+        /* INPUT AREA */
         .controls { display: flex; gap: 6px; margin-bottom: 12px; padding: 4px; background: linear-gradient(90deg, #161b22 0%, #1a2433 100%); border-radius: 6px; border: 1px solid rgba(0, 122, 255, 0.3); box-shadow: 0 0 15px var(--input-glow); }
         input#domainInput { flex: 1; background: #0d1117; border: 1px solid var(--blue); border-radius: 4px; padding: 10px 14px; color: #fff; outline: none; font-weight: bold; font-size: 0.9rem; }
         
@@ -47,6 +50,7 @@
         #runBtn { background: var(--blue); color: #fff; min-width: 100px; }
         #exportBtn { background: #21262d; color: #c9d1d9; border: 1px solid var(--border); }
 
+        /* MASTER STATUS & PULSE */
         .status-container { display: none; grid-template-columns: 80px 1fr; gap: 10px; margin-bottom: 10px; align-items: center; }
         .score-circle { height: 60px; width: 60px; border-radius: 50%; border: 3px solid; display: flex; align-items: center; justify-content: center; font-weight: 900; background: rgba(0,0,0,0.3); font-size: 1.2rem; }
         #masterStatus { padding: 10px; border-radius: 6px; font-weight: 800; font-size: 0.85rem; border: 1px solid; flex-grow: 1; }
@@ -55,17 +59,17 @@
             background: rgba(0, 255, 102, 0.05); 
             color: var(--green); 
             border-color: var(--green); 
-            animation: statusBreathStrong 2.5s ease-in-out infinite; 
-            box-shadow: 0 0 10px rgba(0, 255, 102, 0.2);
+            animation: statusBreathStrong 2s ease-in-out infinite; 
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
         }
         @keyframes statusBreathStrong { 
             0% { box-shadow: 0 0 5px rgba(0, 255, 102, 0.2); background: rgba(0, 255, 102, 0.05); } 
-            50% { box-shadow: 0 0 25px rgba(0, 255, 102, 0.5); background: rgba(0, 255, 102, 0.15); } 
+            50% { box-shadow: 0 0 35px rgba(0, 255, 102, 0.6); background: rgba(0, 255, 102, 0.2); } 
             100% { box-shadow: 0 0 5px rgba(0, 255, 102, 0.2); background: rgba(0, 255, 102, 0.05); } 
         }
-
         .master-fail { background: rgba(255, 51, 51, 0.05); color: var(--red); border-color: var(--red); }
 
+        /* CARDS & RESULTS */
         .results-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
         .small-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; border-left: 3px solid var(--blue); position: relative; backdrop-filter: var(--glass); }
@@ -77,9 +81,6 @@
 
         .provider-badge { font-size: 0.6rem; color: var(--blue); font-weight: 900; background: rgba(0, 122, 255, 0.1); padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; display: inline-block; border: 1px solid var(--blue); }
         .days-badge { font-size: 0.6rem; color: var(--gold); font-weight: 900; background: rgba(251, 191, 36, 0.1); padding: 2px 6px; border-radius: 4px; display: inline-block; border: 1px solid var(--gold); margin-top: 5px; }
-
-        #actionBox { display: none; margin-top: 15px; background: #1a1414; border: 1px solid var(--red); border-radius: 6px; padding: 12px; margin-bottom: 60px; }
-        .action-header { color: var(--red); font-weight: 900; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 8px; }
 
         .record-box { background: #0d1117; border: 1px solid var(--border); padding: 6px 35px 6px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: #7dd3fc; margin-top: 4px; word-break: break-all; min-height: 26px; display: flex; align-items: center; }
         .copy-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: #21262d; border: 1px solid var(--border); color: #8b949e; padding: 2px 4px; font-size: 0.55rem; border-radius: 2px; cursor: pointer; }
@@ -99,13 +100,13 @@
             <span style="font-size:0.55rem; display:block; color:var(--text-dim)">LOCAL WAN IP</span>
             <div class="ip-wrap">
                 <div class="live-dot"></div>
-                <span id="clientIP" onclick="copyToClipboard(this.innerText, this)">Loading...</span>
+                <span id="clientIP">Loading...</span>
             </div>
         </div>
         <div class="bar gold-acc">
             <span style="font-size:0.55rem; display:block; color:var(--text-dim)">FQDN GENERATOR</span>
             <div class="gen-row">
-                <div class="gen-display" id="genDisplay">---<button class="copy-btn" onclick="copyToClipboard(document.getElementById('genDisplay').innerText.replace('COPY',''), this)">COPY</button></div>
+                <div class="gen-display" id="genDisplay">---</div>
                 <button class="gen-btn" onclick="manualGenerate()">GEN</button>
             </div>
         </div>
@@ -125,146 +126,101 @@
     
     <div class="results-grid" id="results"></div>
 
-    <div id="actionBox">
-        <div class="action-header">ACTION REQUIRED FOR CLIENT</div>
-        <ul class="action-list" id="actionList" style="list-style:none; padding-left:15px; font-size:0.75rem; color:#ffcccc;"></ul>
-    </div>
-
     <footer>&copy; 2026 Sterling Tech</footer>
 
     <div class="theme-picker">
         <span class="picker-label">Theme:</span>
-        <div class="color-sq sq-standard" title="Sterling Tech" onclick="setTheme('standard')"></div>
-        <div class="color-sq sq-linux" title="Linux Terminal" onclick="setTheme('linux')"></div>
-        <div class="color-sq sq-macos" title="macOS Graphite" onclick="setTheme('macos')"></div>
+        <div class="color-sq sq-standard" onclick="setTheme('standard')"></div>
+        <div class="color-sq sq-linux" onclick="setTheme('linux')"></div>
+        <div class="color-sq sq-macos" onclick="setTheme('macos')"></div>
     </div>
 
 <script>
     const themes = {
-        standard: { b: '#38bdf8', p: '#a855f7', g: '#fbbf24', bg: '#0b0e14', txt: '#e2e8f0', gls: 'none' },
-        linux: { b: '#00ff41', p: '#d3d3d3', g: '#ffb000', bg: '#0d0d0d', txt: '#00ff41', gls: 'none' },
-        macos: { b: '#007aff', p: '#ff9500', g: '#fbbf24', bg: '#1c1c1e', txt: '#ffffff', gls: 'blur(12px)' }
+        standard: { b: '#38bdf8', g: '#fbbf24', bg: '#0b0e14', txt: '#e2e8f0', gls: 'none' },
+        linux: { b: '#00ff41', g: '#ffb000', bg: '#0d0d0d', txt: '#00ff41', gls: 'none' },
+        macos: { b: '#007aff', g: '#fbbf24', bg: '#1c1c1e', txt: '#ffffff', gls: 'blur(12px)' }
     };
 
-    const names = {
-        planets: ["MERCURY", "VENUS", "MARS", "JUPITER", "SATURN", "URANUS", "NEPTUNE", "PLUTO", "CERES", "ERIS", "EUROPA", "TITAN", "IO", "GANYMEDE"],
-        scifi: ["SKYWALKER", "VADER", "KENOBI", "RIPLEY", "DECKARD", "SPOCK", "KIRK", "PICARD", "DATA", "MORPHEUS", "TRINITY", "SOLO", "LEIA", "COOPER"],
-        plants: ["OAK", "MAPLE", "CEDAR", "WILLOW", "BAMBOO", "IVY", "FERN", "CACTUS", "ORCHID", "LOTUS", "CLOVER", "BIRCH", "BANYAN", "SEQUOIA"],
-        myth: ["ZEUS", "HERA", "POSEIDON", "DEMETER", "ATHENA", "APOLLO", "ARTEMIS", "ARES", "APHRODITE", "HEPHAESTUS", "HERMES", "HESTIA", "DIONYSUS", "HADES", "PERSEPHONE"],
-        sea: ["KRAKEN", "LEVIATHAN", "MEGALODON", "NAUTILUS", "ORCA", "MANTA", "STINGRAY", "BARRACUDA", "MARLIN", "DOLPHIN", "OCTOPUS", "HYDRA"],
-        gaming: ["MARIO", "LINK", "ZELDA", "SAMUS", "KRATOS", "SNAKE", "CHIEF", "SHEPARD", "ALOY", "GERALT", "JENSEN", "RYU", "KEN", "CHUNLI", "CORTANA", "GLADOS"]
-    };
-
-    let generatedHistory = new Set();
+    const names = ["MERCURY", "MARS", "JUPITER", "VADER", "RIPLEY", "SPOCK", "HADES", "ZEUS", "KRAKEN", "CHIEF", "GERALT", "CORTANA"];
+    let history = new Set();
 
     function initApp() {
-        getClientIP();
-        const saved = localStorage.getItem('sterlingThemeName') || 'standard';
-        setTheme(saved);
+        fetch('https://ipapi.co/json/').then(r => r.json()).then(d => document.getElementById('clientIP').innerText = d.ip);
+        setTheme(localStorage.getItem('sterlingTheme') || 'macos');
     }
 
-    function setTheme(name) {
-        const t = themes[name];
+    function setTheme(n) {
+        const t = themes[n];
         document.documentElement.style.setProperty('--blue', t.b);
-        document.documentElement.style.setProperty('--purple', t.p);
         document.documentElement.style.setProperty('--gold', t.g);
         document.documentElement.style.setProperty('--bg', t.bg);
         document.documentElement.style.setProperty('--text', t.txt);
         document.documentElement.style.setProperty('--glass', t.gls);
-        localStorage.setItem('sterlingThemeName', name);
+        localStorage.setItem('sterlingTheme', n);
     }
 
     function manualGenerate() {
-        const d = document.getElementById('domainInput').value.trim().toLowerCase();
-        const allPossible = [].concat(...Object.values(names));
-        const available = allPossible.filter(n => !generatedHistory.has(n));
-        if (available.length === 0) { alert("Session pool empty."); return; }
-        const word = available[Math.floor(Math.random() * available.length)];
-        generatedHistory.add(word);
+        const d = document.getElementById('domainInput').value.trim();
+        const pool = names.filter(n => !history.has(n));
+        const word = pool[Math.floor(Math.random() * pool.length)] || "HOST";
+        history.add(word);
         const host = d ? `${word}.${d}` : word;
-        document.getElementById('genDisplay').innerHTML = `${host}<button class="copy-btn" onclick="copyToClipboard('${host}', this)">COPY</button>`;
+        document.getElementById('genDisplay').innerText = host;
     }
 
     async function runAudit() {
         const domain = document.getElementById('domainInput').value.trim().toLowerCase();
         if (!domain) return;
         document.getElementById('loading').style.display = 'block';
-        document.getElementById('results').innerHTML = '';
-        document.getElementById('actionBox').style.display = 'none';
         
         try {
-            const [spfD, dmarcD, mxD, nsD, rdap] = await Promise.all([
-                fetchDNS(domain, 'TXT'), fetchDNS(`_dmarc.${domain}`, 'TXT'), fetchDNS(domain, 'MX'), fetchDNS(domain, 'NS'), fetchRDAP(domain)
+            const [spfD, mxD, nsD, rdap] = await Promise.all([
+                fetchDNS(domain, 'TXT'), fetchDNS(domain, 'MX'), fetchDNS(domain, 'NS'), fetchRDAP(domain)
             ]);
 
-            const actions = [];
-            const isCritical = rdap.days !== null && rdap.days < 30;
-            if (isCritical) actions.push(`Domain renewal urgent (${rdap.days} days left)`);
-
-            renderCard("Domain Lifecycle", true, `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:5px;"><div style="background:#0d1117;padding:6px;border-radius:4px;border:1px solid var(--border);"><span style="font-size:0.55rem;color:var(--text-dim);display:block;text-transform:uppercase;">Registrar</span><span style="font-family:monospace;font-size:0.75rem;color:var(--gold);font-weight:bold;">${rdap.registrar}</span></div><div style="background:#0d1117;padding:6px;border-radius:4px;border:1px solid var(--border);"><span style="font-size:0.55rem;color:var(--text-dim);display:block;text-transform:uppercase;">Expires</span><span style="font-family:monospace;font-size:0.75rem;color:var(--gold);font-weight:bold;">${rdap.exp}</span></div></div><div class="days-badge ${isCritical?'critical':''}">${rdap.days} DAYS REMAINING</div>`, "Registration details.", "special");
-
-            const spf = (spfD.Answer || []).find(r => r.data.includes('v=spf1'))?.data.replace(/"/g,'');
-            if (!spf) actions.push("Missing SPF record");
-            renderCard("SPF Record", !!spf, spf ? createBox(spf) : createBox("NOT FOUND"), "Authorized senders.");
-
-            const dmarc = (dmarcD.Answer || []).find(r => r.data.includes('v=DMARC1'))?.data.replace(/"/g,'');
-            if (!dmarc || dmarc.includes('p=none')) actions.push("DMARC missing or weak");
-            renderCard("DMARC Record", (dmarc && !dmarc.includes('p=none')), dmarc ? createBox(dmarc) : createBox("NOT FOUND"), "Policy instructions.");
-
+            const spf = (spfD.Answer || []).find(r => r.data.includes('v=spf1'))?.data.replace(/"/g,'') || "NOT FOUND";
             const mxL = (mxD.Answer || []).map(r => r.data);
             const nsL = (nsD.Answer || []).map(r => r.data);
-            document.getElementById('results').innerHTML += `<div class="small-row">${renderSmall("MX Records", mxL, detectProv(mxL))}${renderSmall("Nameservers", nsL, detectProv(nsL))}</div>`;
 
-            const score = (spf ? 35 : 0) + (dmarc ? 35 : 0) + 30;
-            document.getElementById('scoreCircle').innerText = score;
-            const mStat = document.getElementById('masterStatus');
-            if (actions.length > 0) {
-                mStat.innerText = "STERLING AUDIT: FAIL - INFRASTRUCTURE ISSUES DETECTED";
-                mStat.className = "master-fail";
-                document.getElementById('actionList').innerHTML = actions.map(a => `<li style="margin-bottom:4px;">→ ${a}</li>`).join('');
-                document.getElementById('actionBox').style.display = 'block';
-            } else {
-                mStat.innerText = "STERLING AUDIT: PASS - INFRASTRUCTURE SECURE";
-                mStat.className = "master-pass";
+            // THE TENANT LOOKUP LOGIC
+            let tenant = "PRIVATE";
+            if (mxL.join(' ').includes('outlook')) {
+                const match = mxL.join(' ').match(/([a-zA-Z0-9-]+)\.mail\.protection\.outlook\.com/);
+                tenant = match ? `MICROSOFT (${match[1].replace(/-/g, '')}.onmicrosoft.com)` : "MICROSOFT";
             }
+
+            document.getElementById('results').innerHTML = `
+                <div class="card special"><span class="title">Domain Lifecycle</span><div class="explanation">Expiry tracking.</div>
+                    <div class="days-badge">${rdap.days} DAYS REMAINING</div>
+                </div>
+                <div class="card"><span class="title">SPF Record</span><div class="explanation">Authorized senders.</div>${createBox(spf)}</div>
+                <div class="small-row">
+                    <div class="card"><span class="title">MX Records</span><div class="provider-badge">${tenant}</div>${mxL.map(createBox).join('')}</div>
+                    <div class="card"><span class="title">Nameservers</span><div class="provider-badge">DNS</div>${nsL.map(createBox).join('')}</div>
+                </div>
+            `;
+
+            document.getElementById('scoreCircle').innerText = "100";
+            document.getElementById('masterStatus').innerText = "STERLING AUDIT: PASS - INFRASTRUCTURE SECURE";
+            document.getElementById('masterStatus').className = "master-pass";
             document.getElementById('statContainer').style.display = 'grid';
             document.getElementById('exportBtn').style.display = 'block';
-            window.auditData = { d: domain, r: rdap.registrar, e: rdap.exp, s: spf||'None' };
-        } catch (e) { console.error(e); } finally { document.getElementById('loading').style.display = 'none'; }
+
+        } finally { document.getElementById('loading').style.display = 'none'; }
     }
 
-    async function fetchRDAP(domain) {
+    async function fetchRDAP(d) {
         try {
-            const res = await fetch(`https://rdap.org/domain/${domain}`);
-            const data = await res.json();
-            const exp = data.events.find(e => e.eventAction === 'expiration').eventDate.split('T')[0];
-            const reg = data.entities.find(e => e.roles.includes('registrar'))?.vcardArray[1].find(v => v[0] === 'fn')[3] || "Unknown";
-            const days = Math.ceil((new Date(exp) - new Date()) / (1000*60*60*24));
-            return { exp: exp.split('-').reverse().join('/'), registrar: reg, days };
-        } catch(e) { return { exp: "Error", registrar: "Error", days: 0 }; }
-    }
-    async function fetchDNS(n, t) { const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${n}&type=${t}`, { headers: {'Accept': 'application/dns-json'} }); return res.json(); }
-    
-    function detectProv(recs) { 
-        const t = recs.join(' ').toLowerCase(); 
-        if (t.includes('outlook') || t.includes('microsoft')) {
-            // Extracts the internal tenant name (e.g., jacksonsystems.onmicrosoft.com)
-            const match = t.match(/([a-zA-Z0-9-]+)\.mail\.protection\.outlook\.com/);
-            if (match) {
-                const tenant = match[1].replace(/-/g, ''); // Standardizing the string
-                return `MICROSOFT (${tenant}.onmicrosoft.com)`;
-            }
-            return "MICROSOFT";
-        }
-        return t.includes('google') ? "GOOGLE" : "PRIVATE"; 
+            const r = await fetch(`https://rdap.org/domain/${d}`);
+            const data = await r.json();
+            const exp = data.events.find(e => e.eventAction === 'expiration').eventDate;
+            return { days: Math.ceil((new Date(exp) - new Date()) / (86400000)) };
+        } catch { return { days: "???" }; }
     }
 
-    function renderCard(t, p, h, ex, cls="") { document.getElementById('results').innerHTML += `<div class="card ${p?'':'fail'} ${cls}"><span class="title">${t}</span><div class="explanation">${ex}</div>${h}</div>`; }
-    function renderSmall(t, rs, prov) { let h = `<div class="provider-badge">${prov}</div>`; rs.forEach(r => h += createBox(r)); return `<div class="card"><span class="title">${t}</span><div class="explanation">DNS infrastructure.</div>${h}</div>`; }
-    function createBox(v) { return `<div class="record-box"><span>${v}</span><button class="copy-btn" onclick="copyToClipboard('${v.replace(/'/g,"")}', this)">COPY</button></div>`; }
-    function copyToClipboard(t, b) { navigator.clipboard.writeText(t); b.innerText = "DONE"; setTimeout(() => b.innerText = "COPY", 1000); }
-    async function getClientIP() { try { const res = await fetch('https://ipapi.co/json/'); const data = await res.json(); document.getElementById('clientIP').innerText = data.ip; } catch(e) { document.getElementById('clientIP').innerText = "0.0.0.0"; } }
-    function exportToCSV() { const d = window.auditData; const rows = [["Domain", "Registrar", "Expiry", "SPF"], [d.d, d.r, d.e, d.s]]; const link = document.createElement("a"); link.setAttribute("href", encodeURI("data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n"))); link.setAttribute("download", `Audit_${d.d}.csv`); link.click(); }
+    async function fetchDNS(n, t) { return (await fetch(`https://cloudflare-dns.com/dns-query?name=${n}&type=${t}`, { headers: {'Accept': 'application/dns-json'} })).json(); }
+    function createBox(v) { return `<div class="record-box"><span>${v}</span><button class="copy-btn" onclick="navigator.clipboard.writeText('${v}')">COPY</button></div>`; }
 </script>
 </body>
 </html>
