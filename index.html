@@ -1,133 +1,147 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sterling Tools | Jackson Tech</title>
+    <title>Email Security DNS Checker | Jackson Tech</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-
         :root {
-            --green: #20C20E;
-            --dark-green: #0d4b06;
-            --bg: #050505;
+            --bg-body: #0a1118;
+            --bg-card: #121d27;
+            --accent: #00a8ff;
+            --text-main: #e1e8ed;
+            --text-dim: #8899a6;
+            --success: #00fa9a;
+            --warning: #ff9f43;
         }
 
-        body, html {
-            background: var(--bg);
-            margin: 0; padding: 0;
-            overflow: hidden;
-            font-family: 'VT323', monospace;
-            color: var(--green);
-            height: 100vh;
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0; padding: 20px;
         }
 
-        /* The "Glass" Effect */
-        .screen {
-            width: 100vw; height: 100vh;
-            border: 2px solid #333;
-            box-sizing: border-box;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 3px, 3px 100%;
-            position: relative;
-            padding: 40px;
-            display: flex; flex-direction: column;
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        header { margin-bottom: 30px; }
+        h1 { font-size: 1.8rem; margin: 0; color: var(--text-main); }
+        p.subtitle { color: var(--text-dim); margin-top: 5px; }
+
+        /* Search Bar Area */
+        .search-box {
+            display: flex; gap: 10px; margin-bottom: 40px;
+            background: var(--bg-card); padding: 10px; border-radius: 8px;
+            border: 1px solid #23313f;
         }
 
-        /* Scanline Animation */
-        .screen::after {
-            content: " ";
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: rgba(18, 16, 16, 0.1);
-            opacity: 0; z-index: 2;
-            pointer-events: none;
-            animation: flicker 0.15s infinite;
+        input[type="text"] {
+            flex-grow: 1; background: transparent; border: none;
+            color: white; font-size: 1.1rem; outline: none; padding: 10px;
         }
 
-        @keyframes flicker {
-            0% { opacity: 0.27; }
-            50% { opacity: 0.32; }
-            100% { opacity: 0.29; }
+        button {
+            background: var(--accent); color: white; border: none;
+            padding: 10px 30px; border-radius: 6px; cursor: pointer;
+            font-weight: bold; transition: 0.2s;
         }
 
-        #terminal {
-            flex-grow: 1;
-            overflow-y: auto;
-            font-size: 1.5rem;
-            text-shadow: 0 0 10px var(--green), 0 0 20px var(--dark-green);
-            scrollbar-width: none;
+        button:hover { opacity: 0.8; }
+
+        /* Result Cards */
+        .card {
+            background: var(--bg-card); border-radius: 10px;
+            padding: 25px; margin-bottom: 20px;
+            border-left: 5px solid #23313f;
         }
 
-        .input-line {
-            display: flex;
-            align-items: center;
-            font-size: 1.5rem;
-            margin-top: 10px;
+        .card.found { border-left-color: var(--success); }
+        .card.warning { border-left-color: var(--warning); }
+
+        .card-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .tag { font-size: 0.8rem; padding: 3px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
+        .tag.green { background: rgba(0, 250, 154, 0.1); color: var(--success); }
+        .tag.orange { background: rgba(255, 159, 67, 0.1); color: var(--warning); }
+
+        .record-box {
+            background: #090e14; padding: 15px; border-radius: 6px;
+            font-family: 'Courier New', monospace; font-size: 0.9rem;
+            word-break: break-all; margin-top: 10px; position: relative;
         }
 
-        input {
-            background: transparent; border: none; outline: none;
-            color: var(--green); font-family: inherit; font-size: inherit;
-            flex-grow: 1; text-shadow: 0 0 5px var(--green);
-        }
-
-        /* The Vignette (Dark Corners) */
-        .overlay {
-            pointer-events: none;
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, rgba(0,0,0,0) 50%, rgba(0,0,0,0.8) 100%);
-            z-index: 10;
+        .copy-btn {
+            position: absolute; right: 10px; top: 10px;
+            background: #23313f; color: var(--text-dim); border: none;
+            font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-<div class="overlay"></div>
-<div class="screen">
-    <div id="terminal">
-        [SYSTEM INITIALIZING...]<br>
-        [NODE: STERLING-TOOLS-ALPHA]<br>
-        [ENCRYPTION: AES-256 ACTIVE]<br>
-        ------------------------------------------<br>
-        Welcome, Administrator.<br>
-        Type 'help' for diagnostics.<br>
+<div class="container">
+    <header>
+        <h1>Email Security DNS Checker</h1>
+        <p class="subtitle">Check SPF, DKIM, DMARC, MX, and NS records for any domain</p>
+    </header>
+
+    <div class="search-box">
+        <input type="text" id="domainInput" placeholder="yourdomain.com">
+        <button onclick="checkDNS()">Check</button>
     </div>
-    <div class="input-line">
-        <span>sterling@jacksontech:~$ &nbsp;</span>
-        <input type="text" id="cmd-input" autofocus spellcheck="false" autocomplete="off">
-    </div>
+
+    <div id="results">
+        </div>
 </div>
 
 <script>
-    const term = document.getElementById('terminal');
-    const input = document.getElementById('cmd-input');
+    async function fetchDNS(domain, type) {
+        const res = await fetch(`https://dns.google/resolve?name=${domain}&type=${type}`);
+        const data = await res.json();
+        return data.Answer || [];
+    }
 
-    const responses = {
-        'help': "DIAGNOSTIC CMDS: \n > status - Check node health\n > scan - Network sweep\n > clear - Reset terminal\n > contact - HQ Details",
-        'status': "[OK] ALL SYSTEMS NOMINAL. LOAD BALANCER: CLOUDFLARE/GITHUB.",
-        'scan': "SCANNING JACKSONTECH INFRASTRUCTURE... \n [!] 12 DEVICES FOUND. ALL SECURE.",
-        'contact': "JACKSON TECH CENTRAL\n WEB: jacksontech.co.uk\n SECURE LINE: ENABLED"
-    };
+    async function checkDNS() {
+        const domain = document.getElementById('domainInput').value;
+        const resultsDiv = document.getElementById('results');
+        if (!domain) return;
 
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            const val = input.value.trim().toLowerCase();
-            const p = document.createElement('div');
-            p.innerHTML = `<br><span>sterling@jacksontech:~$</span> ${val}`;
-            
-            if (val === 'clear') { term.innerHTML = "[SYSTEM RESET]"; }
-            else if (responses[val]) { p.innerHTML += `<br>${responses[val].replace(/\n/g, '<br>')}`; }
-            else if (val !== "") { p.innerHTML += `<br><span style="color:red">ERROR: CMD NOT RECOGNIZED</span>`; }
+        resultsDiv.innerHTML = "Searching...";
 
-            term.appendChild(p);
-            input.value = "";
-            term.scrollTop = term.scrollHeight;
-        }
-    });
+        const mx = await fetchDNS(domain, 'MX');
+        const txt = await fetchDNS(domain, 'TXT');
+
+        let spf = txt.find(r => r.data.includes('v=spf1'));
+        let dmarc = await fetchDNS(`_dmarc.${domain}`, 'TXT');
+
+        resultsDiv.innerHTML = `
+            <div class="card ${spf ? 'found' : 'warning'}">
+                <div class="card-header">
+                    <strong>SPF Record</strong>
+                    <span class="tag ${spf ? 'green' : 'orange'}">${spf ? 'Found' : 'Warn'}</span>
+                </div>
+                <div class="record-box">${spf ? spf.data : 'No SPF record found. Spoofing protection is disabled.'}</div>
+            </div>
+
+            <div class="card ${dmarc.length ? 'found' : 'warning'}">
+                <div class="card-header">
+                    <strong>DMARC Record</strong>
+                    <span class="tag ${dmarc.length ? 'green' : 'orange'}">${dmarc.length ? 'Found' : 'Warn'}</span>
+                </div>
+                <div class="record-box">${dmarc.length ? dmarc[0].data : 'No DMARC record found. Policy enforcement missing.'}</div>
+            </div>
+
+            <div class="card ${mx.length ? 'found' : 'warning'}">
+                <div class="card-header">
+                    <strong>MX Records</strong>
+                    <span class="tag ${mx.length ? 'green' : 'orange'}">${mx.length ? 'Found' : 'Not Found'}</span>
+                </div>
+                <div class="record-box">
+                    ${mx.map(r => r.data).join('<br>')}
+                </div>
+            </div>
+        `;
+    }
 </script>
+
 </body>
 </html>
