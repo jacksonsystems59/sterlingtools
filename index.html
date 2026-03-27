@@ -6,28 +6,35 @@
     <title>Sterling Tech | DNS Auditor</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0b0e14; color: #e2e8f0; padding: 12px; line-height: 1.2; font-size: 13px; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg, #0b0e14); color: #e2e8f0; padding: 12px; line-height: 1.2; font-size: 13px; transition: background 0.3s; }
         
         :root {
-            --green: #00ff66; --red: #ff3333; --blue: #38bdf8; --purple: #a855f7; --gold: #fbbf24;
+            --green: #00ff66; --red: #ff3333;
+            --blue: #38bdf8; --purple: #a855f7; --gold: #fbbf24;
             --card-bg: #161b22; --border: #30363d; --text-dim: #94a3b8;
             --input-glow: rgba(56, 189, 248, 0.15);
         }
 
-        .header-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        .header-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; position: relative; }
         h1 { font-size: 1.2rem; color: #fff; display: flex; align-items: center; gap: 8px; font-weight: 800; }
         h1::before { content: ''; width: 3px; height: 16px; background: var(--blue); display: inline-block; }
+
+        /* THEME PICKER */
+        .theme-picker { display: flex; gap: 4px; position: absolute; right: 0; top: -5px; align-items: center; }
+        .picker-label { font-size: 0.5rem; color: var(--text-dim); margin-right: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        .color-sq { width: 14px; height: 14px; border-radius: 2px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); transition: transform 0.1s; }
+        .color-sq:hover { transform: scale(1.2); }
+        .sq-default { background: #38bdf8; border: 1.5px solid #fff; } /* The Reset Square */
+        .sq-rand { background: linear-gradient(45deg, #a855f7, #fbbf24); }
 
         .util-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-bottom: 12px; }
         .bar { background: #1a1f29; border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; font-size: 0.8rem; border-left: 3px solid var(--blue); }
         .gold-acc { border-left-color: var(--gold); }
 
-        /* LIVE WAN IP STYLES */
         .ip-wrap { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
         .live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); animation: pulseGreen 1.5s infinite; }
         @keyframes pulseGreen { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
 
-        /* FQDN GENERATOR STYLES */
         .gen-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
         .gen-display { background: #0d1117; border: 1px solid var(--border); padding: 4px 35px 4px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: var(--gold); flex: 1; min-height: 26px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; }
         .gen-btn { background: var(--gold); color: #000; padding: 4px 8px; border-radius: 3px; font-weight: 800; font-size: 0.65rem; cursor: pointer; border: none; }
@@ -61,10 +68,6 @@
         #actionBox { display: none; margin-top: 15px; background: #1a1414; border: 1px solid var(--red); border-radius: 6px; padding: 12px; }
         .action-header { color: var(--red); font-weight: 900; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
         .action-pulse { width: 8px; height: 8px; background: var(--red); border-radius: 50%; animation: pulseRed 1s infinite; }
-        .action-list { list-style: none; }
-        .action-item { font-size: 0.75rem; color: #ffcccc; margin-bottom: 4px; padding-left: 15px; position: relative; }
-        .action-item::before { content: '→'; position: absolute; left: 0; color: var(--red); }
-
         @keyframes pulseRed { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
 
         .record-box { background: #0d1117; border: 1px solid var(--border); padding: 6px 35px 6px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: #7dd3fc; margin-top: 4px; word-break: break-all; min-height: 26px; display: flex; align-items: center; }
@@ -79,10 +82,16 @@
         footer { text-align: center; margin-top: 20px; padding: 10px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.65rem; text-transform: uppercase; }
     </style>
 </head>
-<body onload="getClientIP()">
+<body onload="initApp()">
 
     <div class="header-wrap">
         <h1>STERLING TECH AUDITOR</h1>
+        <div class="theme-picker">
+            <span class="picker-label">Skin:</span>
+            <div class="color-sq sq-default" title="Reset to Default" onclick="resetToDefault()"></div>
+            <div class="color-sq sq-rand" title="Randomize Colors" onclick="randomizeTheme()"></div>
+            <div class="color-sq sq-rand" title="Randomize Colors" onclick="randomizeTheme()"></div>
+        </div>
         <button id="exportBtn" onclick="exportToCSV()">EXPORT CSV</button>
     </div>
 
@@ -126,14 +135,40 @@
 
 <script>
     let currentAuditData = {}; 
-
     const names = {
         planets: ["MERCURY", "VENUS", "MARS", "JUPITER", "SATURN", "URANUS", "NEPTUNE", "PLUTO", "CERES", "ERIS", "EUROPA", "TITAN", "IO", "GANYMEDE"],
         scifi: ["SKYWALKER", "VADER", "KENOBI", "RIPLEY", "DECKARD", "SPOCK", "KIRK", "PICARD", "DATA", "MORPHEUS", "TRINITY", "SOLO", "LEIA", "COOPER"],
         plants: ["OAK", "MAPLE", "CEDAR", "WILLOW", "BAMBOO", "IVY", "FERN", "CACTUS", "ORCHID", "LOTUS", "CLOVER", "BIRCH", "BANYAN", "SEQUOIA"],
-        myth: ["ZEUS", "ODIN", "TITAN", "ORION", "NOVA", "PHOENIX", "COSMOS", "APOLLO", "ARES", "ATHENA", "HERMES", "HADES", "THOR", "LOKI", "FREYA"],
-        tech: ["NEO", "MATRIX", "CIPHER", "VECTOR", "CORE", "APEX", "ZENITH", "NEXUS", "KINETIC", "OSIRIS", "PRIME", "OMEGA", "ALPHA", "STORM"]
+        myth: ["ZEUS", "ODIN", "TITAN", "ORION", "NOVA", "PHOENIX", "COSMOS", "APOLLO", "ARES", "ATHENA", "HERMES", "HADES", "THOR", "LOKI", "FREYA"]
     };
+
+    const defaults = { b: '#38bdf8', p: '#a855f7', g: '#fbbf24', bg: '#0b0e14' };
+
+    function initApp() {
+        getClientIP();
+        const saved = JSON.parse(localStorage.getItem('sterlingTheme'));
+        if (saved) applyColors(saved);
+        else resetToDefault();
+    }
+
+    function resetToDefault() {
+        applyColors(defaults);
+        localStorage.setItem('sterlingTheme', JSON.stringify(defaults));
+    }
+
+    function randomizeTheme() {
+        const rc = () => '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+        const theme = { b: rc(), p: rc(), g: rc(), bg: '#'+(Math.random()*0xFFFFFF<<0).toString(16).padStart(6,'0').substring(0,2)+'0e14' };
+        applyColors(theme);
+        localStorage.setItem('sterlingTheme', JSON.stringify(theme));
+    }
+
+    function applyColors(t) {
+        document.documentElement.style.setProperty('--blue', t.b);
+        document.documentElement.style.setProperty('--purple', t.p);
+        document.documentElement.style.setProperty('--gold', t.g);
+        document.documentElement.style.setProperty('--bg', t.bg);
+    }
 
     function manualGenerate() {
         const d = document.getElementById('domainInput').value.trim().toLowerCase();
@@ -142,12 +177,6 @@
         const word = names[cat][Math.floor(Math.random() * names[cat].length)];
         const host = d ? `${word}.${d}` : word;
         document.getElementById('genDisplay').innerHTML = `${host}<button class="copy-btn" onclick="copyToClipboard('${host}', this)">COPY</button>`;
-    }
-
-    function formatToUK(isoDate) {
-        if (!isoDate || isoDate === "Unknown") return isoDate;
-        const parts = isoDate.split('-');
-        return `${parts[2]}/${parts[1]}/${parts[0]}`;
     }
 
     async function runAudit() {
@@ -166,21 +195,15 @@
             const isCritical = rdap.days !== null && rdap.days < 30;
             if (isCritical) actions.push(`Domain renewal urgent (${rdap.days} days left)`);
 
-            const lifecycleHtml = `
-                <div class="expiry-grid">
-                    <div class="expiry-item"><span class="expiry-label">Registrar</span><span class="expiry-val">${rdap.registrar}</span></div>
-                    <div class="expiry-item"><span class="expiry-label">Expires</span><span class="expiry-val ${isCritical?'urgent':''}">${rdap.exp}</span></div>
-                </div>
-                <div class="days-badge ${isCritical?'critical':''}">${rdap.days} DAYS REMAINING</div>`;
+            const lifecycleHtml = `<div class="expiry-grid"><div class="expiry-item"><span class="expiry-label">Registrar</span><span class="expiry-val">${rdap.registrar}</span></div><div class="expiry-item"><span class="expiry-label">Expires</span><span class="expiry-val ${isCritical?'urgent':''}">${rdap.exp}</span></div></div><div class="days-badge ${isCritical?'critical':''}">${rdap.days} DAYS REMAINING</div>`;
             renderCard("Domain Lifecycle", true, lifecycleHtml, "Registration details.", "special");
 
             const spf = (spfD.Answer || []).find(r => r.data.includes('v=spf1'))?.data.replace(/"/g,'');
-            if (!spf) actions.push("Missing SPF record (Email spoofing risk)");
+            if (!spf) actions.push("Missing SPF record");
             renderCard("SPF Record", !!spf, spf ? createBox(spf) : createBox("NOT FOUND"), "Authorized senders.");
 
             const dmarc = (dmarcD.Answer || []).find(r => r.data.includes('v=DMARC1'))?.data.replace(/"/g,'');
-            if (!dmarc) actions.push("Missing DMARC record");
-            else if (dmarc.includes('p=none')) actions.push("DMARC set to 'None' (Monitoring only)");
+            if (!dmarc || dmarc.includes('p=none')) actions.push("DMARC missing or weak");
             renderCard("DMARC Record", (dmarc && !dmarc.includes('p=none')), dmarc ? createBox(dmarc) : createBox("NOT FOUND"), "Policy instructions.");
 
             const mxL = (mxD.Answer || []).map(r => r.data);
@@ -189,20 +212,14 @@
             row.innerHTML = renderSmall("MX Records", mxL, detectProv(mxL)) + renderSmall("Nameservers", nsL, detectProv(nsL));
             document.getElementById('results').appendChild(row);
 
-            let score = (spf ? 35 : 0) + ((dmarc && !dmarc.includes('p=none')) ? 35 : 0) + (nsL.length > 0 ? 30 : 0);
-            document.getElementById('scoreCircle').innerText = score;
-            document.getElementById('scoreCircle').style.borderColor = score > 70 ? 'var(--green)' : 'var(--red)';
-            document.getElementById('masterStatus').className = score > 70 ? 'master-pass' : 'master-fail';
-            document.getElementById('masterStatus').innerText = score > 70 ? "STERLING AUDIT: SECURE" : "STERLING AUDIT: ATTENTION REQUIRED";
-            document.getElementById('statContainer').style.display = 'grid';
-            document.getElementById('exportBtn').style.display = 'block';
-
             if (actions.length > 0) {
                 document.getElementById('actionList').innerHTML = actions.map(a => `<li class="action-item">${a}</li>`).join('');
                 document.getElementById('actionBox').style.display = 'block';
             }
-
-            currentAuditData = { domain, registrar: rdap.registrar, spf: spf||'None', dmarc: dmarc||'None', mx: mxL.join(' | '), ns: nsL.join(' | '), exp: rdap.exp };
+            document.getElementById('scoreCircle').innerText = (spf ? 35 : 0) + (dmarc ? 35 : 0) + 30;
+            document.getElementById('statContainer').style.display = 'grid';
+            document.getElementById('exportBtn').style.display = 'block';
+            currentAuditData = { domain, registrar: rdap.registrar, exp: rdap.exp, spf: spf||'None', dmarc: dmarc||'None', mx: mxL.join(' | '), ns: nsL.join(' | ') };
         } catch (e) { console.error(e); } finally { document.getElementById('loading').style.display = 'none'; }
     }
 
@@ -213,48 +230,17 @@
             const exp = data.events.find(e => e.eventAction === 'expiration').eventDate.split('T')[0];
             const reg = data.entities.find(e => e.roles.includes('registrar'))?.vcardArray[1].find(v => v[0] === 'fn')[3] || "Unknown";
             const days = Math.ceil((new Date(exp) - new Date()) / (1000*60*60*24));
-            return { exp: formatToUK(exp), registrar: reg, days };
+            return { exp: exp.split('-').reverse().join('/'), registrar: reg, days };
         } catch(e) { return { exp: "Error", registrar: "Error", days: 0 }; }
     }
-
-    async function fetchDNS(n, t) {
-        const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${n}&type=${t}`, { headers: {'Accept': 'application/dns-json'} });
-        return res.json();
-    }
-
-    function detectProv(recs) {
-        const t = recs.join(' ').toLowerCase();
-        if (t.includes('outlook') || t.includes('azure')) return "MICROSOFT";
-        if (t.includes('google')) return "GOOGLE";
-        if (t.includes('cloudflare')) return "CLOUDFLARE";
-        return recs.length > 0 ? "PRIVATE" : "NONE";
-    }
-
-    function renderCard(t, p, h, ex, cls="") {
-        document.getElementById('results').innerHTML += `<div class="card ${p?'':'fail'} ${cls}"><span class="title">${t}</span><div class="explanation">${ex}</div>${h}</div>`;
-    }
-    function renderSmall(t, rs, prov) {
-        let h = `<div class="provider-badge">${prov}</div>`;
-        rs.forEach(r => h += createBox(r));
-        return `<div class="card"><span class="title">${t}</span><div class="explanation">DNS infrastructure.</div>${h}</div>`;
-    }
+    async function fetchDNS(n, t) { const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${n}&type=${t}`, { headers: {'Accept': 'application/dns-json'} }); return res.json(); }
+    function detectProv(recs) { const t = recs.join(' ').toLowerCase(); return t.includes('outlook') ? "MICROSOFT" : t.includes('google') ? "GOOGLE" : "PRIVATE"; }
+    function renderCard(t, p, h, ex, cls="") { document.getElementById('results').innerHTML += `<div class="card ${p?'':'fail'} ${cls}"><span class="title">${t}</span><div class="explanation">${ex}</div>${h}</div>`; }
+    function renderSmall(t, rs, prov) { let h = `<div class="provider-badge">${prov}</div>`; rs.forEach(r => h += createBox(r)); return `<div class="card"><span class="title">${t}</span><div class="explanation">DNS infrastructure.</div>${h}</div>`; }
     function createBox(v) { return `<div class="record-box"><span>${v}</span><button class="copy-btn" onclick="copyToClipboard('${v.replace(/'/g,"")}', this)">COPY</button></div>`; }
     function copyToClipboard(t, b) { navigator.clipboard.writeText(t); b.innerText = "DONE"; setTimeout(() => b.innerText = "COPY", 1000); }
-    
-    async function getClientIP() {
-        try {
-            const res = await fetch('https://ipapi.co/json/'); const data = await res.json();
-            document.getElementById('clientIP').innerText = data.ip;
-        } catch(e) { document.getElementById('clientIP').innerText = "0.0.0.0"; }
-    }
-    function exportToCSV() {
-        const rows = [["Domain", "Registrar", "Expiry", "SPF", "DMARC", "MX", "NS"], 
-                      [currentAuditData.domain, currentAuditData.registrar, currentAuditData.exp, currentAuditData.spf, currentAuditData.dmarc, currentAuditData.mx, currentAuditData.ns]];
-        const link = document.createElement("a");
-        link.setAttribute("href", encodeURI("data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n")));
-        link.setAttribute("download", `Sterling_Audit_${currentAuditData.domain}.csv`);
-        link.click();
-    }
+    async function getClientIP() { try { const res = await fetch('https://ipapi.co/json/'); const data = await res.json(); document.getElementById('clientIP').innerText = data.ip; } catch(e) { document.getElementById('clientIP').innerText = "0.0.0.0"; } }
+    function exportToCSV() { const rows = [["Domain", "Registrar", "Expiry", "SPF", "DMARC", "MX", "NS"], [currentAuditData.domain, currentAuditData.registrar, currentAuditData.exp, currentAuditData.spf, currentAuditData.dmarc, currentAuditData.mx, currentAuditData.ns]]; const link = document.createElement("a"); link.setAttribute("href", encodeURI("data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n"))); link.setAttribute("download", `Sterling_Audit_${currentAuditData.domain}.csv`); link.click(); }
 </script>
 </body>
 </html>
