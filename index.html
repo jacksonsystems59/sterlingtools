@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sterling DNS Auditor | Jackson Tech</title>
+    <title>Sterling Tech | DNS Auditor</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0b0e14; color: #e2e8f0; padding: 12px; line-height: 1.2; font-size: 13px; }
@@ -14,12 +14,13 @@
         }
 
         .header-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-        h1 { font-size: 1.2rem; color: #fff; display: flex; align-items: center; gap: 8px; }
+        h1 { font-size: 1.2rem; color: #fff; display: flex; align-items: center; gap: 8px; font-weight: 800; letter-spacing: -0.5px; }
         h1::before { content: ''; width: 3px; height: 16px; background: var(--blue); display: inline-block; }
 
         /* WAN IP Box */
-        .client-info-bar { background: #1a1f29; border: 1px solid var(--blue); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
-        .ip-val { color: var(--blue); font-weight: 800; font-family: monospace; }
+        .client-info-bar { background: #1a1f29; border: 1px solid var(--border); border-left: 3px solid var(--blue); border-radius: 4px; padding: 8px 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
+        .ip-val { color: var(--blue); font-weight: 800; font-family: monospace; cursor: pointer; border-bottom: 1px dashed transparent; transition: 0.2s; }
+        .ip-val:hover { border-bottom-color: var(--blue); }
 
         .status-container { display: none; grid-template-columns: 80px 1fr; gap: 10px; margin-bottom: 10px; align-items: center; }
         .score-circle { height: 60px; width: 60px; border-radius: 50%; border: 3px solid; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; background: rgba(0,0,0,0.3); }
@@ -30,10 +31,12 @@
         .master-fail { background: rgba(255, 51, 51, 0.05); color: var(--red); border-color: var(--red); }
 
         .controls { display: flex; gap: 6px; margin-bottom: 12px; }
-        input { flex: 1; background: #0d1117; border: 1px solid var(--border); border-radius: 4px; padding: 6px 10px; color: #fff; outline: none; }
-        button { border: none; border-radius: 4px; padding: 6px 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem; }
+        input { flex: 1; background: #0d1117; border: 1px solid var(--border); border-radius: 4px; padding: 6px 10px; color: #fff; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--blue); }
+        button { border: none; border-radius: 4px; padding: 6px 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem; transition: 0.2s; }
         #runBtn { background: var(--blue); color: #000; }
         #exportBtn { background: #21262d; color: #c9d1d9; border: 1px solid var(--border); display: none; }
+        button:hover { opacity: 0.85; }
 
         .results-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
         .small-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -55,22 +58,24 @@
         
         .host-notice { color: var(--blue); font-size: 0.65rem; font-weight: 700; margin-bottom: 4px; display: block; }
         #loading { display: none; font-size: 0.75rem; color: var(--blue); margin-bottom: 10px; text-align: center; }
+
+        footer { text-align: center; margin-top: 20px; padding: 10px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body onload="getClientIP()">
 
     <div class="header-wrap">
-        <h1>Sterling DNS Auditor</h1>
+        <h1>STERLING TECH <span style="font-weight: 300; opacity: 0.7;">AUDITOR</span></h1>
         <button id="exportBtn" onclick="exportToCSV()">EXPORT CSV</button>
     </div>
 
     <div class="client-info-bar">
-        <span>Client WAN IP: <span id="clientIP" class="ip-val">Loading...</span></span>
+        <span>CLIENT WAN IP: <span id="clientIP" class="ip-val" onclick="copyToClipboard(this.innerText, this)" title="Click to Copy">Loading...</span></span>
         <span id="clientISP" style="color: var(--text-dim); font-size: 0.7rem;">Detecting Network...</span>
     </div>
 
     <div class="controls">
-        <input type="text" id="domainInput" placeholder="Enter domain to audit..." autofocus>
+        <input type="text" id="domainInput" placeholder="Enter domain (e.g. sterlingtech.com)" autocomplete="off">
         <button id="runBtn" onclick="runAudit()">ANALYZE</button>
     </div>
 
@@ -86,19 +91,18 @@
     
     <div class="results-grid" id="results"></div>
 
+    <footer>&copy; 2026 Sterling Tech | Professional Network Analysis</footer>
+
 <script>
     let currentAuditData = [];
 
-    // NEW: Fetch Client WAN IP and ISP
     async function getClientIP() {
         try {
             const res = await fetch('https://ipapi.co/json/');
             const data = await res.json();
             document.getElementById('clientIP').innerText = data.ip;
             document.getElementById('clientISP').innerText = `ISP: ${data.org || 'Unknown'}`;
-        } catch (e) {
-            document.getElementById('clientIP').innerText = "Not Found";
-        }
+        } catch (e) { document.getElementById('clientIP').innerText = "Detection Failed"; }
     }
 
     function copyToClipboard(text, btn) {
@@ -106,17 +110,14 @@
         el.value = text; document.body.appendChild(el);
         el.select(); document.execCommand('copy');
         document.body.removeChild(el);
-        const old = btn.innerText; btn.innerText = "DONE";
-        setTimeout(() => { btn.innerText = old; }, 1200);
+        const old = btn.innerText; btn.innerText = "COPIED";
+        setTimeout(() => { btn.innerText = (btn.id === 'clientIP' ? text : old); }, 1200);
     }
 
     function createRecordBox(val) {
         if (!val) return '';
         const cleanVal = val.replace(/"/g, '');
-        return `<div class="record-box">
-            <span>${cleanVal}</span>
-            <button class="copy-btn" onclick="copyToClipboard('${cleanVal.replace(/'/g, "\\'")}', this)">COPY</button>
-        </div>`;
+        return `<div class="record-box"><span>${cleanVal}</span><button class="copy-btn" onclick="copyToClipboard('${cleanVal.replace(/'/g, "\\'")}', this)">COPY</button></div>`;
     }
 
     function detectProvider(nsRecords) {
@@ -164,21 +165,16 @@
             }));
             const foundDkim = dkimResults.filter(x => x !== null);
 
-            // Scoring
             const spf = (spfData.Answer || []).find(r => r.data.includes('v=spf1'))?.data.replace(/"/g,'');
-            if(spf) score += 30;
-            if(spf?.includes('-all')) score += 5;
+            if(spf) score += 30; if(spf?.includes('-all')) score += 5;
 
             const dmarc = (dmarcData.Answer || []).find(r => r.data.includes('v=DMARC1'))?.data.replace(/"/g,'');
-            if(dmarc) score += 20;
-            if(dmarc && !dmarc.includes('p=none')) score += 15;
+            if(dmarc) score += 20; if(dmarc && !dmarc.includes('p=none')) score += 15;
             if(foundDkim.length > 0) score += 30;
 
-            // Render Modules
             renderCard("SPF", "Sender authorization.", !!spf, [spf]);
             renderCard("DMARC", "Policy enforcement.", (dmarc && !dmarc.includes('p=none')), [dmarc]);
 
-            // DKIM Granular
             let dkimHtml = `<div class="record-group">`;
             foundDkim.forEach(d => {
                 dkimHtml += `<div class="selector-label">Selector: ${d.s}</div>${createRecordBox(d.val)}`;
@@ -196,14 +192,13 @@
             row.innerHTML = renderSmallCard("MX Records", mxList) + renderSmallCard("Nameservers", nsList, provider);
             grid.appendChild(row);
 
-            // UI Refresh
             document.getElementById('scoreVal').innerText = score;
             const circle = document.getElementById('scoreCircle');
             circle.style.borderColor = score > 80 ? 'var(--green)' : (score > 50 ? 'orange' : 'var(--red)');
             circle.style.color = circle.style.borderColor;
 
             document.getElementById('masterStatus').className = score > 80 ? 'master-pass' : 'master-fail';
-            document.getElementById('masterStatus').innerHTML = score > 80 ? `✓ STRONG SECURITY<br><span style="font-size:0.7rem">Infrastructure is protected.</span>` : `⚠ ACTION NEEDED<br><span style="font-size:0.7rem">Domain is vulnerable.</span>`;
+            document.getElementById('masterStatus').innerHTML = score > 80 ? `✓ OPTIMIZED BY STERLING TECH<br><span style="font-size:0.7rem">Infrastructure is secure.</span>` : `⚠ ATTENTION REQUIRED<br><span style="font-size:0.7rem">Security gaps detected.</span>`;
             
             document.getElementById('statContainer').style.display = 'grid';
             document.getElementById('exportBtn').style.display = 'block';
@@ -231,8 +226,7 @@
         let recHtml = '<div class="record-group">';
         records.forEach(r => { recHtml += createRecordBox(r); currentAuditData.push({ title, status: 'FOUND', record: r }); });
         recHtml += '</div>';
-        return `
-            <div class="card ${records.length ? 'pass' : 'fail'}">
+        return `<div class="card ${records.length ? 'pass' : 'fail'}">
                 <div class="card-header"><span class="title">${title}</span></div>
                 ${provider ? `<span class="host-notice">Host: ${provider}</span>` : ''}
                 ${recHtml}
@@ -244,7 +238,7 @@
         currentAuditData.forEach(row => { csv += `"${row.title}","${row.status}","${row.record.replace(/"/g, '""')}"\n`; });
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = `Audit_${document.getElementById('domainInput').value}.csv`; a.click();
+        const a = document.createElement('a'); a.href = url; a.download = `SterlingTech_Audit_${document.getElementById('domainInput').value}.csv`; a.click();
     }
 </script>
 </body>
