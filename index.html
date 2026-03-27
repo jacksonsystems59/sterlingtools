@@ -37,7 +37,7 @@
         .badge-missing { background: rgba(248, 81, 73, 0.1); color: #f85149; border-style: dashed; }
 
         .record-val { background: #010409; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 13px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #161b22; }
-        .copy-link { color: var(--blue); font-size: 11px; cursor: pointer; user-select: none; }
+        .copy-link { color: var(--blue); font-size: 11px; cursor: pointer; user-select: none; margin-left: 10px; }
         .copy-link:hover { text-decoration: underline; }
 
         .passed-bar { background: var(--accent); }
@@ -76,27 +76,29 @@
         const domain = document.getElementById('domainInput').value.trim();
         if(!domain) return;
         const grid = document.getElementById('resultsGrid');
-        grid.innerHTML = `<div class="loading">Analyzing infrastructure for ${domain}...</div>`;
+        grid.innerHTML = `<div class="loading">Auditing ${domain}...</div>`;
         currentResults = [];
 
-        // Run all lookups
-        const [spfRecords, mxRecords, nsRecords] = await Promise.all([
+        const [spfRecords, mxRecords, nsRecords, dmarcRecords] = await Promise.all([
             fetchDns(domain, 'TXT'),
             fetchDns(domain, 'MX'),
-            fetchDns(domain, 'NS')
+            fetchDns(domain, 'NS'),
+            fetchDns(`_dmarc.${domain}`, 'TXT')
         ]);
 
-        const dmarcRecords = await fetchDns(`_dmarc.${domain}`, 'TXT');
-
-        // DKIM Guessing Logic
-        const selectors = ['google', 'default', 'k1', 'mail', 'mandrill', 'microsoft'];
+        // Extended DKIM Selector List from your image
+        const selectors = ['google', 'selector1', 'selector2', 'default', 'mail', 'dkim', 'k1', 'smtp', 'mimecast', 'proofpoint'];
         let foundDkim = [];
-        for (let s of selectors) {
+        
+        // Scan selectors in parallel
+        const dkimPromises = selectors.map(async s => {
             const res = await fetchDns(`${s}._domainkey.${domain}`, 'TXT');
-            if (res.length > 0) foundDkim.push({ selector: s, data: res[0].data });
-        }
+            if (res.length > 0) return { selector: s, data: res[0].data };
+            return null;
+        });
+        foundDkim = (await Promise.all(dkimPromises)).filter(x => x !== null);
 
-        grid.innerHTML = ""; // Clear loading
+        grid.innerHTML = "";
 
         renderCard("SPF Record", auditSPF(spfRecords));
         renderCard("DMARC Record", auditDMARC(dmarcRecords));
@@ -109,31 +111,32 @@
 
     function auditSPF(records) {
         const rec = records.find(r => r.data.includes("v=spf1"));
-        if (!rec) return { status: "NOT FOUND", state: "missing", val: "No SPF record found." };
+        if (!rec) return { status: "NOT FOUND", state: "failed", val: "No SPF record found." };
         const passed = rec.data.includes("~all") || rec.data.includes("-all");
         return { status: passed ? "FOUND - PASSED" : "FOUND - FAILED", state: passed ? "passed" : "failed", val: rec.data };
     }
 
     function auditDMARC(records) {
         const rec = records.find(r => r.data.includes("v=DMARC1"));
-        if (!rec) return { status: "NOT FOUND", state: "missing", val: "No DMARC record found." };
-        const passed = !rec.data.includes("p=none");
+        if (!rec) return { status: "NOT FOUND", state: "failed", val: "No DMARC record found." };
+        const passed = (rec.data.includes("p=quarantine") || rec.data.includes("p=reject"));
         return { status: passed ? "FOUND - PASSED" : "FOUND - FAILED", state: passed ? "passed" : "failed", val: rec.data };
     }
 
     function auditDKIM(found) {
-        if (found.length === 0) return { status: "NOT FOUND", state: "missing", val: "No common DKIM selectors found." };
+        if (!found.length) return { status: "NOT FOUND", state: "failed", val: "Common selectors checked: none found." };
         return { status: "FOUND - PASSED", state: "passed", val: found.map(d => `[${d.selector}]: ${d.data}`).join(' | ') };
     }
 
     function auditMX(records) {
-        if (!records.length) return { status: "NOT FOUND", state: "missing", val: "No MX records detected." };
-        return { status: "FOUND - PASSED", state: "passed", val: records.map(r => r.data).join(', ') };
+        if (!records.length) return { status: "NOT FOUND", state: "failed", val: "No MX records detected." };
+        return { status: "FOUND - PASSED", state: "passed", val: records.map(r => r.data).join(' \n ') };
     }
 
     function auditNS(records) {
-        if (!records.length) return { status: "NOT FOUND", state: "missing", val: "No Nameservers detected." };
-        return { status: "FOUND - PASSED", state: "passed", val: records.map(r => r.data).join(', ') };
+        // Handle nameservers specifically as they return data in trailing-dot format
+        if (!records.length) return { status: "NOT FOUND", state: "failed", val: "No NS records detected." };
+        return { status: "FOUND - PASSED", state: "passed", val: records.map(r => r.data.replace(/\.$/, '')).join(', ') };
     }
 
     function renderCard(title, result) {
@@ -145,7 +148,7 @@
         card.innerHTML = `
             <div class="card-status-bar ${result.state === 'passed' ? 'passed-bar' : 'failed-bar'}"></div>
             <div class="content">
-                <strong>${title}</strong> <span class="badge badge-${result.state}">${result.status}</span>
+                <strong>${title}</strong> <span class="badge badge-${result.state === 'passed' ? 'passed' : 'failed'}">${result.status}</span>
                 <div class="record-val">
                     <span id="txt_${title.replace(/\s/g, '')}">${result.val}</span>
                     <span class="copy-link" onclick="copyText('txt_${title.replace(/\s/g, '')}')">COPY</span>
@@ -158,7 +161,9 @@
     function copyText(id) {
         const text = document.getElementById(id).innerText;
         navigator.clipboard.writeText(text);
-        alert("Copied!");
+        const original = document.querySelector(`[onclick="copyText('${id}')"]`);
+        original.innerText = "COPIED!";
+        setTimeout(() => original.innerText = "COPY", 2000);
     }
 
     function exportResults() {
@@ -168,7 +173,7 @@
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `DNS_Audit_${new Date().toISOString().slice(0,10)}.csv`;
+        a.download = `Audit_${document.getElementById('domainInput').value}.csv`;
         a.click();
     }
 </script>
