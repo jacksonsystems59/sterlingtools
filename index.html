@@ -142,12 +142,13 @@
         document.getElementById('loading').style.display = 'block';
         
         try {
-            const [spfD, dmarcD, mxD, nsD, rdap] = await Promise.all([
-                fetchDNS(domain, 'TXT'), fetchDNS(`_dmarc.${domain}`, 'TXT'), fetchDNS(domain, 'MX'), fetchDNS(domain, 'NS'), fetchRDAP(domain)
+            const [spfD, dmarcD, dkimD, mxD, nsD, rdap] = await Promise.all([
+                fetchDNS(domain, 'TXT'), fetchDNS(`_dmarc.${domain}`, 'TXT'), fetchDNS(`selector1._domainkey.${domain}`, 'TXT'), fetchDNS(domain, 'MX'), fetchDNS(domain, 'NS'), fetchRDAP(domain)
             ]);
 
             const spf = (spfD.Answer || []).find(r => r.data.includes('v=spf1'))?.data.replace(/"/g,'') || "NOT FOUND";
             const dmarc = (dmarcD.Answer || []).find(r => r.data.includes('v=DMARC1'))?.data.replace(/"/g,'') || "NOT FOUND";
+            const dkim = (dkimD.Answer || []).find(r => r.data.includes('v=DKIM1'))?.data.replace(/"/g,'') || "NOT FOUND";
             const mxL = (mxD.Answer || []).map(r => r.data);
             const nsL = (nsD.Answer || []).map(r => r.data);
 
@@ -176,6 +177,7 @@
                 </div>
                 <div class="card"><span class="title">SPF Record</span><div class="explanation">Authorized senders.</div>${createBox(spf)}</div>
                 <div class="card"><span class="title">DMARC Record</span><div class="explanation">Policy instructions.</div>${createBox(dmarc)}</div>
+                <div class="card"><span class="title">DKIM Record</span><div class="explanation">Signature verification.</div>${createBox(dkim)}</div>
                 <div class="small-row">
                     <div class="card"><span class="title">MX Records</span><div class="explanation">DNS infrastructure.</div><div class="provider-badge">${mxProv}</div>${mxL.map(createBox).join('')}</div>
                     <div class="card"><span class="title">Nameservers</span><div class="explanation">DNS infrastructure.</div><div class="provider-badge">${nsProv}</div>${nsL.map(createBox).join('')}</div>
