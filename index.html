@@ -17,11 +17,15 @@
         h1 { font-size: 1.2rem; color: #fff; display: flex; align-items: center; gap: 8px; }
         h1::before { content: ''; width: 3px; height: 16px; background: var(--blue); display: inline-block; }
 
-        .status-container { display: none; grid-template-columns: 100px 1fr; gap: 10px; margin-bottom: 10px; align-items: center; }
-        .score-circle { height: 70px; width: 70px; border-radius: 50%; border: 4px solid; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; background: rgba(0,0,0,0.3); }
-        .score-label { font-size: 0.6rem; text-transform: uppercase; margin-top: -2px; }
+        /* WAN IP Box */
+        .client-info-bar { background: #1a1f29; border: 1px solid var(--blue); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
+        .ip-val { color: var(--blue); font-weight: 800; font-family: monospace; }
+
+        .status-container { display: none; grid-template-columns: 80px 1fr; gap: 10px; margin-bottom: 10px; align-items: center; }
+        .score-circle { height: 60px; width: 60px; border-radius: 50%; border: 3px solid; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; background: rgba(0,0,0,0.3); }
+        .score-label { font-size: 0.55rem; text-transform: uppercase; margin-top: -2px; }
         
-        #masterStatus { padding: 12px; border-radius: 6px; text-align: left; font-weight: 800; font-size: 0.9rem; border: 1px solid; flex-grow: 1; }
+        #masterStatus { padding: 10px; border-radius: 6px; text-align: left; font-weight: 800; font-size: 0.85rem; border: 1px solid; flex-grow: 1; }
         .master-pass { background: rgba(0, 255, 102, 0.05); color: var(--green); border-color: var(--green); }
         .master-fail { background: rgba(255, 51, 51, 0.05); color: var(--red); border-color: var(--red); }
 
@@ -44,9 +48,6 @@
         .badge.pass { color: var(--green); border-color: var(--green); }
         .badge.fail { color: var(--red); border-color: var(--red); }
 
-        .blurb { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 5px; }
-        
-        /* New Record Chip Styling */
         .record-group { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
         .selector-label { font-size: 0.65rem; color: var(--blue); font-weight: 800; text-transform: uppercase; margin-top: 4px; }
         .record-box { background: #0d1117; border: 1px solid var(--border); padding: 6px 35px 6px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: #7dd3fc; word-break: break-all; min-height: 28px; display: flex; align-items: center; }
@@ -56,15 +57,20 @@
         #loading { display: none; font-size: 0.75rem; color: var(--blue); margin-bottom: 10px; text-align: center; }
     </style>
 </head>
-<body>
+<body onload="getClientIP()">
 
     <div class="header-wrap">
         <h1>Sterling DNS Auditor</h1>
         <button id="exportBtn" onclick="exportToCSV()">EXPORT CSV</button>
     </div>
 
+    <div class="client-info-bar">
+        <span>Client WAN IP: <span id="clientIP" class="ip-val">Loading...</span></span>
+        <span id="clientISP" style="color: var(--text-dim); font-size: 0.7rem;">Detecting Network...</span>
+    </div>
+
     <div class="controls">
-        <input type="text" id="domainInput" placeholder="Enter domain..." autofocus>
+        <input type="text" id="domainInput" placeholder="Enter domain to audit..." autofocus>
         <button id="runBtn" onclick="runAudit()">ANALYZE</button>
     </div>
 
@@ -83,13 +89,24 @@
 <script>
     let currentAuditData = [];
 
+    // NEW: Fetch Client WAN IP and ISP
+    async function getClientIP() {
+        try {
+            const res = await fetch('https://ipapi.co/json/');
+            const data = await res.json();
+            document.getElementById('clientIP').innerText = data.ip;
+            document.getElementById('clientISP').innerText = `ISP: ${data.org || 'Unknown'}`;
+        } catch (e) {
+            document.getElementById('clientIP').innerText = "Not Found";
+        }
+    }
+
     function copyToClipboard(text, btn) {
         const el = document.createElement('textarea');
         el.value = text; document.body.appendChild(el);
         el.select(); document.execCommand('copy');
         document.body.removeChild(el);
-        const old = btn.innerText;
-        btn.innerText = "COPIED";
+        const old = btn.innerText; btn.innerText = "DONE";
         setTimeout(() => { btn.innerText = old; }, 1200);
     }
 
@@ -157,76 +174,62 @@
             if(dmarc && !dmarc.includes('p=none')) score += 15;
             if(foundDkim.length > 0) score += 30;
 
-            // Render SPF
-            renderCard("SPF", "Authenticates sender IP.", !!spf, [spf]);
+            // Render Modules
+            renderCard("SPF", "Sender authorization.", !!spf, [spf]);
+            renderCard("DMARC", "Policy enforcement.", (dmarc && !dmarc.includes('p=none')), [dmarc]);
 
-            // Render DMARC
-            renderCard("DMARC", "Prevents domain impersonation.", (dmarc && !dmarc.includes('p=none')), [dmarc]);
-
-            // Render DKIM (Individual Selectors)
+            // DKIM Granular
             let dkimHtml = `<div class="record-group">`;
             foundDkim.forEach(d => {
                 dkimHtml += `<div class="selector-label">Selector: ${d.s}</div>${createRecordBox(d.val)}`;
                 currentAuditData.push({ title: `DKIM (${d.s})`, status: 'PASS', record: d.val });
             });
             dkimHtml += `</div>`;
-            renderCardRaw("DKIM", "Ensures email integrity.", foundDkim.length > 0, dkimHtml);
+            renderCardRaw("DKIM", "Signature integrity.", foundDkim.length > 0, dkimHtml);
 
-            // Small Row: MX & NS
-            const mxList = (mxData.Answer || []).map(r => r.data);
             const nsList = (nsData.Answer || []).map(r => r.data);
+            const mxList = (mxData.Answer || []).map(r => r.data);
             const provider = detectProvider(nsList);
 
             const grid = document.getElementById('results');
             const row = document.createElement('div'); row.className = 'small-row';
-            
-            row.innerHTML = renderSmallCard("MX Records", mxList, "Mail routing.") +
-                            renderSmallCard("Nameservers", nsList, "DNS Hosting.", provider);
+            row.innerHTML = renderSmallCard("MX Records", mxList) + renderSmallCard("Nameservers", nsList, provider);
             grid.appendChild(row);
 
-            // UI Wrap
-            const container = document.getElementById('statContainer');
+            // UI Refresh
             document.getElementById('scoreVal').innerText = score;
             const circle = document.getElementById('scoreCircle');
             circle.style.borderColor = score > 80 ? 'var(--green)' : (score > 50 ? 'orange' : 'var(--red)');
             circle.style.color = circle.style.borderColor;
 
             document.getElementById('masterStatus').className = score > 80 ? 'master-pass' : 'master-fail';
-            document.getElementById('masterStatus').innerHTML = score > 80 ? `✓ CONFIGURATION STRONG<br><span style="font-size:0.7rem">Domain is secure.</span>` : `⚠ ATTENTION REQUIRED<br><span style="font-size:0.7rem">Security gaps found.</span>`;
+            document.getElementById('masterStatus').innerHTML = score > 80 ? `✓ STRONG SECURITY<br><span style="font-size:0.7rem">Infrastructure is protected.</span>` : `⚠ ACTION NEEDED<br><span style="font-size:0.7rem">Domain is vulnerable.</span>`;
             
-            container.style.display = 'grid';
+            document.getElementById('statContainer').style.display = 'grid';
             document.getElementById('exportBtn').style.display = 'block';
 
         } catch (e) { console.error(e); } finally { document.getElementById('loading').style.display = 'none'; }
-    }
-
-    function renderCard(title, blurb, isPass, records) {
-        let recHtml = '<div class="record-group">';
-        records.forEach(r => {
-            if(r) {
-                recHtml += createRecordBox(r);
-                currentAuditData.push({ title, status: isPass ? 'PASS' : 'FAIL', record: r });
-            }
-        });
-        recHtml += '</div>';
-        renderCardRaw(title, blurb, isPass, recHtml);
     }
 
     function renderCardRaw(title, blurb, isPass, rawHtml) {
         document.getElementById('results').innerHTML += `
             <div class="card ${isPass ? 'pass' : 'fail'}">
                 <div class="card-header"><span class="title">${title}</span><span class="badge ${isPass ? 'pass' : 'fail'}">${isPass ? 'PASS' : 'FAIL'}</span></div>
-                <div class="blurb">${blurb}</div>
+                <div style="font-size:0.7rem; color:var(--text-dim)">${blurb}</div>
                 ${rawHtml}
             </div>`;
     }
 
-    function renderSmallCard(title, records, blurb, provider = null) {
+    function renderCard(title, blurb, isPass, records) {
         let recHtml = '<div class="record-group">';
-        records.forEach(r => {
-            recHtml += createRecordBox(r);
-            currentAuditData.push({ title, status: 'FOUND', record: r });
-        });
+        records.forEach(r => { if(r) { recHtml += createRecordBox(r); currentAuditData.push({ title, status: 'PASS', record: r }); } });
+        recHtml += '</div>';
+        renderCardRaw(title, blurb, isPass, recHtml);
+    }
+
+    function renderSmallCard(title, records, provider = null) {
+        let recHtml = '<div class="record-group">';
+        records.forEach(r => { recHtml += createRecordBox(r); currentAuditData.push({ title, status: 'FOUND', record: r }); });
         recHtml += '</div>';
         return `
             <div class="card ${records.length ? 'pass' : 'fail'}">
@@ -241,9 +244,7 @@
         currentAuditData.forEach(row => { csv += `"${row.title}","${row.status}","${row.record.replace(/"/g, '""')}"\n`; });
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = `Audit_${document.getElementById('domainInput').value}.csv`;
-        a.click();
+        const a = document.createElement('a'); a.href = url; a.download = `Audit_${document.getElementById('domainInput').value}.csv`; a.click();
     }
 </script>
 </body>
