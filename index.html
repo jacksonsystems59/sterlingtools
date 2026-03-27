@@ -20,50 +20,41 @@
         h1 { font-size: 1.2rem; color: #fff; display: flex; align-items: center; gap: 8px; font-weight: 800; }
         h1::before { content: ''; width: 3px; height: 16px; background: var(--blue); display: inline-block; }
 
-        /* TOP BARS */
-        .util-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-bottom: 12px; }
+        .util-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
         .bar { background: #1a1f29; border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; font-size: 0.8rem; border-left: 3px solid var(--blue); }
         .gold-acc { border-left-color: var(--gold); }
+        .purple-acc { border-left-color: var(--purple); }
 
         .ip-wrap { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
         .live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); animation: pulseGreen 1.5s infinite; }
         @keyframes pulseGreen { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
 
         .gen-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
-        .gen-display { background: #0d1117; border: 1px solid var(--border); padding: 4px 35px 4px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: var(--gold); flex: 1; min-height: 26px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; }
+        .gen-display { background: #0d1117; border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: var(--gold); flex: 1; min-height: 26px; display: flex; align-items: center; overflow: hidden; }
         .gen-btn { background: var(--gold); color: #000; padding: 4px 8px; border-radius: 3px; font-weight: 800; font-size: 0.65rem; cursor: pointer; border: none; }
+        
+        .tenant-input { background: #0d1117; border: 1px solid var(--border); color: var(--purple); padding: 4px 8px; border-radius: 4px; width: 100%; font-size: 0.7rem; outline: none; margin-top: 4px; }
 
-        /* INPUT AREA */
         .controls { display: flex; gap: 6px; margin-bottom: 12px; padding: 4px; background: linear-gradient(90deg, #161b22 0%, #1a2433 100%); border-radius: 6px; border: 1px solid rgba(0, 122, 255, 0.3); box-shadow: 0 0 15px var(--input-glow); }
         input#domainInput { flex: 1; background: #0d1117; border: 1px solid var(--blue); border-radius: 4px; padding: 10px 14px; color: #fff; outline: none; font-weight: bold; font-size: 0.9rem; }
         
         button { border: none; border-radius: 4px; padding: 6px 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem; text-transform: uppercase; }
         #runBtn { background: var(--blue); color: #fff; min-width: 100px; }
-        #exportBtn { background: #21262d; color: #c9d1d9; border: 1px solid var(--border); }
 
-        /* MASTER STATUS PULSE */
         .status-container { display: none; grid-template-columns: 80px 1fr; gap: 10px; margin-bottom: 10px; align-items: center; }
         .score-circle { height: 60px; width: 60px; border-radius: 50%; border: 3px solid; display: flex; align-items: center; justify-content: center; font-weight: 900; background: rgba(0,0,0,0.3); font-size: 1.2rem; }
         #masterStatus { padding: 10px; border-radius: 6px; font-weight: 800; font-size: 0.85rem; border: 1px solid; flex-grow: 1; }
 
         .master-pass { 
-            background: rgba(0, 255, 102, 0.05); 
-            color: var(--green); 
-            border-color: var(--green); 
+            background: rgba(0, 255, 102, 0.05); color: var(--green); border-color: var(--green); 
             animation: statusBreathStrong 2s ease-in-out infinite; 
             box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
         }
-        @keyframes statusBreathStrong { 
-            0% { box-shadow: 0 0 5px rgba(0, 255, 102, 0.2); background: rgba(0, 255, 102, 0.05); } 
-            50% { box-shadow: 0 0 35px rgba(0, 255, 102, 0.6); background: rgba(0, 255, 102, 0.2); } 
-            100% { box-shadow: 0 0 5px rgba(0, 255, 102, 0.2); background: rgba(0, 255, 102, 0.05); } 
-        }
+        @keyframes statusBreathStrong { 0% { box-shadow: 0 0 5px rgba(0, 255, 102, 0.2); } 50% { box-shadow: 0 0 35px rgba(0, 255, 102, 0.6); } 100% { box-shadow: 0 0 5px rgba(0, 255, 102, 0.2); } }
 
-        /* CARDS & BADGES */
         .results-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
         .small-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; border-left: 3px solid var(--blue); position: relative; backdrop-filter: var(--glass); }
-        .card.fail { border-left-color: var(--red); }
         .card.special { border-left-color: var(--gold); }
         
         .title { font-weight: 800; font-size: 0.7rem; text-transform: uppercase; color: #fff; margin-bottom: 2px; display: block; }
@@ -75,9 +66,6 @@
         .record-box { background: #0d1117; border: 1px solid var(--border); padding: 6px 35px 6px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: #7dd3fc; margin-top: 4px; word-break: break-all; min-height: 26px; display: flex; align-items: center; }
         .copy-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: #21262d; border: 1px solid var(--border); color: #8b949e; padding: 2px 4px; font-size: 0.55rem; border-radius: 2px; cursor: pointer; }
 
-        .theme-picker { position: fixed; bottom: 15px; right: 15px; display: flex; gap: 8px; align-items: center; background: rgba(0,0,0,0.7); padding: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); z-index: 9999; backdrop-filter: blur(10px); }
-        .color-sq { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); }
-
         footer { text-align: center; margin-top: 20px; padding: 10px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.65rem; text-transform: uppercase; margin-bottom: 40px; }
     </style>
 </head>
@@ -85,16 +73,12 @@
 
     <div class="header-wrap">
         <h1>STERLING TECH AUDITOR</h1>
-        <button id="exportBtn" style="display:none" onclick="exportToCSV()">EXPORT CSV</button>
     </div>
 
     <div class="util-grid">
         <div class="bar">
             <span style="font-size:0.55rem; display:block; color:var(--text-dim)">LOCAL WAN IP</span>
-            <div class="ip-wrap">
-                <div class="live-dot"></div>
-                <span id="clientIP">Loading...</span>
-            </div>
+            <div class="ip-wrap"><div class="live-dot"></div><span id="clientIP">Loading...</span></div>
         </div>
         <div class="bar gold-acc">
             <span style="font-size:0.55rem; display:block; color:var(--text-dim)">FQDN GENERATOR</span>
@@ -102,6 +86,11 @@
                 <div class="gen-display" id="genDisplay">---</div>
                 <button class="gen-btn" onclick="manualGenerate()">GEN</button>
             </div>
+        </div>
+        <div class="bar purple-acc">
+            <span style="font-size:0.55rem; display:block; color:var(--text-dim)">MS TENANT ID LOOKUP</span>
+            <input type="text" class="tenant-input" id="tenantInput" placeholder="Enter onmicrosoft.com domain..." onkeyup="lookupTenantID(this.value)">
+            <div id="tenantResult" style="font-size:0.65rem; color:var(--purple); margin-top:4px; font-family:monospace; word-break:break-all;">---</div>
         </div>
     </div>
 
@@ -121,33 +110,12 @@
 
     <footer>&copy; 2026 Sterling Tech</footer>
 
-    <div class="theme-picker">
-        <div class="color-sq" style="background:#38bdf8" onclick="setTheme('standard')"></div>
-        <div class="color-sq" style="background:#5e5e5e" onclick="setTheme('macos')"></div>
-    </div>
-
 <script>
-    const themes = {
-        standard: { b: '#38bdf8', g: '#fbbf24', bg: '#0b0e14', txt: '#e2e8f0', gls: 'none' },
-        macos: { b: '#007aff', g: '#fbbf24', bg: '#1c1c1e', txt: '#ffffff', gls: 'blur(12px)' }
-    };
-
     const names = ["MERCURY", "MARS", "JUPITER", "VADER", "RIPLEY", "SPOCK", "HADES", "ZEUS", "KRAKEN", "CHIEF"];
     let history = new Set();
 
     function initApp() {
         fetch('https://ipapi.co/json/').then(r => r.json()).then(d => document.getElementById('clientIP').innerText = d.ip);
-        setTheme(localStorage.getItem('sterlingTheme') || 'macos');
-    }
-
-    function setTheme(n) {
-        const t = themes[n];
-        document.documentElement.style.setProperty('--blue', t.b);
-        document.documentElement.style.setProperty('--gold', t.g);
-        document.documentElement.style.setProperty('--bg', t.bg);
-        document.documentElement.style.setProperty('--text', t.txt);
-        document.documentElement.style.setProperty('--glass', t.gls);
-        localStorage.setItem('sterlingTheme', n);
     }
 
     function manualGenerate() {
@@ -155,8 +123,17 @@
         const pool = names.filter(n => !history.has(n));
         const word = pool[Math.floor(Math.random() * pool.length)] || "HOST";
         history.add(word);
-        const host = d ? `${word}.${d}` : word;
-        document.getElementById('genDisplay').innerText = host;
+        document.getElementById('genDisplay').innerText = d ? `${word}.${d}` : word;
+    }
+
+    async function lookupTenantID(domain) {
+        if (!domain.includes('.onmicrosoft.com')) return;
+        try {
+            const r = await fetch(`https://login.microsoftonline.com/${domain}/.well-known/openid-configuration`);
+            const d = await r.json();
+            const id = d.token_endpoint.split('/')[3];
+            document.getElementById('tenantResult').innerText = id;
+        } catch { document.getElementById('tenantResult').innerText = "Not Found"; }
     }
 
     async function runAudit() {
@@ -165,33 +142,43 @@
         document.getElementById('loading').style.display = 'block';
         
         try {
-            const [spfD, dkimD, mxD, nsD, rdap] = await Promise.all([
-                fetchDNS(domain, 'TXT'), fetchDNS(`selector1._domainkey.${domain}`, 'TXT'), fetchDNS(domain, 'MX'), fetchDNS(domain, 'NS'), fetchRDAP(domain)
+            const [spfD, dmarcD, mxD, nsD, rdap] = await Promise.all([
+                fetchDNS(domain, 'TXT'), fetchDNS(`_dmarc.${domain}`, 'TXT'), fetchDNS(domain, 'MX'), fetchDNS(domain, 'NS'), fetchRDAP(domain)
             ]);
 
             const spf = (spfD.Answer || []).find(r => r.data.includes('v=spf1'))?.data.replace(/"/g,'') || "NOT FOUND";
-            const dkim = (dkimD.Answer || []).find(r => r.data.includes('v=DKIM1'))?.data.replace(/"/g,'') || "NOT FOUND";
+            const dmarc = (dmarcD.Answer || []).find(r => r.data.includes('v=DMARC1'))?.data.replace(/"/g,'') || "NOT FOUND";
             const mxL = (mxD.Answer || []).map(r => r.data);
             const nsL = (nsD.Answer || []).map(r => r.data);
 
-            // Provider Detection for Badge
-            let tenant = "PRIVATE";
+            let mxProv = "PRIVATE";
             if (mxL.join(' ').includes('outlook')) {
                 const match = mxL.join(' ').match(/([a-zA-Z0-9-]+)\.mail\.protection\.outlook\.com/);
-                tenant = match ? `MICROSOFT (${match[1].replace(/-/g, '')}.onmicrosoft.com)` : "MICROSOFT";
+                mxProv = match ? `MICROSOFT (${match[1].replace(/-/g, '')}.onmicrosoft.com)` : "MICROSOFT";
             }
+            
+            const nsText = nsL.join(' ').toLowerCase();
+            const nsProv = nsText.includes('cloudflare') ? "CLOUDFLARE" : nsText.includes('google') ? "GOOGLE" : "PRIVATE";
 
             document.getElementById('results').innerHTML = `
-                <div class="card special"><span class="title">Domain Lifecycle</span><div class="explanation">Expiry tracking.</div>
+                <div class="card special"><span class="title">Domain Lifecycle</span><div class="explanation">Registration details.</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:5px;">
+                        <div style="background:#0d1117;padding:6px;border-radius:4px;border:1px solid var(--border);">
+                            <span style="font-size:0.55rem;color:var(--text-dim);display:block;">REGISTRAR</span>
+                            <span style="font-family:monospace;font-size:0.75rem;color:var(--gold);font-weight:bold;">${rdap.registrar}</span>
+                        </div>
+                        <div style="background:#0d1117;padding:6px;border-radius:4px;border:1px solid var(--border);">
+                            <span style="font-size:0.55rem;color:var(--text-dim);display:block;">EXPIRES</span>
+                            <span style="font-family:monospace;font-size:0.75rem;color:var(--gold);font-weight:bold;">${rdap.exp}</span>
+                        </div>
+                    </div>
                     <div class="days-badge">${rdap.days} DAYS REMAINING</div>
                 </div>
+                <div class="card"><span class="title">SPF Record</span><div class="explanation">Authorized senders.</div>${createBox(spf)}</div>
+                <div class="card"><span class="title">DMARC Record</span><div class="explanation">Policy instructions.</div>${createBox(dmarc)}</div>
                 <div class="small-row">
-                    <div class="card"><span class="title">SPF Record</span><div class="explanation">Auth.</div>${createBox(spf)}</div>
-                    <div class="card"><span class="title">DKIM Record</span><div class="explanation">Sign.</div>${createBox(dkim)}</div>
-                </div>
-                <div class="small-row">
-                    <div class="card"><span class="title">MX Records</span><div class="provider-badge">${tenant}</div>${mxL.map(createBox).join('')}</div>
-                    <div class="card"><span class="title">Nameservers</span><div class="provider-badge">DNS</div>${nsL.map(createBox).join('')}</div>
+                    <div class="card"><span class="title">MX Records</span><div class="explanation">DNS infrastructure.</div><div class="provider-badge">${mxProv}</div>${mxL.map(createBox).join('')}</div>
+                    <div class="card"><span class="title">Nameservers</span><div class="explanation">DNS infrastructure.</div><div class="provider-badge">${nsProv}</div>${nsL.map(createBox).join('')}</div>
                 </div>
             `;
 
@@ -199,7 +186,6 @@
             document.getElementById('masterStatus').innerText = "STERLING AUDIT: PASS - INFRASTRUCTURE SECURE";
             document.getElementById('masterStatus').className = "master-pass";
             document.getElementById('statContainer').style.display = 'grid';
-            document.getElementById('exportBtn').style.display = 'block';
 
         } finally { document.getElementById('loading').style.display = 'none'; }
     }
@@ -208,9 +194,10 @@
         try {
             const r = await fetch(`https://rdap.org/domain/${d}`);
             const data = await r.json();
-            const exp = data.events.find(e => e.eventAction === 'expiration').eventDate;
-            return { days: Math.ceil((new Date(exp) - new Date()) / (86400000)) };
-        } catch { return { days: "???" }; }
+            const expDate = data.events.find(e => e.eventAction === 'expiration').eventDate;
+            const reg = data.entities.find(e => e.roles.includes('registrar'))?.vcardArray[1].find(v => v[0] === 'fn')[3] || "UNKNOWN";
+            return { exp: expDate.split('T')[0], registrar: reg.toUpperCase(), days: Math.ceil((new Date(expDate) - new Date()) / (86400000)) };
+        } catch { return { exp: "N/A", registrar: "N/A", days: "???" }; }
     }
 
     async function fetchDNS(n, t) { return (await fetch(`https://cloudflare-dns.com/dns-query?name=${n}&type=${t}`, { headers: {'Accept': 'application/dns-json'} })).json(); }
