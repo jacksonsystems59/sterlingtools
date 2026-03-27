@@ -6,27 +6,27 @@
     <title>Sterling Tech | DNS Auditor</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg, #0b0e14); color: var(--text, #e2e8f0); padding: 12px; line-height: 1.2; font-size: 13px; transition: all 0.3s; min-height: 100vh; }
+        body { font-family: 'SF Pro Display', 'Segoe UI', system-ui, sans-serif; background: var(--bg, #0b0e14); color: var(--text, #e2e8f0); padding: 12px; line-height: 1.2; font-size: 13px; transition: all 0.3s; min-height: 100vh; }
         
         :root {
             --green: #00ff66; --red: #ff3333;
             --blue: #38bdf8; --purple: #a855f7; --gold: #fbbf24;
             --card-bg: #161b22; --border: #30363d; --text-dim: #94a3b8;
             --input-glow: rgba(56, 189, 248, 0.15);
+            --glass: none;
         }
 
         .header-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
         h1 { font-size: 1.2rem; color: #fff; display: flex; align-items: center; gap: 8px; font-weight: 800; }
         h1::before { content: ''; width: 3px; height: 16px; background: var(--blue); display: inline-block; }
 
-        /* THEME PICKER - MOVED TO BOTTOM RIGHT */
-        .theme-picker { position: fixed; bottom: 15px; right: 15px; display: flex; gap: 8px; align-items: center; background: rgba(0,0,0,0.6); padding: 8px; border-radius: 8px; border: 1px solid var(--border); z-index: 9999; }
+        .theme-picker { position: fixed; bottom: 15px; right: 15px; display: flex; gap: 8px; align-items: center; background: rgba(0,0,0,0.7); padding: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); z-index: 9999; backdrop-filter: blur(10px); }
         .picker-label { font-size: 0.6rem; color: #fff; text-transform: uppercase; font-weight: 900; }
-        .color-sq { width: 18px; height: 18px; border-radius: 3px; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); transition: transform 0.1s; }
+        .color-sq { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); transition: transform 0.1s; }
         .color-sq:hover { transform: translateY(-3px); }
         .sq-standard { background: #38bdf8; }
         .sq-linux { background: #00ff41; }
-        .sq-windows { background: #0078d4; }
+        .sq-macos { background: #5e5e5e; }
 
         .util-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-bottom: 12px; }
         .bar { background: #1a1f29; border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; font-size: 0.8rem; border-left: 3px solid var(--blue); }
@@ -55,7 +55,7 @@
 
         .results-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
         .small-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; border-left: 3px solid var(--blue); position: relative; }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; border-left: 3px solid var(--blue); position: relative; backdrop-filter: var(--glass); }
         .card.fail { border-left-color: var(--red); }
         .card.special { border-left-color: var(--gold); }
         
@@ -126,21 +126,22 @@
         <span class="picker-label">Theme:</span>
         <div class="color-sq sq-standard" title="Sterling Tech" onclick="setTheme('standard')"></div>
         <div class="color-sq sq-linux" title="Linux Terminal" onclick="setTheme('linux')"></div>
-        <div class="color-sq sq-windows" title="Windows Azure" onclick="setTheme('windows')"></div>
+        <div class="color-sq sq-macos" title="macOS Graphite" onclick="setTheme('macos')"></div>
     </div>
 
 <script>
     const themes = {
-        standard: { b: '#38bdf8', p: '#a855f7', g: '#fbbf24', bg: '#0b0e14', txt: '#e2e8f0' },
-        linux: { b: '#00ff41', p: '#d3d3d3', g: '#ffb000', bg: '#0d0d0d', txt: '#00ff41' },
-        windows: { b: '#0078d4', p: '#002050', g: '#f2f2f2', bg: '#ffffff', txt: '#000000' }
+        standard: { b: '#38bdf8', p: '#a855f7', g: '#fbbf24', bg: '#0b0e14', txt: '#e2e8f0', gls: 'none' },
+        linux: { b: '#00ff41', p: '#d3d3d3', g: '#ffb000', bg: '#0d0d0d', txt: '#00ff41', gls: 'none' },
+        macos: { b: '#007aff', p: '#ff9500', g: '#8e8e93', bg: '#1c1c1e', txt: '#ffffff', gls: 'blur(12px)' }
     };
 
     const names = {
         planets: ["MERCURY", "VENUS", "MARS", "JUPITER", "SATURN", "URANUS", "NEPTUNE", "PLUTO", "CERES", "ERIS", "EUROPA", "TITAN", "IO", "GANYMEDE"],
         scifi: ["SKYWALKER", "VADER", "KENOBI", "RIPLEY", "DECKARD", "SPOCK", "KIRK", "PICARD", "DATA", "MORPHEUS", "TRINITY", "SOLO", "LEIA", "COOPER"],
         plants: ["OAK", "MAPLE", "CEDAR", "WILLOW", "BAMBOO", "IVY", "FERN", "CACTUS", "ORCHID", "LOTUS", "CLOVER", "BIRCH", "BANYAN", "SEQUOIA"],
-        myth: ["ZEUS", "ODIN", "TITAN", "ORION", "NOVA", "PHOENIX", "COSMOS", "APOLLO", "ARES", "ATHENA", "HERMES", "HADES", "THOR", "LOKI", "FREYA"]
+        myth: ["ZEUS", "ODIN", "TITAN", "ORION", "NOVA", "PHOENIX", "COSMOS", "APOLLO", "ARES", "ATHENA", "HERMES", "HADES", "THOR", "LOKI", "FREYA"],
+        states: ["ALABAMA", "ALASKA", "ARIZONA", "ARKANSAS", "CALIFORNIA", "COLORADO", "CONNECTICUT", "DELAWARE", "FLORIDA", "GEORGIA", "HAWAII", "IDAHO", "ILLINOIS", "INDIANA", "IOWA", "KANSAS", "KENTUCKY", "LOUISIANA", "MAINE", "MARYLAND", "MASSACHUSETTS", "MICHIGAN", "MINNESOTA", "MISSISSIPPI", "MISSOURI", "MONTANA", "NEBRASKA", "NEVADA", "NEW-HAMPSHIRE", "NEW-JERSEY", "NEW-MEXICO", "NEW-YORK", "NORTH-CAROLINA", "NORTH-DAKOTA", "OHIO", "OKLAHOMA", "OREGON", "PENNSYLVANIA", "RHODE-ISLAND", "SOUTH-CAROLINA", "SOUTH-DAKOTA", "TENNESSEE", "TEXAS", "UTAH", "VERMONT", "VIRGINIA", "WASHINGTON", "WEST-VIRGINIA", "WISCONSIN", "WYOMING"]
     };
 
     function initApp() {
@@ -156,6 +157,7 @@
         document.documentElement.style.setProperty('--gold', t.g);
         document.documentElement.style.setProperty('--bg', t.bg);
         document.documentElement.style.setProperty('--text', t.txt);
+        document.documentElement.style.setProperty('--glass', t.gls);
         localStorage.setItem('sterlingThemeName', name);
     }
 
