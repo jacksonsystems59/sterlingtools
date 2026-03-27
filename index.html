@@ -17,33 +17,28 @@
         h1 { font-size: 1.2rem; color: #fff; display: flex; align-items: center; gap: 8px; font-weight: 800; }
         h1::before { content: ''; width: 3px; height: 16px; background: var(--blue); display: inline-block; }
 
-        /* Utility Bars Layout */
         .util-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
         .bar { background: #1a1f29; border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; font-size: 0.8rem; }
         
-        /* Accents */
         .blue-acc { border-left: 3px solid var(--blue); }
         .purp-acc { border-left: 3px solid var(--purple); }
         .gold-acc { border-left: 3px solid var(--gold); }
 
         .ip-val { color: var(--blue); font-weight: 800; font-family: monospace; cursor: pointer; }
 
-        /* Generator Styling */
-        .gen-wrap { display: flex; gap: 5px; margin-top: 5px; }
-        #hostnameResult { color: var(--gold); font-weight: 800; font-family: monospace; cursor: pointer; background: #0d1117; padding: 2px 6px; border-radius: 3px; }
+        /* Generator Styling - Updated for FQDN */
+        .gen-wrap { display: flex; gap: 5px; margin-top: 5px; align-items: center; }
+        #hostnameResult { color: var(--gold); font-weight: 800; font-family: monospace; cursor: pointer; background: #0d1117; padding: 4px 8px; border-radius: 3px; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
 
-        /* Tenant Styling */
         .tenant-row { display: flex; gap: 5px; margin-top: 5px; }
-        .tenant-input { background: #0d1117; border: 1px solid var(--border); border-radius: 3px; color: #fff; padding: 3px 6px; flex: 1; font-size: 0.7rem; }
+        .tenant-input { background: #0d1117; border: 1px solid var(--border); border-radius: 3px; color: #fff; padding: 3px 6px; flex: 1; font-size: 0.7rem; outline: none; }
 
-        /* Standard Controls */
         .controls { display: flex; gap: 6px; margin-bottom: 12px; }
-        input#domainInput { flex: 1; background: #0d1117; border: 1px solid var(--border); border-radius: 4px; padding: 6px 10px; color: #fff; outline: none; border-left: 3px solid var(--blue); }
-        button { border: none; border-radius: 4px; padding: 6px 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem; }
+        input#domainInput { flex: 1; background: #0d1117; border: 1px solid var(--border); border-radius: 4px; padding: 6px 10px; color: #fff; outline: none; border-left: 3px solid var(--blue); font-weight: bold; }
+        button { border: none; border-radius: 4px; padding: 6px 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem; transition: 0.2s; }
         #runBtn { background: var(--blue); color: #000; }
         #exportBtn { background: #21262d; color: #c9d1d9; border: 1px solid var(--border); display: none; }
 
-        /* Results Display */
         .status-container { display: none; grid-template-columns: 80px 1fr; gap: 10px; margin-bottom: 10px; align-items: center; }
         .score-circle { height: 60px; width: 60px; border-radius: 50%; border: 3px solid; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; background: rgba(0,0,0,0.3); }
         #masterStatus { padding: 10px; border-radius: 6px; font-weight: 800; font-size: 0.85rem; border: 1px solid; flex-grow: 1; }
@@ -52,7 +47,7 @@
 
         .results-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
         .small-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; position: relative; border-left: 3px solid var(--blue); }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; border-left: 3px solid var(--blue); }
         .card.fail { border-left-color: var(--red); }
         .title { font-weight: 800; font-size: 0.7rem; text-transform: uppercase; color: #fff; margin-bottom: 4px; display: block; }
         .record-box { background: #0d1117; border: 1px solid var(--border); padding: 6px 35px 6px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: #7dd3fc; margin-top: 4px; word-break: break-all; min-height: 26px; display: flex; align-items: center; }
@@ -75,10 +70,10 @@
         </div>
 
         <div class="bar gold-acc">
-            <span style="font-size:0.65rem; display:block; color:var(--text-dim)">HOSTNAME GENERATOR</span>
+            <span style="font-size:0.65rem; display:block; color:var(--text-dim)">FQDN GENERATOR</span>
             <div class="gen-wrap">
-                <span id="hostnameResult" onclick="copyToClipboard(this.innerText, this)">---</span>
-                <button onclick="generateName()" style="background:var(--gold); color:#000; padding:2px 8px; font-size:0.6rem;">GENERATE</button>
+                <span id="hostnameResult" onclick="copyToClipboard(this.innerText, this)" title="Click to Copy FQDN">---</span>
+                <button onclick="generateName()" style="background:var(--gold); color:#000; padding:2px 8px; font-size:0.6rem;">GEN</button>
             </div>
         </div>
     </div>
@@ -86,14 +81,14 @@
     <div class="bar purp-acc" style="margin-bottom:12px;">
         <span style="font-size:0.65rem; display:block; color:var(--text-dim)">MICROSOFT TENANT LOOKUP</span>
         <div class="tenant-row">
-            <input type="text" id="tenantInput" class="tenant-input" placeholder="e.g. company.onmicrosoft.com">
+            <input type="text" id="tenantInput" class="tenant-input" placeholder="e.g. domain.onmicrosoft.com">
             <button onclick="lookupTenant()" style="background:var(--purple); color:#fff; padding:2px 8px; font-size:0.6rem;">FIND</button>
             <span id="tenantGuid" style="color:var(--purple); font-family:monospace; font-size:0.75rem; display:none; flex:1; text-align:right;" onclick="copyToClipboard(this.innerText, this)"></span>
         </div>
     </div>
 
     <div class="controls">
-        <input type="text" id="domainInput" placeholder="Enter target domain...">
+        <input type="text" id="domainInput" placeholder="Enter target domain for audit & naming...">
         <button id="runBtn" onclick="runAudit()">ANALYZE</button>
     </div>
 
@@ -112,17 +107,26 @@
 
 <script>
     const themes = {
-        gods: ["Zeus", "Hades", "Apollo", "Ares", "Poseidon", "Hermes", "Thor", "Odin", "Loki"],
-        space: ["Jupiter", "Saturn", "Nebula", "Quasar", "Orion", "Titan", "Europa", "Nova"],
-        wild: ["Falcon", "Kodiak", "Raptor", "Viper", "Mammoth", "Orca", "Lynx", "Panther"],
-        film: ["Neo", "Morpheus", "Ripley", "Skywalker", "Kenobi", "Ghent", "Deckard"]
+        gods: ["Zeus", "Hades", "Apollo", "Ares", "Poseidon", "Hermes", "Thor", "Odin", "Loki", "Freya"],
+        space: ["Jupiter", "Saturn", "Nebula", "Quasar", "Orion", "Titan", "Europa", "Nova", "Cosmos"],
+        wild: ["Falcon", "Kodiak", "Raptor", "Viper", "Mammoth", "Orca", "Lynx", "Panther", "Cobra"],
+        film: ["Neo", "Morpheus", "Ripley", "Skywalker", "Kenobi", "Ghent", "Deckard", "Bane"]
     };
 
+    // New FQDN Logic
     function generateName() {
         const all = [].concat(...Object.values(themes));
         const name = all[Math.floor(Math.random() * all.length)];
         const num = Math.floor(Math.random() * 99) + 1;
-        document.getElementById('hostnameResult').innerText = `${name.toUpperCase()}-${num.toString().padStart(2, '0')}`;
+        const host = `${name.toUpperCase()}-${num.toString().padStart(2, '0')}`;
+        
+        // Poll the domain input
+        const domainSuffix = document.getElementById('domainInput').value.trim().toLowerCase();
+        
+        // Combine them if domain exists
+        const finalFQDN = domainSuffix ? `${host}.${domainSuffix}` : host;
+        
+        document.getElementById('hostnameResult').innerText = finalFQDN;
     }
 
     async function lookupTenant() {
@@ -153,7 +157,7 @@
         document.body.removeChild(el);
         const original = btn.innerText;
         btn.innerText = "COPIED";
-        setTimeout(() => { btn.innerText = original; }, 1000);
+        setTimeout(() => { btn.innerText = (btn.id === 'hostnameResult' || btn.id === 'clientIP') ? text : "COPY"; }, 1000);
     }
 
     async function fetchDNS(name, type) {
