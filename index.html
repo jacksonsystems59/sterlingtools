@@ -18,9 +18,14 @@
         h1 { font-size: 1.2rem; color: #fff; display: flex; align-items: center; gap: 8px; font-weight: 800; }
         h1::before { content: ''; width: 3px; height: 16px; background: var(--blue); display: inline-block; }
 
-        .util-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        .util-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-bottom: 12px; }
         .bar { background: #1a1f29; border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; font-size: 0.8rem; border-left: 3px solid var(--blue); }
         .gold-acc { border-left-color: var(--gold); }
+
+        /* FQDN GENERATOR STYLES */
+        .gen-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+        .gen-display { background: #0d1117; border: 1px solid var(--border); padding: 4px 35px 4px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: var(--gold); flex: 1; min-height: 26px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; }
+        .gen-btn { background: var(--gold); color: #000; padding: 4px 8px; border-radius: 3px; font-weight: 800; font-size: 0.65rem; cursor: pointer; border: none; }
 
         .controls { display: flex; gap: 6px; margin-bottom: 12px; padding: 4px; background: linear-gradient(90deg, #161b22 0%, #1a2433 100%); border-radius: 6px; border: 1px solid #38bdf844; box-shadow: 0 0 15px var(--input-glow); }
         input#domainInput { flex: 1; background: #0d1117; border: 1px solid var(--blue); border-radius: 4px; padding: 10px 14px; color: #fff; outline: none; font-weight: bold; font-size: 0.9rem; }
@@ -48,7 +53,6 @@
         .days-badge { font-size: 0.6rem; color: var(--gold); font-weight: 900; background: rgba(251, 191, 36, 0.1); padding: 2px 6px; border-radius: 4px; display: inline-block; border: 1px solid var(--gold); margin-top: 5px; }
         .days-badge.critical { color: var(--red); background: rgba(255, 51, 51, 0.1); border-color: var(--red); animation: pulse 1.5s infinite; }
 
-        /* ACTION BOX */
         #actionBox { display: none; margin-top: 15px; background: #1a1414; border: 1px solid var(--red); border-radius: 6px; padding: 12px; }
         .action-header { color: var(--red); font-weight: 900; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
         .pulse-dot { width: 8px; height: 8px; background: var(--red); border-radius: 50%; animation: pulse 1s infinite; }
@@ -83,8 +87,11 @@
             <span id="clientIP" class="ip-val" onclick="copyToClipboard(this.innerText, this)">Loading...</span>
         </div>
         <div class="bar gold-acc">
-            <span style="font-size:0.55rem; display:block; color:var(--text-dim)">FQDN SUGGESTION</span>
-            <div id="hostGen" style="color:var(--gold); font-family:monospace; margin-top:2px; cursor:pointer;" onclick="copyToClipboard(this.innerText, this)">---</div>
+            <span style="font-size:0.55rem; display:block; color:var(--text-dim)">FQDN GENERATOR</span>
+            <div class="gen-row">
+                <div class="gen-display" id="genDisplay">---<button class="copy-btn" onclick="copyToClipboard(document.getElementById('genDisplay').innerText.replace('COPY',''), this)">COPY</button></div>
+                <button class="gen-btn" onclick="manualGenerate()">GEN</button>
+            </div>
         </div>
     </div>
 
@@ -134,7 +141,6 @@
             const isCritical = rdap.days !== null && rdap.days < 30;
             if (isCritical) actions.push(`Domain renewal urgent (${rdap.days} days left)`);
 
-            // Lifecycle
             const lifecycleHtml = `
                 <div class="expiry-grid">
                     <div class="expiry-item"><span class="expiry-label">Registrar</span><span class="expiry-val">${rdap.registrar}</span></div>
@@ -143,25 +149,21 @@
                 <div class="days-badge ${isCritical?'critical':''}">${rdap.days} DAYS REMAINING</div>`;
             renderCard("Domain Lifecycle", true, lifecycleHtml, "Registration details.", "special");
 
-            // SPF
             const spf = (spfD.Answer || []).find(r => r.data.includes('v=spf1'))?.data.replace(/"/g,'');
             if (!spf) actions.push("Missing SPF record (Email spoofing risk)");
             renderCard("SPF Record", !!spf, spf ? createBox(spf) : createBox("NOT FOUND"), "Authorized senders.");
 
-            // DMARC
             const dmarc = (dmarcD.Answer || []).find(r => r.data.includes('v=DMARC1'))?.data.replace(/"/g,'');
             if (!dmarc) actions.push("Missing DMARC record");
             else if (dmarc.includes('p=none')) actions.push("DMARC set to 'None' (Monitoring only)");
             renderCard("DMARC Record", (dmarc && !dmarc.includes('p=none')), dmarc ? createBox(dmarc) : createBox("NOT FOUND"), "Policy instructions.");
 
-            // Small Row (MX / NS)
             const mxL = (mxD.Answer || []).map(r => r.data);
             const nsL = (nsD.Answer || []).map(r => r.data);
             const row = document.createElement('div'); row.className = 'small-row';
             row.innerHTML = renderSmall("MX Records", mxL, detectProv(mxL)) + renderSmall("Nameservers", nsL, detectProv(nsL));
             document.getElementById('results').appendChild(row);
 
-            // Score & Status
             let score = (spf ? 35 : 0) + ((dmarc && !dmarc.includes('p=none')) ? 35 : 0) + (nsL.length > 0 ? 30 : 0);
             document.getElementById('scoreCircle').innerText = score;
             document.getElementById('scoreCircle').style.borderColor = score > 70 ? 'var(--green)' : 'var(--red)';
@@ -170,17 +172,21 @@
             document.getElementById('statContainer').style.display = 'grid';
             document.getElementById('exportBtn').style.display = 'block';
 
-            // Populate Action Box
             if (actions.length > 0) {
-                const list = document.getElementById('actionList');
-                list.innerHTML = actions.map(a => `<li class="action-item">${a}</li>`).join('');
+                document.getElementById('actionList').innerHTML = actions.map(a => `<li class="action-item">${a}</li>`).join('');
                 document.getElementById('actionBox').style.display = 'block';
             }
 
-            currentAuditData = { domain, registrar: rdap.registrar, spf: spf||'None', dmarc: dmarc||'None' };
-            generateHost(domain);
-
+            currentAuditData = { domain, registrar: rdap.registrar, spf: spf||'None', dmarc: dmarc||'None', mx: mxL.join(' | '), ns: nsL.join(' | '), exp: rdap.exp };
         } catch (e) { console.error(e); } finally { document.getElementById('loading').style.display = 'none'; }
+    }
+
+    function manualGenerate() {
+        const d = document.getElementById('domainInput').value.trim().toLowerCase();
+        const names = ["ZEUS", "TITAN", "NEO", "ORION", "NOVA", "PHOENIX", "COSMOS", "APOLLO"];
+        const name = names[Math.floor(Math.random()*names.length)];
+        const host = d ? `${name}.${d}` : name;
+        document.getElementById('genDisplay').innerHTML = `${host}<button class="copy-btn" onclick="copyToClipboard('${host}', this)">COPY</button>`;
     }
 
     async function fetchRDAP(domain) {
@@ -222,15 +228,12 @@
         const res = await fetch('https://ipapi.co/json/'); const data = await res.json();
         document.getElementById('clientIP').innerText = data.ip;
     }
-    function generateHost(d) {
-        const names = ["ZEUS", "TITAN", "NEO", "ORION", "NOVA"];
-        document.getElementById('hostGen').innerText = `${names[Math.floor(Math.random()*names.length)]}.${d}`;
-    }
     function exportToCSV() {
-        const rows = [["Domain", "Registrar", "SPF", "DMARC"], [currentAuditData.domain, currentAuditData.registrar, currentAuditData.spf, currentAuditData.dmarc]];
+        const rows = [["Domain", "Registrar", "Expiry", "SPF", "DMARC", "MX", "NS"], 
+                      [currentAuditData.domain, currentAuditData.registrar, currentAuditData.exp, currentAuditData.spf, currentAuditData.dmarc, currentAuditData.mx, currentAuditData.ns]];
         const link = document.createElement("a");
         link.setAttribute("href", encodeURI("data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n")));
-        link.setAttribute("download", `Sterling_Audit.csv`);
+        link.setAttribute("download", `Sterling_Audit_${currentAuditData.domain}.csv`);
         link.click();
     }
 </script>
