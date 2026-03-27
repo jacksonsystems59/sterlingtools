@@ -51,7 +51,6 @@
         .score-circle { height: 60px; width: 60px; border-radius: 50%; border: 3px solid; display: flex; align-items: center; justify-content: center; font-weight: 900; background: rgba(0,0,0,0.3); font-size: 1.2rem; }
         #masterStatus { padding: 10px; border-radius: 6px; font-weight: 800; font-size: 0.85rem; border: 1px solid; flex-grow: 1; }
 
-        /* STRONGER BREATHING PULSE */
         .master-pass { 
             background: rgba(0, 255, 102, 0.05); 
             color: var(--green); 
@@ -214,7 +213,7 @@
 
             const mxL = (mxD.Answer || []).map(r => r.data);
             const nsL = (nsD.Answer || []).map(r => r.data);
-            document.getElementById('results').innerHTML += `<div class="small-row">${renderSmall("MX Records", mxL, detectProv(mxL, spf))}${renderSmall("Nameservers", nsL, detectProv(nsL, ""))}</div>`;
+            document.getElementById('results').innerHTML += `<div class="small-row">${renderSmall("MX Records", mxL, detectProv(mxL))}${renderSmall("Nameservers", nsL, detectProv(nsL))}</div>`;
 
             const score = (spf ? 35 : 0) + (dmarc ? 35 : 0) + 30;
             document.getElementById('scoreCircle').innerText = score;
@@ -246,11 +245,16 @@
     }
     async function fetchDNS(n, t) { const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${n}&type=${t}`, { headers: {'Accept': 'application/dns-json'} }); return res.json(); }
     
-    function detectProv(recs, spfTxt) { 
+    function detectProv(recs) { 
         const t = recs.join(' ').toLowerCase(); 
         if (t.includes('outlook') || t.includes('microsoft')) {
-            const tenantMatch = (spfTxt || "").match(/include:([a-zA-Z0-9.-]+\.outlook\.com)/);
-            return tenantMatch ? `MICROSOFT (${tenantMatch[1].split('.')[0]})` : "MICROSOFT";
+            // Extracts the internal tenant name (e.g., jacksonsystems.onmicrosoft.com)
+            const match = t.match(/([a-zA-Z0-9-]+)\.mail\.protection\.outlook\.com/);
+            if (match) {
+                const tenant = match[1].replace(/-/g, ''); // Standardizing the string
+                return `MICROSOFT (${tenant}.onmicrosoft.com)`;
+            }
+            return "MICROSOFT";
         }
         return t.includes('google') ? "GOOGLE" : "PRIVATE"; 
     }
