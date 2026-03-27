@@ -22,6 +22,11 @@
         .bar { background: #1a1f29; border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; font-size: 0.8rem; border-left: 3px solid var(--blue); }
         .gold-acc { border-left-color: var(--gold); }
 
+        /* LIVE WAN IP STYLES */
+        .ip-wrap { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+        .live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); animation: pulseGreen 1.5s infinite; }
+        @keyframes pulseGreen { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
+
         /* FQDN GENERATOR STYLES */
         .gen-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
         .gen-display { background: #0d1117; border: 1px solid var(--border); padding: 4px 35px 4px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: var(--gold); flex: 1; min-height: 26px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; }
@@ -51,16 +56,16 @@
 
         .provider-badge { font-size: 0.6rem; color: var(--blue); font-weight: 900; background: rgba(56, 189, 248, 0.1); padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; display: inline-block; border: 1px solid var(--blue); }
         .days-badge { font-size: 0.6rem; color: var(--gold); font-weight: 900; background: rgba(251, 191, 36, 0.1); padding: 2px 6px; border-radius: 4px; display: inline-block; border: 1px solid var(--gold); margin-top: 5px; }
-        .days-badge.critical { color: var(--red); background: rgba(255, 51, 51, 0.1); border-color: var(--red); animation: pulse 1.5s infinite; }
+        .days-badge.critical { color: var(--red); background: rgba(255, 51, 51, 0.1); border-color: var(--red); animation: pulseRed 1.5s infinite; }
 
         #actionBox { display: none; margin-top: 15px; background: #1a1414; border: 1px solid var(--red); border-radius: 6px; padding: 12px; }
         .action-header { color: var(--red); font-weight: 900; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-        .pulse-dot { width: 8px; height: 8px; background: var(--red); border-radius: 50%; animation: pulse 1s infinite; }
+        .action-pulse { width: 8px; height: 8px; background: var(--red); border-radius: 50%; animation: pulseRed 1s infinite; }
         .action-list { list-style: none; }
         .action-item { font-size: 0.75rem; color: #ffcccc; margin-bottom: 4px; padding-left: 15px; position: relative; }
         .action-item::before { content: '→'; position: absolute; left: 0; color: var(--red); }
 
-        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes pulseRed { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
 
         .record-box { background: #0d1117; border: 1px solid var(--border); padding: 6px 35px 6px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: #7dd3fc; margin-top: 4px; word-break: break-all; min-height: 26px; display: flex; align-items: center; }
         .copy-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: #21262d; border: 1px solid var(--border); color: #8b949e; padding: 2px 4px; font-size: 0.55rem; border-radius: 2px; cursor: pointer; }
@@ -84,7 +89,10 @@
     <div class="util-grid">
         <div class="bar">
             <span style="font-size:0.55rem; display:block; color:var(--text-dim)">LOCAL WAN IP</span>
-            <span id="clientIP" class="ip-val" onclick="copyToClipboard(this.innerText, this)">Loading...</span>
+            <div class="ip-wrap">
+                <div class="live-dot"></div>
+                <span id="clientIP" class="ip-val" onclick="copyToClipboard(this.innerText, this)">Loading...</span>
+            </div>
         </div>
         <div class="bar gold-acc">
             <span style="font-size:0.55rem; display:block; color:var(--text-dim)">FQDN GENERATOR</span>
@@ -110,7 +118,7 @@
     <div class="results-grid" id="results"></div>
 
     <div id="actionBox">
-        <div class="action-header"><div class="pulse-dot"></div> ACTION REQUIRED FOR CLIENT</div>
+        <div class="action-header"><div class="action-pulse"></div> ACTION REQUIRED FOR CLIENT</div>
         <ul class="action-list" id="actionList"></ul>
     </div>
 
@@ -118,6 +126,23 @@
 
 <script>
     let currentAuditData = {}; 
+
+    const names = {
+        planets: ["MERCURY", "VENUS", "MARS", "JUPITER", "SATURN", "URANUS", "NEPTUNE", "PLUTO", "CERES", "ERIS", "EUROPA", "TITAN", "IO", "GANYMEDE"],
+        scifi: ["SKYWALKER", "VADER", "KENOBI", "RIPLEY", "DECKARD", "SPOCK", "KIRK", "PICARD", "DATA", "MORPHEUS", "TRINITY", "SOLO", "LEIA", "COOPER"],
+        plants: ["OAK", "MAPLE", "CEDAR", "WILLOW", "BAMBOO", "IVY", "FERN", "CACTUS", "ORCHID", "LOTUS", "CLOVER", "BIRCH", "BANYAN", "SEQUOIA"],
+        myth: ["ZEUS", "ODIN", "TITAN", "ORION", "NOVA", "PHOENIX", "COSMOS", "APOLLO", "ARES", "ATHENA", "HERMES", "HADES", "THOR", "LOKI", "FREYA"],
+        tech: ["NEO", "MATRIX", "CIPHER", "VECTOR", "CORE", "APEX", "ZENITH", "NEXUS", "KINETIC", "OSIRIS", "PRIME", "OMEGA", "ALPHA", "STORM"]
+    };
+
+    function manualGenerate() {
+        const d = document.getElementById('domainInput').value.trim().toLowerCase();
+        const categories = Object.keys(names);
+        const cat = categories[Math.floor(Math.random() * categories.length)];
+        const word = names[cat][Math.floor(Math.random() * names[cat].length)];
+        const host = d ? `${word}.${d}` : word;
+        document.getElementById('genDisplay').innerHTML = `${host}<button class="copy-btn" onclick="copyToClipboard('${host}', this)">COPY</button>`;
+    }
 
     function formatToUK(isoDate) {
         if (!isoDate || isoDate === "Unknown") return isoDate;
@@ -181,14 +206,6 @@
         } catch (e) { console.error(e); } finally { document.getElementById('loading').style.display = 'none'; }
     }
 
-    function manualGenerate() {
-        const d = document.getElementById('domainInput').value.trim().toLowerCase();
-        const names = ["ZEUS", "TITAN", "NEO", "ORION", "NOVA", "PHOENIX", "COSMOS", "APOLLO"];
-        const name = names[Math.floor(Math.random()*names.length)];
-        const host = d ? `${name}.${d}` : name;
-        document.getElementById('genDisplay').innerHTML = `${host}<button class="copy-btn" onclick="copyToClipboard('${host}', this)">COPY</button>`;
-    }
-
     async function fetchRDAP(domain) {
         try {
             const res = await fetch(`https://rdap.org/domain/${domain}`);
@@ -225,8 +242,10 @@
     function copyToClipboard(t, b) { navigator.clipboard.writeText(t); b.innerText = "DONE"; setTimeout(() => b.innerText = "COPY", 1000); }
     
     async function getClientIP() {
-        const res = await fetch('https://ipapi.co/json/'); const data = await res.json();
-        document.getElementById('clientIP').innerText = data.ip;
+        try {
+            const res = await fetch('https://ipapi.co/json/'); const data = await res.json();
+            document.getElementById('clientIP').innerText = data.ip;
+        } catch(e) { document.getElementById('clientIP').innerText = "0.0.0.0"; }
     }
     function exportToCSV() {
         const rows = [["Domain", "Registrar", "Expiry", "SPF", "DMARC", "MX", "NS"], 
