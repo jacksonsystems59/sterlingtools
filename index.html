@@ -26,16 +26,18 @@
 
         .ip-val { color: var(--blue); font-weight: 800; font-family: monospace; cursor: pointer; }
 
-        /* Generator Styling - Updated for FQDN */
-        .gen-wrap { display: flex; gap: 5px; margin-top: 5px; align-items: center; }
-        #hostnameResult { color: var(--gold); font-weight: 800; font-family: monospace; cursor: pointer; background: #0d1117; padding: 4px 8px; border-radius: 3px; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+        /* FQDN Generator with Toggle */
+        .gen-wrap { display: flex; flex-direction: column; gap: 4px; margin-top: 5px; }
+        .gen-controls { display: flex; align-items: center; gap: 8px; }
+        #hostnameResult { color: var(--gold); font-weight: 800; font-family: monospace; cursor: pointer; background: #0d1117; padding: 4px 8px; border-radius: 3px; font-size: 0.75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .opt-label { font-size: 0.6rem; color: var(--text-dim); display: flex; align-items: center; gap: 3px; cursor: pointer; }
 
         .tenant-row { display: flex; gap: 5px; margin-top: 5px; }
         .tenant-input { background: #0d1117; border: 1px solid var(--border); border-radius: 3px; color: #fff; padding: 3px 6px; flex: 1; font-size: 0.7rem; outline: none; }
 
         .controls { display: flex; gap: 6px; margin-bottom: 12px; }
         input#domainInput { flex: 1; background: #0d1117; border: 1px solid var(--border); border-radius: 4px; padding: 6px 10px; color: #fff; outline: none; border-left: 3px solid var(--blue); font-weight: bold; }
-        button { border: none; border-radius: 4px; padding: 6px 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem; transition: 0.2s; }
+        button { border: none; border-radius: 4px; padding: 6px 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem; }
         #runBtn { background: var(--blue); color: #000; }
         #exportBtn { background: #21262d; color: #c9d1d9; border: 1px solid var(--border); display: none; }
 
@@ -72,8 +74,11 @@
         <div class="bar gold-acc">
             <span style="font-size:0.65rem; display:block; color:var(--text-dim)">FQDN GENERATOR</span>
             <div class="gen-wrap">
-                <span id="hostnameResult" onclick="copyToClipboard(this.innerText, this)" title="Click to Copy FQDN">---</span>
-                <button onclick="generateName()" style="background:var(--gold); color:#000; padding:2px 8px; font-size:0.6rem;">GEN</button>
+                <div id="hostnameResult" onclick="copyToClipboard(this.innerText, this)">---</div>
+                <div class="gen-controls">
+                    <button onclick="generateName()" style="background:var(--gold); color:#000; padding:2px 8px; font-size:0.6rem;">GEN</button>
+                    <label class="opt-label"><input type="checkbox" id="includeNum"> Add ID</label>
+                </div>
             </div>
         </div>
     </div>
@@ -88,7 +93,7 @@
     </div>
 
     <div class="controls">
-        <input type="text" id="domainInput" placeholder="Enter target domain for audit & naming...">
+        <input type="text" id="domainInput" placeholder="Enter target domain...">
         <button id="runBtn" onclick="runAudit()">ANALYZE</button>
     </div>
 
@@ -107,24 +112,24 @@
 
 <script>
     const themes = {
-        gods: ["Zeus", "Hades", "Apollo", "Ares", "Poseidon", "Hermes", "Thor", "Odin", "Loki", "Freya"],
-        space: ["Jupiter", "Saturn", "Nebula", "Quasar", "Orion", "Titan", "Europa", "Nova", "Cosmos"],
-        wild: ["Falcon", "Kodiak", "Raptor", "Viper", "Mammoth", "Orca", "Lynx", "Panther", "Cobra"],
-        film: ["Neo", "Morpheus", "Ripley", "Skywalker", "Kenobi", "Ghent", "Deckard", "Bane"]
+        gods: ["Zeus", "Hades", "Apollo", "Ares", "Poseidon", "Hermes", "Thor", "Odin", "Loki", "Freya", "Athena", "Atlas"],
+        space: ["Jupiter", "Saturn", "Nebula", "Quasar", "Orion", "Titan", "Europa", "Nova", "Cosmos", "Zenith"],
+        wild: ["Falcon", "Kodiak", "Raptor", "Viper", "Mammoth", "Orca", "Lynx", "Panther", "Cobra", "Phoenix"],
+        film: ["Neo", "Morpheus", "Ripley", "Skywalker", "Kenobi", "Ghent", "Deckard", "Bane", "Vader"]
     };
 
-    // New FQDN Logic
     function generateName() {
         const all = [].concat(...Object.values(themes));
-        const name = all[Math.floor(Math.random() * all.length)];
-        const num = Math.floor(Math.random() * 99) + 1;
-        const host = `${name.toUpperCase()}-${num.toString().padStart(2, '0')}`;
+        let name = all[Math.floor(Math.random() * all.length)].toUpperCase();
         
-        // Poll the domain input
+        // Check for number toggle
+        if (document.getElementById('includeNum').checked) {
+            const num = Math.floor(Math.random() * 99) + 1;
+            name += `-${num.toString().padStart(2, '0')}`;
+        }
+        
         const domainSuffix = document.getElementById('domainInput').value.trim().toLowerCase();
-        
-        // Combine them if domain exists
-        const finalFQDN = domainSuffix ? `${host}.${domainSuffix}` : host;
+        const finalFQDN = domainSuffix ? `${name}.${domainSuffix}` : name;
         
         document.getElementById('hostnameResult').innerText = finalFQDN;
     }
