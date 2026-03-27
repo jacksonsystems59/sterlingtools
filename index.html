@@ -3,145 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Security DNS Checker | Jackson Tech</title>
+    <title>Sterling DNS Auditor | Jackson Tech</title>
     <style>
         :root {
-            --bg-body: #0a1118;
-            --bg-card: #121d27;
-            --accent: #00a8ff;
-            --text-main: #e1e8ed;
-            --text-dim: #8899a6;
-            --success: #00fa9a;
-            --warning: #ff9f43;
+            --bg-body: #06090f;
+            --bg-card: #0d1117;
+            --bg-input: #161b22;
+            --text-main: #c9d1d9;
+            --accent: #238636; /* Success Green */
+            --danger: #da3633; /* Red */
+            --warning: #d29922; /* Gold */
+            --border: #30363d;
         }
 
-        body {
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0; padding: 20px;
-        }
+        body { background: var(--bg-body); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; margin: 0; padding: 40px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .search-area { display: flex; gap: 10px; background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 30px; }
+        
+        input { flex-grow: 1; background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 6px; outline: none; }
+        button { background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .export-btn { background: #21262d; border: 1px solid var(--border); margin-left: 10px; }
 
-        .container { max-width: 1200px; margin: 0 auto; }
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; position: relative; overflow: hidden; }
+        .card-status-bar { height: 4px; width: 100%; position: absolute; top: 0; left: 0; }
+        .content { padding: 20px; }
 
-        header { margin-bottom: 30px; }
-        h1 { font-size: 1.8rem; margin: 0; color: var(--text-main); }
-        p.subtitle { color: var(--text-dim); margin-top: 5px; }
+        .badge { font-size: 11px; padding: 2px 8px; border-radius: 12px; font-weight: bold; margin-left: 10px; text-transform: uppercase; }
+        .badge-passed { background: rgba(35, 134, 54, 0.2); color: #3fb950; border: 1px solid var(--accent); }
+        .badge-failed { background: rgba(218, 54, 51, 0.2); color: #f85149; border: 1px solid var(--danger); }
+        .badge-missing { background: rgba(248, 81, 73, 0.1); color: #f85149; border: 1px dashed var(--danger); }
 
-        /* Search Bar Area */
-        .search-box {
-            display: flex; gap: 10px; margin-bottom: 40px;
-            background: var(--bg-card); padding: 10px; border-radius: 8px;
-            border: 1px solid #23313f;
-        }
+        .record-val { background: #010409; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 13px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #161b22; }
+        .copy-link { color: #58a6ff; font-size: 11px; cursor: pointer; text-decoration: none; }
+        .copy-link:hover { text-decoration: underline; }
 
-        input[type="text"] {
-            flex-grow: 1; background: transparent; border: none;
-            color: white; font-size: 1.1rem; outline: none; padding: 10px;
-        }
-
-        button {
-            background: var(--accent); color: white; border: none;
-            padding: 10px 30px; border-radius: 6px; cursor: pointer;
-            font-weight: bold; transition: 0.2s;
-        }
-
-        button:hover { opacity: 0.8; }
-
-        /* Result Cards */
-        .card {
-            background: var(--bg-card); border-radius: 10px;
-            padding: 25px; margin-bottom: 20px;
-            border-left: 5px solid #23313f;
-        }
-
-        .card.found { border-left-color: var(--success); }
-        .card.warning { border-left-color: var(--warning); }
-
-        .card-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-        .tag { font-size: 0.8rem; padding: 3px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
-        .tag.green { background: rgba(0, 250, 154, 0.1); color: var(--success); }
-        .tag.orange { background: rgba(255, 159, 67, 0.1); color: var(--warning); }
-
-        .record-box {
-            background: #090e14; padding: 15px; border-radius: 6px;
-            font-family: 'Courier New', monospace; font-size: 0.9rem;
-            word-break: break-all; margin-top: 10px; position: relative;
-        }
-
-        .copy-btn {
-            position: absolute; right: 10px; top: 10px;
-            background: #23313f; color: var(--text-dim); border: none;
-            font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; cursor: pointer;
-        }
+        .passed-bar { background: var(--accent); }
+        .failed-bar { background: var(--danger); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header>
-        <h1>Email Security DNS Checker</h1>
-        <p class="subtitle">Check SPF, DKIM, DMARC, MX, and NS records for any domain</p>
-    </header>
-
-    <div class="search-box">
-        <input type="text" id="domainInput" placeholder="yourdomain.com">
-        <button onclick="checkDNS()">Check</button>
+    <div class="header-flex">
+        <h1>Sterling DNS Auditor</h1>
+        <button class="export-btn" id="exportBtn" style="display:none;" onclick="exportResults()">Export CSV</button>
     </div>
 
-    <div id="results">
-        </div>
+    <div class="search-area">
+        <input type="text" id="domainInput" placeholder="Enter domain (e.g. jacksontech.co.uk)">
+        <button onclick="runAudit()">Audit Domain</button>
+    </div>
+
+    <div id="resultsGrid"></div>
 </div>
 
 <script>
-    async function fetchDNS(domain, type) {
-        const res = await fetch(`https://dns.google/resolve?name=${domain}&type=${type}`);
-        const data = await res.json();
-        return data.Answer || [];
+    let currentResults = [];
+
+    async function fetchDns(domain, type) {
+        const r = await fetch(`https://dns.google/resolve?name=${domain}&type=${type}`);
+        const d = await r.json();
+        return d.Answer || [];
     }
 
-    async function checkDNS() {
-        const domain = document.getElementById('domainInput').value;
-        const resultsDiv = document.getElementById('results');
-        if (!domain) return;
+    async function runAudit() {
+        const domain = document.getElementById('domainInput').value.trim();
+        if(!domain) return;
+        const grid = document.getElementById('resultsGrid');
+        grid.innerHTML = "Auditing infrastructure...";
+        currentResults = [];
 
-        resultsDiv.innerHTML = "Searching...";
+        const data = {
+            spf: await fetchDns(domain, 'TXT'),
+            dmarc: await fetchDns(`_dmarc.${domain}`, 'TXT'),
+            mx: await fetchDns(domain, 'MX'),
+            ns: await fetchDns(domain, 'NS')
+        };
 
-        const mx = await fetchDNS(domain, 'MX');
-        const txt = await fetchDNS(domain, 'TXT');
+        renderCard("SPF Record", auditSPF(data.spf));
+        renderCard("DMARC Record", auditDMARC(data.dmarc));
+        renderCard("MX Records", auditMX(data.mx));
+        renderCard("Nameservers", auditNS(data.ns));
 
-        let spf = txt.find(r => r.data.includes('v=spf1'));
-        let dmarc = await fetchDNS(`_dmarc.${domain}`, 'TXT');
+        document.getElementById('exportBtn').style.display = 'block';
+    }
 
-        resultsDiv.innerHTML = `
-            <div class="card ${spf ? 'found' : 'warning'}">
-                <div class="card-header">
-                    <strong>SPF Record</strong>
-                    <span class="tag ${spf ? 'green' : 'orange'}">${spf ? 'Found' : 'Warn'}</span>
-                </div>
-                <div class="record-box">${spf ? spf.data : 'No SPF record found. Spoofing protection is disabled.'}</div>
-            </div>
+    function auditSPF(records) {
+        const rec = records.find(r => r.data.includes("v=spf1"));
+        if (!rec) return { status: "NOT FOUND", state: "missing", val: "No SPF record found." };
+        const passed = rec.data.includes("-all") || rec.data.includes("~all");
+        return { status: passed ? "FOUND - PASSED" : "FOUND - FAILED", state: passed ? "passed" : "failed", val: rec.data };
+    }
 
-            <div class="card ${dmarc.length ? 'found' : 'warning'}">
-                <div class="card-header">
-                    <strong>DMARC Record</strong>
-                    <span class="tag ${dmarc.length ? 'green' : 'orange'}">${dmarc.length ? 'Found' : 'Warn'}</span>
-                </div>
-                <div class="record-box">${dmarc.length ? dmarc[0].data : 'No DMARC record found. Policy enforcement missing.'}</div>
-            </div>
+    function auditDMARC(records) {
+        const rec = records.find(r => r.data.includes("v=DMARC1"));
+        if (!rec) return { status: "NOT FOUND", state: "missing", val: "No DMARC record found." };
+        const passed = rec.data.includes("p=reject") || rec.data.includes("p=quarantine");
+        return { status: passed ? "FOUND - PASSED" : "FOUND - FAILED", state: passed ? "passed" : "failed", val: rec.data };
+    }
 
-            <div class="card ${mx.length ? 'found' : 'warning'}">
-                <div class="card-header">
-                    <strong>MX Records</strong>
-                    <span class="tag ${mx.length ? 'green' : 'orange'}">${mx.length ? 'Found' : 'Not Found'}</span>
-                </div>
-                <div class="record-box">
-                    ${mx.map(r => r.data).join('<br>')}
+    function auditMX(records) {
+        if (!records.length) return { status: "NOT FOUND", state: "missing", val: "No MX records." };
+        return { status: "FOUND - PASSED", state: "passed", val: records.map(r => r.data).join(', ') };
+    }
+
+    function auditNS(records) {
+        if (!records.length) return { status: "NOT FOUND", state: "missing", val: "No Nameservers detected." };
+        return { status: "FOUND - PASSED", state: "passed", val: records.map(r => r.data).join(', ') };
+    }
+
+    function renderCard(title, result) {
+        const grid = document.getElementById('resultsGrid');
+        if(grid.innerHTML === "Auditing infrastructure...") grid.innerHTML = "";
+        
+        currentResults.push({ title, status: result.status, record: result.val });
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <div class="card-status-bar ${result.state === 'passed' ? 'passed-bar' : 'failed-bar'}"></div>
+            <div class="content">
+                <strong>${title}</strong> <span class="badge badge-${result.state}">${result.status}</span>
+                <div class="record-val">
+                    <span id="txt_${title}">${result.val}</span>
+                    <span class="copy-link" onclick="copyText('txt_${title}')">COPY</span>
                 </div>
             </div>
         `;
+        grid.appendChild(card);
+    }
+
+    function copyText(id) {
+        const text = document.getElementById(id).innerText;
+        navigator.clipboard.writeText(text);
+        alert("Copied to clipboard!");
+    }
+
+    function exportResults() {
+        let csv = "Record Type,Status,Value\n";
+        currentResults.forEach(r => {
+            csv += `"${r.title}","${r.status}","${r.record.replace(/"/g, '""')}"\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('href', url);
+        a.setAttribute('download', 'dns-audit.csv');
+        a.click();
     }
 </script>
-
 </body>
 </html>
