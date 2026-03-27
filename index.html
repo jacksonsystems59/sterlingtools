@@ -11,6 +11,7 @@
         :root {
             --green: #00ff66; --red: #ff3333; --blue: #38bdf8; --purple: #a855f7; --gold: #fbbf24;
             --card-bg: #161b22; --border: #30363d; --text-dim: #94a3b8;
+            --input-glow: rgba(56, 189, 248, 0.15);
         }
 
         .header-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
@@ -34,10 +35,13 @@
         .tenant-row { display: flex; gap: 5px; margin-top: 5px; }
         .tenant-input { background: #0d1117; border: 1px solid var(--border); border-radius: 3px; color: #fff; padding: 3px 6px; flex: 1; font-size: 0.7rem; outline: none; }
 
-        .controls { display: flex; gap: 6px; margin-bottom: 12px; }
-        input#domainInput { flex: 1; background: #0d1117; border: 1px solid var(--border); border-radius: 4px; padding: 6px 10px; color: #fff; outline: none; border-left: 3px solid var(--blue); font-weight: bold; }
+        /* HIGHLIGHTED INPUT SECTION */
+        .controls { display: flex; gap: 6px; margin-bottom: 12px; padding: 4px; background: linear-gradient(90deg, #161b22 0%, #1a2433 100%); border-radius: 6px; border: 1px solid #38bdf844; box-shadow: 0 0 15px var(--input-glow); }
+        input#domainInput { flex: 1; background: #0d1117; border: 1px solid var(--blue); border-radius: 4px; padding: 10px 14px; color: #fff; outline: none; font-weight: bold; font-size: 0.9rem; letter-spacing: 0.5px; transition: all 0.2s; }
+        input#domainInput:focus { border-color: var(--green); box-shadow: 0 0 8px rgba(0, 255, 102, 0.2); }
+        
         button { border: none; border-radius: 4px; padding: 6px 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem; }
-        #runBtn { background: var(--blue); color: #000; }
+        #runBtn { background: var(--blue); color: #000; min-width: 100px; text-transform: uppercase; }
         #exportBtn { background: #21262d; color: #c9d1d9; border: 1px solid var(--border); display: none; }
 
         .status-container { display: none; grid-template-columns: 80px 1fr; gap: 10px; margin-bottom: 10px; align-items: center; }
@@ -63,7 +67,7 @@
         .copy-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: #21262d; border: 1px solid var(--border); color: #8b949e; padding: 2px 4px; font-size: 0.55rem; border-radius: 2px; cursor: pointer; }
 
         .expiry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
-        .expiry-item { background: #0d1117; padding: 6px; border-radius: 4px; border: 1px solid var(--border); }
+        .expiry-item { background: #0d1117; padding: 6px; border-radius: 4px; border: 1px solid var(--border); overflow: hidden; }
         .expiry-label { font-size: 0.55rem; color: var(--text-dim); display: block; text-transform: uppercase; }
         .expiry-val { font-family: monospace; font-size: 0.75rem; color: var(--gold); font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -105,7 +109,7 @@
     </div>
 
     <div class="controls">
-        <input type="text" id="domainInput" placeholder="Enter target domain...">
+        <input type="text" id="domainInput" placeholder="Enter target domain to audit...">
         <button id="runBtn" onclick="runAudit()">ANALYZE</button>
     </div>
 
@@ -123,13 +127,7 @@
     <footer>&copy; 2026 Sterling Tech</footer>
 
 <script>
-    let currentAuditData = {}; // Global store for CSV export
-    const themes = {
-        gods: ["Zeus", "Hades", "Apollo", "Ares", "Poseidon", "Hermes", "Thor", "Odin", "Loki", "Freya", "Athena", "Atlas"],
-        space: ["Jupiter", "Saturn", "Nebula", "Quasar", "Orion", "Titan", "Europa", "Nova", "Cosmos", "Zenith"],
-        wild: ["Falcon", "Kodiak", "Raptor", "Viper", "Mammoth", "Orca", "Lynx", "Panther", "Cobra", "Phoenix"],
-        film: ["Neo", "Morpheus", "Ripley", "Skywalker", "Kenobi", "Ghent", "Deckard", "Bane", "Vader"]
-    };
+    let currentAuditData = {}; 
 
     const explanations = {
         "SPF Record": "Authorized IP addresses for sending mail.",
@@ -146,17 +144,6 @@
         return `${parts[2]}/${parts[1]}/${parts[0]}`;
     }
 
-    function generateName() {
-        const all = [].concat(...Object.values(themes));
-        let name = all[Math.floor(Math.random() * all.length)].toUpperCase();
-        if (document.getElementById('includeNum').checked) {
-            const num = Math.floor(Math.random() * 99) + 1;
-            name += `-${num.toString().padStart(2, '0')}`;
-        }
-        const domainSuffix = document.getElementById('domainInput').value.trim().toLowerCase();
-        document.getElementById('hostnameResult').innerText = domainSuffix ? `${name}.${domainSuffix}` : name;
-    }
-
     async function getDomainDates(domain) {
         try {
             const res = await fetch(`https://rdap.org/domain/${domain}`);
@@ -164,15 +151,10 @@
             const events = data.events || [];
             const regISO = events.find(e => e.eventAction === 'registration')?.eventDate.split('T')[0] || "Unknown";
             const expISO = events.find(e => e.eventAction === 'expiration')?.eventDate.split('T')[0] || "Unknown";
-            
-            // Extract Registrar
             const entity = data.entities?.find(e => e.roles.includes('registrar'));
             const registrar = entity?.vcardArray?.[1]?.find(v => v[0] === 'fn')?.[3] || "Unknown Registrar";
-
-            const now = new Date();
-            const diff = new Date(expISO) - now;
+            const diff = new Date(expISO) - new Date();
             const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-
             return { registration: formatToUK(regISO), expiration: formatToUK(expISO), registrar, daysRemaining: days };
         } catch (e) { return { registration: "Error", expiration: "Error", registrar: "Error", daysRemaining: null }; }
     }
@@ -192,7 +174,7 @@
             const daysText = info.daysRemaining !== null ? `<div class="days-badge">${info.daysRemaining} DAYS REMAINING</div>` : '';
             const lifecycleHtml = `
                 <div class="expiry-grid">
-                    <div class="expiry-item"><span class="expiry-label">Registrar</span><span class="expiry-val">${info.registrar}</span></div>
+                    <div class="expiry-item"><span class="expiry-label">Registrar</span><span class="expiry-val" title="${info.registrar}">${info.registrar}</span></div>
                     <div class="expiry-item"><span class="expiry-label">Expires</span><span class="expiry-val">${info.expiration}</span></div>
                 </div>${daysText}`;
             renderCardRaw("Domain Lifecycle", true, lifecycleHtml, "special");
@@ -221,7 +203,6 @@
             row.innerHTML = renderSmall("MX Records", mxList, provider) + renderSmall("Nameservers", nsList);
             grid.appendChild(row);
 
-            // Save for Export
             currentAuditData = { domain, registrar: info.registrar, expiry: info.expiration, spf, dmarc, mx: mxList.join(' | '), ns: nsList.join(' | ') };
 
             let score = (spf !== "None Found" ? 35 : 0) + ((dmarc !== "None Found" && !dmarc.includes('p=none')) ? 35 : 0) + (foundDkim.length > 0 ? 30 : 0);
@@ -243,9 +224,7 @@
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
         link.setAttribute("download", `Sterling_Audit_${currentAuditData.domain}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
     async function fetchDNS(n, t) {
@@ -259,9 +238,7 @@
         return mx.length > 0 ? "PRIVATE / OTHER" : "NONE";
     }
     function createBox(v) { return `<div class="record-box"><span>${v}</span><button class="copy-btn" onclick="copyToClipboard('${v.replace(/'/g, "\\'")}', this)">COPY</button></div>`; }
-    function renderCardRaw(t, p, h, cls = "") { 
-        document.getElementById('results').innerHTML += `<div class="card ${p?'':'fail'} ${cls}"><span class="title">${t}</span><div class="explanation">${explanations[t]||""}</div>${h}</div>`; 
-    }
+    function renderCardRaw(t, p, h, cls = "") { document.getElementById('results').innerHTML += `<div class="card ${p?'':'fail'} ${cls}"><span class="title">${t}</span><div class="explanation">${explanations[t]||""}</div>${h}</div>`; }
     function renderCard(t, p, rs) { let h = ''; rs.forEach(r => { if(r) h += createBox(r); }); renderCardRaw(t, p, h); }
     function renderSmall(t, rs, prov = null) { 
         let h = prov ? `<div class="provider-badge">${prov}</div>` : ''; 
@@ -288,6 +265,13 @@
             g.innerText = data.authorization_endpoint.split('/')[3];
             g.style.display = 'inline';
         } catch (e) { g.innerText = "NOT FOUND"; g.style.display = 'inline'; }
+    }
+    function generateName() {
+        const themes = ["ZEUS", "ODIN", "NEO", "TITAN", "ORION", "NOVA", "PHOENIX", "COSMOS"];
+        let name = themes[Math.floor(Math.random() * themes.length)];
+        if (document.getElementById('includeNum').checked) name += `-${Math.floor(Math.random()*90)+10}`;
+        const dom = document.getElementById('domainInput').value.trim().toLowerCase();
+        document.getElementById('hostnameResult').innerText = dom ? `${name}.${dom}` : name;
     }
 </script>
 </body>
