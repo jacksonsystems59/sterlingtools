@@ -6,88 +6,94 @@
     <title>Sterling DNS Auditor | Jackson Tech</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0b0e14; color: #e2e8f0; padding: 24px; line-height: 1.5; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0b0e14; color: #e2e8f0; padding: 15px; line-height: 1.3; font-size: 14px; }
         
         :root {
-            --green: #00ff66;
-            --red: #ff3333;
-            --blue: #38bdf8;
-            --card-bg: #161b22;
-            --border: #30363d;
-            --text-dim: #94a3b8;
+            --green: #00ff66; --red: #ff3333; --blue: #38bdf8;
+            --card-bg: #161b22; --border: #30363d; --text-dim: #94a3b8;
         }
 
-        h1 { font-size: 1.6rem; color: #fff; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; }
-        h1::before { content: ''; width: 4px; height: 24px; background: var(--blue); display: inline-block; border-radius: 2px; }
-        .subtitle { font-size: 0.9rem; color: var(--text-dim); margin-bottom: 20px; }
+        .header-wrap { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        h1 { font-size: 1.3rem; color: #fff; display: flex; align-items: center; gap: 8px; }
+        h1::before { content: ''; width: 3px; height: 18px; background: var(--blue); display: inline-block; }
 
-        /* Master Status Header */
-        #masterStatus { display: none; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; font-weight: 800; font-size: 1.2rem; border: 2px solid; }
-        .master-pass { background: rgba(0, 255, 102, 0.1); color: var(--green); border-color: var(--green) !important; }
-        .master-fail { background: rgba(255, 51, 51, 0.1); color: var(--red); border-color: var(--red) !important; }
+        #masterStatus { display: none; padding: 10px; border-radius: 6px; margin-bottom: 12px; text-align: center; font-weight: 800; font-size: 0.9rem; border: 1px solid; }
+        .master-pass { background: rgba(0, 255, 102, 0.05); color: var(--green); border-color: var(--green); }
+        .master-fail { background: rgba(255, 51, 51, 0.05); color: var(--red); border-color: var(--red); }
 
-        .search-container { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 25px; display: flex; gap: 10px; }
-        input { flex: 1; background: #0d1117; border: 1px solid var(--border); border-radius: 6px; padding: 12px; color: #fff; font-size: 1rem; outline: none; }
-        input:focus { border-color: var(--blue); }
-        button#runBtn { background: var(--blue); color: #000; border: none; border-radius: 6px; padding: 0 25px; font-weight: 700; cursor: pointer; }
+        .controls { display: flex; gap: 8px; margin-bottom: 15px; }
+        input { flex: 1; background: #0d1117; border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; color: #fff; outline: none; }
+        button { border: none; border-radius: 4px; padding: 8px 16px; font-weight: 700; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
+        #runBtn { background: var(--blue); color: #000; }
+        #exportBtn { background: #21262d; color: #c9d1d9; border: 1px solid var(--border); display: none; }
+        button:hover { opacity: 0.8; }
 
-        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 15px; }
-        .card.pass { border-left: 5px solid var(--green); }
-        .card.fail { border-left: 5px solid var(--red); }
+        /* Compact Layout */
+        .results-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .small-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .title { font-weight: 800; font-size: 0.9rem; text-transform: uppercase; color: #fff; }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; position: relative; }
+        .card.pass { border-left: 4px solid var(--green); }
+        .card.fail { border-left: 4px solid var(--red); }
+
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .title { font-weight: 800; font-size: 0.75rem; text-transform: uppercase; color: #fff; }
+        .badge { font-size: 0.65rem; font-weight: 900; padding: 2px 6px; border-radius: 3px; border: 1px solid; }
+        .badge.pass { color: var(--green); border-color: var(--green); }
+        .badge.fail { color: var(--red); border-color: var(--red); }
+
+        .blurb { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px; line-height: 1.2; }
+        .record-box { background: #0d1117; border: 1px solid var(--border); padding: 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.8rem; color: #7dd3fc; word-break: break-all; margin-top: 5px; }
+        .copy-btn { position: absolute; right: 5px; top: 5px; background: #21262d; border: 1px solid var(--border); color: #8b949e; padding: 2px 5px; font-size: 0.6rem; border-radius: 3px; cursor: pointer; }
         
-        .badge { font-size: 0.7rem; font-weight: 900; padding: 4px 10px; border-radius: 4px; }
-        .badge.pass { color: var(--green); background: rgba(0, 255, 102, 0.1); border: 1px solid var(--green); }
-        .badge.fail { color: var(--red); background: rgba(255, 51, 51, 0.1); border: 1px solid var(--red); }
+        .host-notice { background: rgba(56, 189, 248, 0.1); color: var(--blue); padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; margin-top: 8px; display: inline-block; }
 
-        .blurb { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 12px; font-style: italic; border-bottom: 1px solid #232a35; padding-bottom: 10px; }
-
-        .record-box { background: #0d1117; border: 1px solid var(--border); padding: 12px; border-radius: 6px; position: relative; font-family: 'Consolas', monospace; font-size: 0.85rem; color: #7dd3fc; word-break: break-all; margin-top: 8px; }
-        .copy-btn { position: absolute; right: 8px; top: 8px; background: #21262d; border: 1px solid var(--border); color: #8b949e; padding: 4px 8px; font-size: 0.65rem; border-radius: 4px; cursor: pointer; }
-        
-        .msg { font-size: 0.85rem; margin-top: 10px; font-weight: 600; }
-        .msg.pass { color: var(--green); }
-        .msg.fail { color: var(--red); }
-
-        #loading { display: none; color: var(--blue); margin-bottom: 20px; }
-        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(56, 189, 248, 0.2); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 10px; }
+        #loading { display: none; font-size: 0.8rem; color: var(--blue); margin-bottom: 10px; text-align: center; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #333; border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 5px; }
     </style>
 </head>
 <body>
 
-    <h1>Sterling DNS Auditor</h1>
-    <p class="subtitle">Secure Infrastructure Analysis by Jackson Tech</p>
+    <div class="header-wrap">
+        <div>
+            <h1>Sterling DNS Auditor</h1>
+            <p style="font-size: 0.75rem; color: var(--text-dim)">Jackson Tech Security Suite</p>
+        </div>
+        <button id="exportBtn" onclick="exportToCSV()">EXPORT CSV</button>
+    </div>
 
-    <div class="search-container">
-        <input type="text" id="domainInput" placeholder="Enter domain (e.g. jacksontech.co.uk)" autocomplete="off">
-        <button id="runBtn">ANALYZE</button>
+    <div class="controls">
+        <input type="text" id="domainInput" placeholder="Enter domain..." autofocus>
+        <button id="runBtn" onclick="runAudit()">ANALYZE</button>
     </div>
 
     <div id="masterStatus"></div>
-    <div id="loading"><span class="spinner"></span> Querying Global DNS Clusters...</div>
-    <div id="results"></div>
+    <div id="loading"><span class="spinner"></span> Scanning Infrastructure...</div>
+    
+    <div class="results-grid" id="results"></div>
 
 <script>
-    const blurbs = {
-        spf: "SPF identifies which mail servers are authorized to send email on your behalf. A 'PASS' prevents spammers from using your domain to send fake emails.",
-        dmarc: "DMARC tells receiving servers how to handle mail that fails SPF/DKIM. A 'PASS' (quarantine/reject) ensures fraudulent mail is blocked entirely.",
-        dkim: "DKIM adds a digital signature to emails. A 'PASS' proves the email wasn't tampered with in transit and confirms it really came from you.",
-        mx: "MX records direct email to your mail server. Without these, you cannot receive any incoming mail.",
-        ns: "Nameservers are the 'phonebooks' of the internet. They host your DNS records and control where your website and email traffic goes."
-    };
+    let currentAuditData = [];
 
     function copyToClipboard(text, btn) {
         const el = document.createElement('textarea');
-        el.value = text;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
+        el.value = text; document.body.appendChild(el);
+        el.select(); document.execCommand('copy');
         document.body.removeChild(el);
-        btn.innerText = "COPIED!";
-        setTimeout(() => { btn.innerText = "COPY"; }, 2000);
+        btn.innerText = "DONE";
+        setTimeout(() => { btn.innerText = "COPY"; }, 1500);
+    }
+
+    function detectProvider(nsRecords) {
+        const text = nsRecords.join(' ').toLowerCase();
+        if (text.includes('cloudflare')) return "Cloudflare";
+        if (text.includes('awsdns')) return "AWS Route 53";
+        if (text.includes('googledomains') || text.includes('google')) return "Google DNS";
+        if (text.includes('domaincontrol')) return "GoDaddy";
+        if (text.includes('azure-dns')) return "Microsoft Azure";
+        if (text.includes('fasthosts')) return "Fasthosts";
+        return "Third-Party Provider";
     }
 
     async function fetchDNS(name, type) {
@@ -100,94 +106,93 @@
     async function runAudit() {
         const domain = document.getElementById('domainInput').value.trim().toLowerCase();
         if (!domain) return;
-
-        const loader = document.getElementById('loading');
-        const results = document.getElementById('results');
-        const master = document.getElementById('masterStatus');
         
-        loader.style.display = 'block';
-        results.innerHTML = '';
-        master.style.display = 'none';
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('results').innerHTML = '';
+        document.getElementById('masterStatus').style.display = 'none';
+        document.getElementById('exportBtn').style.display = 'none';
+        currentAuditData = [];
 
         let totalPass = true;
 
         try {
             const [spfData, dmarcData, mxData, nsData] = await Promise.all([
-                fetchDNS(domain, 'TXT'),
-                fetchDNS(`_dmarc.${domain}`, 'TXT'),
-                fetchDNS(domain, 'MX'),
-                fetchDNS(domain, 'NS')
+                fetchDNS(domain, 'TXT'), fetchDNS(`_dmarc.${domain}`, 'TXT'),
+                fetchDNS(domain, 'MX'), fetchDNS(domain, 'NS')
             ]);
 
-            // DKIM Parallel Scan
-            const selectors = ['google', 'selector1', 'selector2', 'default', 'mail', 'dkim', 'k1', 'smtp', 'ms', 'microsoft'];
-            const dkimPromises = selectors.map(async s => {
+            // DKIM Parallel
+            const selectors = ['google', 'selector1', 'default', 'mail', 'k1', 'ms', 'microsoft'];
+            const dkimResults = await Promise.all(selectors.map(async s => {
                 const data = await fetchDNS(`${s}._domainkey.${domain}`, 'TXT');
                 const rec = data.Answer?.find(r => r.data.includes('v=DKIM1') || r.data.includes('p='));
-                return rec ? { selector: s, data: rec.data.replace(/"/g, '') } : null;
-            });
-            const foundDkim = (await Promise.all(dkimPromises)).filter(x => x !== null);
+                return rec ? { s, val: rec.data.replace(/"/g, '') } : null;
+            }));
+            const foundDkim = dkimResults.filter(x => x !== null);
 
-            // SPF Assessment
-            const spfRec = (spfData.Answer || []).find(r => r.data.includes('v=spf1'))?.data.replace(/"/g,'');
-            const spfPass = !!spfRec;
-            if(!spfPass) totalPass = false;
-            renderCard("SPF Record", spfRec, spfPass, spfPass ? "✓ SPF Configured" : "✗ SPF Missing", blurbs.spf);
+            // Audit Logic
+            const spf = (spfData.Answer || []).find(r => r.data.includes('v=spf1'))?.data.replace(/"/g,'');
+            const dmarc = (dmarcData.Answer || []).find(r => r.data.includes('v=DMARC1'))?.data.replace(/"/g,'');
+            const dmarcEnforced = dmarc && (dmarc.includes('p=quarantine') || dmarc.includes('p=reject'));
+            
+            if (!spf || !dmarcEnforced || foundDkim.length === 0) totalPass = false;
 
-            // DMARC Assessment (Must be p=quarantine or p=reject to pass)
-            const dmarcRec = (dmarcData.Answer || []).find(r => r.data.includes('v=DMARC1'))?.data.replace(/"/g,'');
-            const dmarcPass = dmarcRec && (dmarcRec.includes('p=quarantine') || dmarcRec.includes('p=reject'));
-            if(!dmarcPass) totalPass = false;
-            renderCard("DMARC Enforcement", dmarcRec, dmarcPass, dmarcPass ? "✓ Policy Enforced" : "✗ Policy Weak or Missing", blurbs.dmarc);
+            const nsList = (nsData.Answer || []).map(r => r.data);
+            const provider = detectProvider(nsList);
 
-            // DKIM Assessment
-            const dkimPass = foundDkim.length > 0;
-            if(!dkimPass) totalPass = false;
-            const dkimString = foundDkim.map(d => `[${d.selector}]: ${d.data}`).join('\n\n');
-            renderCard("DKIM Records", dkimString, dkimPass, dkimPass ? `✓ ${foundDkim.length} Selectors Active` : "✗ No DKIM found", blurbs.dkim);
+            // Render Cards
+            renderCard("SPF", spf, !!spf, "Prevents domain spoofing.");
+            renderCard("DMARC", dmarc, dmarcEnforced, "Enforces email security policy.");
+            renderCard("DKIM", foundDkim.map(d => `[${d.s}]: ${d.val}`).join('\n'), foundDkim.length > 0, "Digital signature for integrity.");
+            
+            const resultsDiv = document.getElementById('results');
+            const row = document.createElement('div'); row.className = 'small-row';
+            row.innerHTML = renderSmallCard("MX Records", (mxData.Answer || []).map(r => r.data).join('\n'), "Mail routing.") +
+                            renderSmallCard("Nameservers", nsList.join('\n'), "DNS Hosting.", provider);
+            resultsDiv.appendChild(row);
 
-            // MX & NS (Informational, usually pass)
-            const mxs = (mxData.Answer || []).map(r => r.data).join('\n');
-            renderCard("MX Records", mxs, !!mxs, mxs ? "✓ Mail Routing Active" : "✗ Routing Missing", blurbs.mx);
-
-            const nss = (nsData.Answer || []).map(r => r.data).join('\n');
-            renderCard("Nameservers", nss, !!nss, nss ? "✓ DNS Active" : "✗ No Nameservers", blurbs.ns);
-
-            // Set Master Status
+            // Master Status
+            const master = document.getElementById('masterStatus');
             master.style.display = 'block';
             master.className = totalPass ? 'master-pass' : 'master-fail';
-            master.innerText = totalPass ? `✓ CONFIGURATION OPTIMIZED: ${domain.toUpperCase()}` : `⚠ ATTENTION REQUIRED: ${domain.toUpperCase()}`;
+            master.innerText = totalPass ? `✓ SYSTEM OPTIMIZED: ${domain.toUpperCase()}` : `⚠ ACTION REQUIRED: ${domain.toUpperCase()}`;
+            document.getElementById('exportBtn').style.display = 'block';
 
         } catch (e) {
-            results.innerHTML = `<div class="card fail">DNS Error. Check domain string.</div>`;
-        } finally {
-            loader.style.display = 'none';
-        }
+            alert("DNS Query Failed.");
+        } finally { document.getElementById('loading').style.display = 'none'; }
     }
 
-    function renderCard(title, record, isPass, msg, blurb) {
-        const container = document.getElementById('results');
+    function renderCard(title, record, isPass, blurb) {
+        currentAuditData.push({ title, status: isPass ? 'PASS' : 'FAIL', record: record || 'NONE' });
         const html = `
             <div class="card ${isPass ? 'pass' : 'fail'}">
-                <div class="card-header">
-                    <span class="title">${title}</span>
-                    <span class="badge ${isPass ? 'pass' : 'fail'}">${isPass ? 'PASSED' : 'FAILED'}</span>
-                </div>
+                <div class="card-header"><span class="title">${title}</span><span class="badge ${isPass ? 'pass' : 'fail'}">${isPass ? 'PASS' : 'FAIL'}</span></div>
                 <div class="blurb">${blurb}</div>
-                ${record ? `
-                    <div class="record-box">
-                        ${record.replace(/\n/g, '<br>')}
-                        <button class="copy-btn" onclick="copyToClipboard(\`${record}\`, this)">COPY</button>
-                    </div>
-                ` : ''}
-                <div class="msg ${isPass ? 'pass' : 'fail'}">${msg}</div>
-            </div>
-        `;
-        container.innerHTML += html;
+                ${record ? `<div class="record-box">${record}<button class="copy-btn" onclick="copyToClipboard('${record.replace(/'/g, "\\'")}', this)">COPY</button></div>` : ''}
+            </div>`;
+        document.getElementById('results').innerHTML += html;
     }
 
-    document.getElementById('runBtn').addEventListener('click', runAudit);
-    document.getElementById('domainInput').addEventListener('keydown', (e) => { if(e.key === 'Enter') runAudit(); });
+    function renderSmallCard(title, record, blurb, provider = null) {
+        currentAuditData.push({ title, status: record ? 'FOUND' : 'MISSING', record: record || 'NONE' });
+        return `
+            <div class="card ${record ? 'pass' : 'fail'}">
+                <div class="card-header"><span class="title">${title}</span></div>
+                ${provider ? `<div class="host-notice">Host: ${provider}</div>` : ''}
+                <div class="record-box" style="font-size:0.7rem">${record || 'Missing'}<button class="copy-btn" onclick="copyToClipboard('${record.replace(/'/g, "\\'")}', this)">COPY</button></div>
+            </div>`;
+    }
+
+    function exportToCSV() {
+        let csv = "Type,Status,Record\n";
+        currentAuditData.forEach(row => { csv += `"${row.title}","${row.status}","${row.record.replace(/"/g, '""')}"\n`; });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `Audit_${document.getElementById('domainInput').value}.csv`;
+        a.click();
+    }
 </script>
 </body>
 </html>
