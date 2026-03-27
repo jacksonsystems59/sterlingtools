@@ -26,7 +26,6 @@
 
         .ip-val { color: var(--blue); font-weight: 800; font-family: monospace; cursor: pointer; }
 
-        /* FQDN Generator with Toggle */
         .gen-wrap { display: flex; flex-direction: column; gap: 4px; margin-top: 5px; }
         .gen-controls { display: flex; align-items: center; gap: 8px; }
         #hostnameResult { color: var(--gold); font-weight: 800; font-family: monospace; cursor: pointer; background: #0d1117; padding: 4px 8px; border-radius: 3px; font-size: 0.75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -52,6 +51,10 @@
         .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; border-left: 3px solid var(--blue); }
         .card.fail { border-left-color: var(--red); }
         .title { font-weight: 800; font-size: 0.7rem; text-transform: uppercase; color: #fff; margin-bottom: 4px; display: block; }
+        
+        /* Provider Badge */
+        .provider-badge { font-size: 0.6rem; color: var(--blue); font-weight: 900; background: rgba(56, 189, 248, 0.1); padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; display: inline-block; border: 1px solid var(--blue); }
+
         .record-box { background: #0d1117; border: 1px solid var(--border); padding: 6px 35px 6px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: #7dd3fc; margin-top: 4px; word-break: break-all; min-height: 26px; display: flex; align-items: center; }
         .copy-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: #21262d; border: 1px solid var(--border); color: #8b949e; padding: 2px 4px; font-size: 0.55rem; border-radius: 2px; cursor: pointer; }
 
@@ -118,20 +121,25 @@
         film: ["Neo", "Morpheus", "Ripley", "Skywalker", "Kenobi", "Ghent", "Deckard", "Bane", "Vader"]
     };
 
+    function detectMailProvider(mxRecords) {
+        const text = mxRecords.join(' ').toLowerCase();
+        if (text.includes('outlook.com')) return "MICROSOFT 365";
+        if (text.includes('google.com') || text.includes('aspmx.l.google.com')) return "GOOGLE WORKSPACE";
+        if (text.includes('pphosted.com')) return "PROOFPOINT";
+        if (text.includes('mimecast.com')) return "MIMECAST";
+        if (mxRecords.length > 0) return "PRIVATE / ON-PREM";
+        return "NO MAIL SYSTEM DETECTED";
+    }
+
     function generateName() {
         const all = [].concat(...Object.values(themes));
         let name = all[Math.floor(Math.random() * all.length)].toUpperCase();
-        
-        // Check for number toggle
         if (document.getElementById('includeNum').checked) {
             const num = Math.floor(Math.random() * 99) + 1;
             name += `-${num.toString().padStart(2, '0')}`;
         }
-        
         const domainSuffix = document.getElementById('domainInput').value.trim().toLowerCase();
-        const finalFQDN = domainSuffix ? `${name}.${domainSuffix}` : name;
-        
-        document.getElementById('hostnameResult').innerText = finalFQDN;
+        document.getElementById('hostnameResult').innerText = domainSuffix ? `${name}.${domainSuffix}` : name;
     }
 
     async function lookupTenant() {
@@ -141,8 +149,7 @@
         try {
             const res = await fetch(`https://login.microsoftonline.com/${domain}/.well-known/openid-configuration`);
             const data = await res.json();
-            const id = data.authorization_endpoint.split('/')[3];
-            guidSpan.innerText = id;
+            guidSpan.innerText = data.authorization_endpoint.split('/')[3];
             guidSpan.style.display = 'inline';
         } catch (e) { guidSpan.innerText = "NOT FOUND"; guidSpan.style.display = 'inline'; }
     }
@@ -201,9 +208,14 @@
             foundDkim.forEach(d => { dkimHtml += `<div style="font-size:0.6rem; color:var(--blue); margin-top:4px;">${d.s.toUpperCase()}</div>` + createBox(d.val); });
             renderCardRaw("DKIM Keys", foundDkim.length > 0, dkimHtml);
 
+            // MX with Provider Detection
+            const mxList = (mxData.Answer || []).map(r => r.data);
+            const provider = detectMailProvider(mxList);
+            const nsList = (nsData.Answer || []).map(r => r.data);
+
             const grid = document.getElementById('results');
             const row = document.createElement('div'); row.className = 'small-row';
-            row.innerHTML = renderSmall("MX", (mxData.Answer || []).map(r => r.data)) + renderSmall("NS", (nsData.Answer || []).map(r => r.data));
+            row.innerHTML = renderSmall("MX Records", mxList, provider) + renderSmall("Nameservers", nsList);
             grid.appendChild(row);
 
             document.getElementById('scoreVal').innerText = score;
@@ -218,7 +230,11 @@
     function createBox(v) { return `<div class="record-box"><span>${v}</span><button class="copy-btn" onclick="copyToClipboard('${v.replace(/'/g, "\\'")}', this)">COPY</button></div>`; }
     function renderCardRaw(t, p, h) { document.getElementById('results').innerHTML += `<div class="card ${p?'':'fail'}"><span class="title">${t}</span>${h}</div>`; }
     function renderCard(t, p, rs) { let h = ''; rs.forEach(r => { if(r) h += createBox(r); }); renderCardRaw(t, p, h); }
-    function renderSmall(t, rs) { let h = ''; rs.forEach(r => { h += createBox(r); }); return `<div class="card"><span class="title">${t}</span>${h}</div>`; }
+    function renderSmall(t, rs, provider = null) { 
+        let h = provider ? `<div class="provider-badge">${provider}</div>` : ''; 
+        rs.forEach(r => { h += createBox(r); }); 
+        return `<div class="card"><span class="title">${t}</span>${h}</div>`; 
+    }
 </script>
 </body>
 </html>
