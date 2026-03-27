@@ -10,7 +10,7 @@
         
         :root {
             --green: #00ff66; --red: #ff3333;
-            --blue: #007aff; --purple: #ff9500; --gold: #8e8e93;
+            --blue: #007aff; --purple: #ff9500; --gold: #fbbf24;
             --card-bg: #1c1c1e; --border: #30363d; --text-dim: #94a3b8;
             --input-glow: rgba(0, 122, 255, 0.15);
             --glass: blur(12px);
@@ -30,15 +30,15 @@
 
         .util-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-bottom: 12px; }
         .bar { background: #1a1f29; border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; font-size: 0.8rem; border-left: 3px solid var(--blue); }
-        .gold-acc { border-left-color: #fbbf24; }
+        .gold-acc { border-left-color: var(--gold); }
 
         .ip-wrap { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
         .live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); animation: pulseGreen 1.5s infinite; }
         @keyframes pulseGreen { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
 
         .gen-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
-        .gen-display { background: #0d1117; border: 1px solid var(--border); padding: 4px 35px 4px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: #fbbf24; flex: 1; min-height: 26px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; }
-        .gen-btn { background: #fbbf24; color: #000; padding: 4px 8px; border-radius: 3px; font-weight: 800; font-size: 0.65rem; cursor: pointer; border: none; }
+        .gen-display { background: #0d1117; border: 1px solid var(--border); padding: 4px 35px 4px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: var(--gold); flex: 1; min-height: 26px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; }
+        .gen-btn { background: var(--gold); color: #000; padding: 4px 8px; border-radius: 3px; font-weight: 800; font-size: 0.65rem; cursor: pointer; border: none; }
 
         .controls { display: flex; gap: 6px; margin-bottom: 12px; padding: 4px; background: linear-gradient(90deg, #161b22 0%, #1a2433 100%); border-radius: 6px; border: 1px solid rgba(0, 122, 255, 0.3); box-shadow: 0 0 15px var(--input-glow); }
         input#domainInput { flex: 1; background: #0d1117; border: 1px solid var(--blue); border-radius: 4px; padding: 10px 14px; color: #fff; outline: none; font-weight: bold; font-size: 0.9rem; }
@@ -49,25 +49,35 @@
 
         .status-container { display: none; grid-template-columns: 80px 1fr; gap: 10px; margin-bottom: 10px; align-items: center; }
         .score-circle { height: 60px; width: 60px; border-radius: 50%; border: 3px solid; display: flex; align-items: center; justify-content: center; font-weight: 900; background: rgba(0,0,0,0.3); font-size: 1.2rem; }
-        #masterStatus { padding: 10px; border-radius: 6px; font-weight: 800; font-size: 0.85rem; border: 1px solid; flex-grow: 1; position: relative; overflow: hidden; }
-        
-        /* THE PULSE EFFECT */
-        .master-pass { background: rgba(0, 255, 102, 0.05); color: var(--green); border-color: var(--green); animation: statusBreath 3s ease-in-out infinite; }
-        @keyframes statusBreath { 0% { box-shadow: 0 0 5px rgba(0, 255, 102, 0.1); } 50% { box-shadow: 0 0 15px rgba(0, 255, 102, 0.3); background: rgba(0, 255, 102, 0.08); } 100% { box-shadow: 0 0 5px rgba(0, 255, 102, 0.1); } }
-        
+        #masterStatus { padding: 10px; border-radius: 6px; font-weight: 800; font-size: 0.85rem; border: 1px solid; flex-grow: 1; }
+
+        /* STRONGER BREATHING PULSE */
+        .master-pass { 
+            background: rgba(0, 255, 102, 0.05); 
+            color: var(--green); 
+            border-color: var(--green); 
+            animation: statusBreathStrong 2.5s ease-in-out infinite; 
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.2);
+        }
+        @keyframes statusBreathStrong { 
+            0% { box-shadow: 0 0 5px rgba(0, 255, 102, 0.2); background: rgba(0, 255, 102, 0.05); } 
+            50% { box-shadow: 0 0 25px rgba(0, 255, 102, 0.5); background: rgba(0, 255, 102, 0.15); } 
+            100% { box-shadow: 0 0 5px rgba(0, 255, 102, 0.2); background: rgba(0, 255, 102, 0.05); } 
+        }
+
         .master-fail { background: rgba(255, 51, 51, 0.05); color: var(--red); border-color: var(--red); }
 
         .results-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
         .small-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; border-left: 3px solid var(--blue); position: relative; backdrop-filter: var(--glass); }
         .card.fail { border-left-color: var(--red); }
-        .card.special { border-left-color: #fbbf24; }
+        .card.special { border-left-color: var(--gold); }
         
         .title { font-weight: 800; font-size: 0.7rem; text-transform: uppercase; color: #fff; margin-bottom: 2px; display: block; }
         .explanation { font-size: 0.65rem; color: var(--text-dim); margin-bottom: 6px; font-style: italic; }
 
         .provider-badge { font-size: 0.6rem; color: var(--blue); font-weight: 900; background: rgba(0, 122, 255, 0.1); padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; display: inline-block; border: 1px solid var(--blue); }
-        .days-badge { font-size: 0.6rem; color: #fbbf24; font-weight: 900; background: rgba(251, 191, 36, 0.1); padding: 2px 6px; border-radius: 4px; display: inline-block; border: 1px solid #fbbf24; margin-top: 5px; }
+        .days-badge { font-size: 0.6rem; color: var(--gold); font-weight: 900; background: rgba(251, 191, 36, 0.1); padding: 2px 6px; border-radius: 4px; display: inline-block; border: 1px solid var(--gold); margin-top: 5px; }
 
         #actionBox { display: none; margin-top: 15px; background: #1a1414; border: 1px solid var(--red); border-radius: 6px; padding: 12px; margin-bottom: 60px; }
         .action-header { color: var(--red); font-weight: 900; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 8px; }
@@ -134,7 +144,7 @@
     const themes = {
         standard: { b: '#38bdf8', p: '#a855f7', g: '#fbbf24', bg: '#0b0e14', txt: '#e2e8f0', gls: 'none' },
         linux: { b: '#00ff41', p: '#d3d3d3', g: '#ffb000', bg: '#0d0d0d', txt: '#00ff41', gls: 'none' },
-        macos: { b: '#007aff', p: '#ff9500', g: '#8e8e93', bg: '#1c1c1e', txt: '#ffffff', gls: 'blur(12px)' }
+        macos: { b: '#007aff', p: '#ff9500', g: '#fbbf24', bg: '#1c1c1e', txt: '#ffffff', gls: 'blur(12px)' }
     };
 
     const names = {
@@ -169,15 +179,9 @@
         const d = document.getElementById('domainInput').value.trim().toLowerCase();
         const allPossible = [].concat(...Object.values(names));
         const available = allPossible.filter(n => !generatedHistory.has(n));
-
-        if (available.length === 0) {
-            alert("All unique hosts used in this session. Refresh to restart pool.");
-            return;
-        }
-
+        if (available.length === 0) { alert("Session pool empty."); return; }
         const word = available[Math.floor(Math.random() * available.length)];
         generatedHistory.add(word);
-        
         const host = d ? `${word}.${d}` : word;
         document.getElementById('genDisplay').innerHTML = `${host}<button class="copy-btn" onclick="copyToClipboard('${host}', this)">COPY</button>`;
     }
@@ -198,7 +202,7 @@
             const isCritical = rdap.days !== null && rdap.days < 30;
             if (isCritical) actions.push(`Domain renewal urgent (${rdap.days} days left)`);
 
-            renderCard("Domain Lifecycle", true, `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:5px;"><div style="background:#0d1117;padding:6px;border-radius:4px;border:1px solid var(--border);"><span style="font-size:0.55rem;color:var(--text-dim);display:block;text-transform:uppercase;">Registrar</span><span style="font-family:monospace;font-size:0.75rem;color:#fbbf24;font-weight:bold;">${rdap.registrar}</span></div><div style="background:#0d1117;padding:6px;border-radius:4px;border:1px solid var(--border);"><span style="font-size:0.55rem;color:var(--text-dim);display:block;text-transform:uppercase;">Expires</span><span style="font-family:monospace;font-size:0.75rem;color:#fbbf24;font-weight:bold;">${rdap.exp}</span></div></div><div class="days-badge ${isCritical?'critical':''}">${rdap.days} DAYS REMAINING</div>`, "Registration details.", "special");
+            renderCard("Domain Lifecycle", true, `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:5px;"><div style="background:#0d1117;padding:6px;border-radius:4px;border:1px solid var(--border);"><span style="font-size:0.55rem;color:var(--text-dim);display:block;text-transform:uppercase;">Registrar</span><span style="font-family:monospace;font-size:0.75rem;color:var(--gold);font-weight:bold;">${rdap.registrar}</span></div><div style="background:#0d1117;padding:6px;border-radius:4px;border:1px solid var(--border);"><span style="font-size:0.55rem;color:var(--text-dim);display:block;text-transform:uppercase;">Expires</span><span style="font-family:monospace;font-size:0.75rem;color:var(--gold);font-weight:bold;">${rdap.exp}</span></div></div><div class="days-badge ${isCritical?'critical':''}">${rdap.days} DAYS REMAINING</div>`, "Registration details.", "special");
 
             const spf = (spfD.Answer || []).find(r => r.data.includes('v=spf1'))?.data.replace(/"/g,'');
             if (!spf) actions.push("Missing SPF record");
@@ -210,11 +214,10 @@
 
             const mxL = (mxD.Answer || []).map(r => r.data);
             const nsL = (nsD.Answer || []).map(r => r.data);
-            document.getElementById('results').innerHTML += `<div class="small-row">${renderSmall("MX Records", mxL, detectProv(mxL))}${renderSmall("Nameservers", nsL, detectProv(nsL))}</div>`;
+            document.getElementById('results').innerHTML += `<div class="small-row">${renderSmall("MX Records", mxL, detectProv(mxL, spf))}${renderSmall("Nameservers", nsL, detectProv(nsL, ""))}</div>`;
 
             const score = (spf ? 35 : 0) + (dmarc ? 35 : 0) + 30;
             document.getElementById('scoreCircle').innerText = score;
-            
             const mStat = document.getElementById('masterStatus');
             if (actions.length > 0) {
                 mStat.innerText = "STERLING AUDIT: FAIL - INFRASTRUCTURE ISSUES DETECTED";
@@ -225,7 +228,6 @@
                 mStat.innerText = "STERLING AUDIT: PASS - INFRASTRUCTURE SECURE";
                 mStat.className = "master-pass";
             }
-
             document.getElementById('statContainer').style.display = 'grid';
             document.getElementById('exportBtn').style.display = 'block';
             window.auditData = { d: domain, r: rdap.registrar, e: rdap.exp, s: spf||'None' };
@@ -243,7 +245,16 @@
         } catch(e) { return { exp: "Error", registrar: "Error", days: 0 }; }
     }
     async function fetchDNS(n, t) { const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${n}&type=${t}`, { headers: {'Accept': 'application/dns-json'} }); return res.json(); }
-    function detectProv(recs) { const t = recs.join(' ').toLowerCase(); return t.includes('outlook') ? "MICROSOFT" : t.includes('google') ? "GOOGLE" : "PRIVATE"; }
+    
+    function detectProv(recs, spfTxt) { 
+        const t = recs.join(' ').toLowerCase(); 
+        if (t.includes('outlook') || t.includes('microsoft')) {
+            const tenantMatch = (spfTxt || "").match(/include:([a-zA-Z0-9.-]+\.outlook\.com)/);
+            return tenantMatch ? `MICROSOFT (${tenantMatch[1].split('.')[0]})` : "MICROSOFT";
+        }
+        return t.includes('google') ? "GOOGLE" : "PRIVATE"; 
+    }
+
     function renderCard(t, p, h, ex, cls="") { document.getElementById('results').innerHTML += `<div class="card ${p?'':'fail'} ${cls}"><span class="title">${t}</span><div class="explanation">${ex}</div>${h}</div>`; }
     function renderSmall(t, rs, prov) { let h = `<div class="provider-badge">${prov}</div>`; rs.forEach(r => h += createBox(r)); return `<div class="card"><span class="title">${t}</span><div class="explanation">DNS infrastructure.</div>${h}</div>`; }
     function createBox(v) { return `<div class="record-box"><span>${v}</span><button class="copy-btn" onclick="copyToClipboard('${v.replace(/'/g,"")}', this)">COPY</button></div>`; }
