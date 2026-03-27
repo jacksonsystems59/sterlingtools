@@ -48,15 +48,23 @@
 
         .results-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
         .small-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; border-left: 3px solid var(--blue); }
-        .card.fail { border-left-color: var(--red); }
-        .title { font-weight: 800; font-size: 0.7rem; text-transform: uppercase; color: #fff; margin-bottom: 4px; display: block; }
         
-        /* Provider Badge */
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; border-left: 3px solid var(--blue); position: relative; }
+        .card.fail { border-left-color: var(--red); }
+        .card.special { border-left-color: var(--gold); }
+        
+        .title { font-weight: 800; font-size: 0.7rem; text-transform: uppercase; color: #fff; margin-bottom: 2px; display: block; }
+        .explanation { font-size: 0.65rem; color: var(--text-dim); margin-bottom: 6px; font-style: italic; }
+
         .provider-badge { font-size: 0.6rem; color: var(--blue); font-weight: 900; background: rgba(56, 189, 248, 0.1); padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; display: inline-block; border: 1px solid var(--blue); }
 
         .record-box { background: #0d1117; border: 1px solid var(--border); padding: 6px 35px 6px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: #7dd3fc; margin-top: 4px; word-break: break-all; min-height: 26px; display: flex; align-items: center; }
         .copy-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: #21262d; border: 1px solid var(--border); color: #8b949e; padding: 2px 4px; font-size: 0.55rem; border-radius: 2px; cursor: pointer; }
+
+        .expiry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
+        .expiry-item { background: #0d1117; padding: 6px; border-radius: 4px; border: 1px solid var(--border); }
+        .expiry-label { font-size: 0.55rem; color: var(--text-dim); display: block; text-transform: uppercase; }
+        .expiry-val { font-family: monospace; font-size: 0.75rem; color: var(--gold); font-weight: bold; }
 
         footer { text-align: center; margin-top: 20px; padding: 10px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.65rem; text-transform: uppercase; }
     </style>
@@ -121,15 +129,14 @@
         film: ["Neo", "Morpheus", "Ripley", "Skywalker", "Kenobi", "Ghent", "Deckard", "Bane", "Vader"]
     };
 
-    function detectMailProvider(mxRecords) {
-        const text = mxRecords.join(' ').toLowerCase();
-        if (text.includes('outlook.com')) return "MICROSOFT 365";
-        if (text.includes('google.com') || text.includes('aspmx.l.google.com')) return "GOOGLE WORKSPACE";
-        if (text.includes('pphosted.com')) return "PROOFPOINT";
-        if (text.includes('mimecast.com')) return "MIMECAST";
-        if (mxRecords.length > 0) return "PRIVATE / ON-PREM";
-        return "NO MAIL SYSTEM DETECTED";
-    }
+    const explanations = {
+        "SPF Record": "Authorized IP addresses for sending mail.",
+        "DMARC Record": "Instructions for servers if SPF/DKIM fails.",
+        "DKIM Keys": "Cryptographic signature for email integrity.",
+        "MX Records": "The mail servers responsible for receiving email.",
+        "Nameservers": "The servers hosting this domain's DNS zones.",
+        "Domain Lifecycle": "Critical dates for domain registration and renewal."
+    };
 
     function generateName() {
         const all = [].concat(...Object.values(themes));
@@ -142,39 +149,15 @@
         document.getElementById('hostnameResult').innerText = domainSuffix ? `${name}.${domainSuffix}` : name;
     }
 
-    async function lookupTenant() {
-        const domain = document.getElementById('tenantInput').value.trim();
-        const guidSpan = document.getElementById('tenantGuid');
-        if (!domain) return;
+    async function getDomainDates(domain) {
         try {
-            const res = await fetch(`https://login.microsoftonline.com/${domain}/.well-known/openid-configuration`);
+            const res = await fetch(`https://rdap.org/domain/${domain}`);
             const data = await res.json();
-            guidSpan.innerText = data.authorization_endpoint.split('/')[3];
-            guidSpan.style.display = 'inline';
-        } catch (e) { guidSpan.innerText = "NOT FOUND"; guidSpan.style.display = 'inline'; }
-    }
-
-    async function getClientIP() {
-        try {
-            const res = await fetch('https://ipapi.co/json/');
-            const data = await res.json();
-            document.getElementById('clientIP').innerText = data.ip;
-        } catch (e) { document.getElementById('clientIP').innerText = "0.0.0.0"; }
-    }
-
-    function copyToClipboard(text, btn) {
-        const el = document.createElement('textarea');
-        el.value = text; document.body.appendChild(el);
-        el.select(); document.execCommand('copy');
-        document.body.removeChild(el);
-        const original = btn.innerText;
-        btn.innerText = "COPIED";
-        setTimeout(() => { btn.innerText = (btn.id === 'hostnameResult' || btn.id === 'clientIP') ? text : "COPY"; }, 1000);
-    }
-
-    async function fetchDNS(name, type) {
-        const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(name)}&type=${type}`, { headers: { 'Accept': 'application/dns-json' } });
-        return res.json();
+            const events = data.events || [];
+            const registration = events.find(e => e.eventAction === 'registration')?.eventDate.split('T')[0] || "Unknown";
+            const expiration = events.find(e => e.eventAction === 'expiration')?.eventDate.split('T')[0] || "Unknown";
+            return { registration, expiration };
+        } catch (e) { return { registration: "Error", expiration: "Error" }; }
     }
 
     async function runAudit() {
@@ -183,10 +166,31 @@
         document.getElementById('loading').style.display = 'block';
         document.getElementById('results').innerHTML = '';
         document.getElementById('statContainer').style.display = 'none';
-        let score = 0;
-
+        
         try {
-            const [spfData, dmarcData, mxData, nsData] = await Promise.all([fetchDNS(domain, 'TXT'), fetchDNS(`_dmarc.${domain}`, 'TXT'), fetchDNS(domain, 'MX'), fetchDNS(domain, 'NS')]);
+            const [spfData, dmarcData, mxData, nsData, dates] = await Promise.all([
+                fetchDNS(domain, 'TXT'), 
+                fetchDNS(`_dmarc.${domain}`, 'TXT'), 
+                fetchDNS(domain, 'MX'), 
+                fetchDNS(domain, 'NS'),
+                getDomainDates(domain)
+            ]);
+
+            // Lifecycle Card
+            const lifecycleHtml = `
+                <div class="expiry-grid">
+                    <div class="expiry-item"><span class="expiry-label">Registered</span><span class="expiry-val">${dates.registration}</span></div>
+                    <div class="expiry-item"><span class="expiry-label">Expires</span><span class="expiry-val">${dates.expiration}</span></div>
+                </div>`;
+            renderCardRaw("Domain Lifecycle", true, lifecycleHtml, "special");
+
+            // SPF & DMARC
+            const spf = (spfData.Answer || []).find(r => r.data.includes('v=spf1'))?.data.replace(/"/g,'');
+            const dmarc = (dmarcData.Answer || []).find(r => r.data.includes('v=DMARC1'))?.data.replace(/"/g,'');
+            renderCard("SPF Record", !!spf, [spf]);
+            renderCard("DMARC Record", (dmarc && !dmarc.includes('p=none')), [dmarc]);
+
+            // DKIM
             const selectors = ['google', 'selector1', 'default', 'mail', 'k1', 'ms', 'microsoft'];
             const dkimResults = await Promise.all(selectors.map(async s => {
                 const data = await fetchDNS(`${s}._domainkey.${domain}`, 'TXT');
@@ -194,46 +198,61 @@
                 return rec ? { s, val: rec.data.replace(/"/g, '') } : null;
             }));
             const foundDkim = dkimResults.filter(x => x !== null);
-
-            const spf = (spfData.Answer || []).find(r => r.data.includes('v=spf1'))?.data.replace(/"/g,'');
-            if(spf) score += 35;
-            const dmarc = (dmarcData.Answer || []).find(r => r.data.includes('v=DMARC1'))?.data.replace(/"/g,'');
-            if(dmarc && !dmarc.includes('p=none')) score += 35;
-            if(foundDkim.length > 0) score += 30;
-
-            renderCard("SPF Record", !!spf, [spf]);
-            renderCard("DMARC Record", (dmarc && !dmarc.includes('p=none')), [dmarc]);
-            
             let dkimHtml = '';
             foundDkim.forEach(d => { dkimHtml += `<div style="font-size:0.6rem; color:var(--blue); margin-top:4px;">${d.s.toUpperCase()}</div>` + createBox(d.val); });
             renderCardRaw("DKIM Keys", foundDkim.length > 0, dkimHtml);
 
-            // MX with Provider Detection
+            // MX & NS
             const mxList = (mxData.Answer || []).map(r => r.data);
             const provider = detectMailProvider(mxList);
             const nsList = (nsData.Answer || []).map(r => r.data);
-
             const grid = document.getElementById('results');
             const row = document.createElement('div'); row.className = 'small-row';
             row.innerHTML = renderSmall("MX Records", mxList, provider) + renderSmall("Nameservers", nsList);
             grid.appendChild(row);
 
+            // Scoring logic remains
+            let score = (spf ? 35 : 0) + ((dmarc && !dmarc.includes('p=none')) ? 35 : 0) + (foundDkim.length > 0 ? 30 : 0);
             document.getElementById('scoreVal').innerText = score;
             document.getElementById('scoreCircle').style.borderColor = score > 80 ? 'var(--green)' : 'var(--red)';
             document.getElementById('masterStatus').className = score > 80 ? 'master-pass' : 'master-fail';
             document.getElementById('masterStatus').innerHTML = score > 80 ? `STERLING AUDIT: PASS` : `STERLING AUDIT: FAIL`;
             document.getElementById('statContainer').style.display = 'grid';
             document.getElementById('exportBtn').style.display = 'block';
+
         } catch (e) { console.error(e); } finally { document.getElementById('loading').style.display = 'none'; }
     }
 
+    // Helper functions
+    async function fetchDNS(name, type) {
+        const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(name)}&type=${type}`, { headers: { 'Accept': 'application/dns-json' } });
+        return res.json();
+    }
+    function detectMailProvider(mx) {
+        const t = mx.join(' ').toLowerCase();
+        if (t.includes('outlook.com')) return "MICROSOFT 365";
+        if (t.includes('google.com')) return "GOOGLE WORKSPACE";
+        return mx.length > 0 ? "PRIVATE / OTHER" : "NONE";
+    }
     function createBox(v) { return `<div class="record-box"><span>${v}</span><button class="copy-btn" onclick="copyToClipboard('${v.replace(/'/g, "\\'")}', this)">COPY</button></div>`; }
-    function renderCardRaw(t, p, h) { document.getElementById('results').innerHTML += `<div class="card ${p?'':'fail'}"><span class="title">${t}</span>${h}</div>`; }
+    function renderCardRaw(t, p, h, cls = "") { 
+        document.getElementById('results').innerHTML += `<div class="card ${p?'':'fail'} ${cls}"><span class="title">${t}</span><div class="explanation">${explanations[t]||""}</div>${h}</div>`; 
+    }
     function renderCard(t, p, rs) { let h = ''; rs.forEach(r => { if(r) h += createBox(r); }); renderCardRaw(t, p, h); }
-    function renderSmall(t, rs, provider = null) { 
-        let h = provider ? `<div class="provider-badge">${provider}</div>` : ''; 
+    function renderSmall(t, rs, prov = null) { 
+        let h = prov ? `<div class="provider-badge">${prov}</div>` : ''; 
         rs.forEach(r => { h += createBox(r); }); 
-        return `<div class="card"><span class="title">${t}</span>${h}</div>`; 
+        return `<div class="card"><span class="title">${t}</span><div class="explanation">${explanations[t]||""}</div>${h}</div>`; 
+    }
+    function copyToClipboard(text, btn) {
+        const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el);
+        el.select(); document.execCommand('copy'); document.body.removeChild(el);
+        const orig = btn.innerText; btn.innerText = "COPIED";
+        setTimeout(() => { btn.innerText = (btn.className === 'copy-btn' ? "COPY" : text); }, 1000);
+    }
+    async function getClientIP() {
+        try { const res = await fetch('https://ipapi.co/json/'); const data = await res.json(); document.getElementById('clientIP').innerText = data.ip; } 
+        catch (e) { document.getElementById('clientIP').innerText = "0.0.0.0"; }
     }
 </script>
 </body>
