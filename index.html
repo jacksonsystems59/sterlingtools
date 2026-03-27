@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,119 +6,126 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sterling Tools | Jackson Tech</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
         :root {
-            --bg-color: #0a0a0a;
-            --text-color: #00ff41; /* Classic Matrix/Terminal Green */
-            --font-main: 'Courier New', Courier, monospace;
+            --green: #20C20E;
+            --dark-green: #0d4b06;
+            --bg: #050505;
         }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: var(--font-main);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            height: 95vh;
+        body, html {
+            background: var(--bg);
+            margin: 0; padding: 0;
             overflow: hidden;
+            font-family: 'VT323', monospace;
+            color: var(--green);
+            height: 100vh;
         }
 
-        /* CRT Scanline Effect */
-        body::before {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
+        /* The "Glass" Effect */
+        .screen {
+            width: 100vw; height: 100vh;
+            border: 2px solid #333;
+            box-sizing: border-box;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
                         linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 2;
-            background-size: 100% 2px, 3px 100%;
+            background-size: 100% 3px, 3px 100%;
+            position: relative;
+            padding: 40px;
+            display: flex; flex-direction: column;
+        }
+
+        /* Scanline Animation */
+        .screen::after {
+            content: " ";
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: rgba(18, 16, 16, 0.1);
+            opacity: 0; z-index: 2;
             pointer-events: none;
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.27; }
+            50% { opacity: 0.32; }
+            100% { opacity: 0.29; }
         }
 
         #terminal {
             flex-grow: 1;
             overflow-y: auto;
-            white-space: pre-wrap;
-            line-height: 1.4;
-            text-shadow: 0 0 5px var(--text-color);
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px var(--green), 0 0 20px var(--dark-green);
+            scrollbar-width: none;
         }
 
-        .input-area {
+        .input-line {
             display: flex;
+            align-items: center;
+            font-size: 1.5rem;
             margin-top: 10px;
-            border-top: 1px solid #333;
-            padding-top: 10px;
-        }
-
-        .prompt {
-            margin-right: 10px;
-            font-weight: bold;
         }
 
         input {
-            background: transparent;
-            border: none;
-            color: var(--text-color);
-            font-family: var(--font-main);
-            font-size: 1rem;
-            flex-grow: 1;
-            outline: none;
+            background: transparent; border: none; outline: none;
+            color: var(--green); font-family: inherit; font-size: inherit;
+            flex-grow: 1; text-shadow: 0 0 5px var(--green);
         }
 
-        .system-msg { color: #888; font-style: italic; }
-        .error-msg { color: #ff5555; }
-        .success-msg { color: #55ff55; }
+        /* The Vignette (Dark Corners) */
+        .overlay {
+            pointer-events: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0) 50%, rgba(0,0,0,0.8) 100%);
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
 
-<div id="terminal">
-[SYSTEM INITIALIZED]
-[LOCATION: JACKSONTECH CENTRAL]
-[USER: GUEST_ACCESS]
-
-Welcome to Sterling Tools v1.0.
-Type 'help' to see available commands.
---------------------------------------------------
-</div>
-
-<div class="input-area">
-    <span class="prompt">sterling@jacksontech:~$</span>
-    <input type="text" id="user-input" autofocus autocomplete="off">
+<div class="overlay"></div>
+<div class="screen">
+    <div id="terminal">
+        [SYSTEM INITIALIZING...]<br>
+        [NODE: STERLING-TOOLS-ALPHA]<br>
+        [ENCRYPTION: AES-256 ACTIVE]<br>
+        ------------------------------------------<br>
+        Welcome, Administrator.<br>
+        Type 'help' for diagnostics.<br>
+    </div>
+    <div class="input-line">
+        <span>sterling@jacksontech:~$ &nbsp;</span>
+        <input type="text" id="cmd-input" autofocus spellcheck="false" autocomplete="off">
+    </div>
 </div>
 
 <script>
-    const terminal = document.getElementById('terminal');
-    const input = document.getElementById('user-input');
+    const term = document.getElementById('terminal');
+    const input = document.getElementById('cmd-input');
 
-    const commands = {
-        'help': "Available commands: \n- status: Check system health\n- clear: Wipe screen\n- info: About Sterling Tools\n- contact: Jackson Tech details",
-        'status': "<span class='success-msg'>[OK]</span> All systems operational. GitHub Pages active.",
-        'info': "Sterling Tools is a proprietary diagnostic interface for Jackson Tech infrastructure.",
-        'contact': "Visit: https://jacksontech.co.uk\nEmail: admin@jacksontech.co.uk",
-        'clear': ""
+    const responses = {
+        'help': "DIAGNOSTIC CMDS: \n > status - Check node health\n > scan - Network sweep\n > clear - Reset terminal\n > contact - HQ Details",
+        'status': "[OK] ALL SYSTEMS NOMINAL. LOAD BALANCER: CLOUDFLARE/GITHUB.",
+        'scan': "SCANNING JACKSONTECH INFRASTRUCTURE... \n [!] 12 DEVICES FOUND. ALL SECURE.",
+        'contact': "JACKSON TECH CENTRAL\n WEB: jacksontech.co.uk\n SECURE LINE: ENABLED"
     };
 
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            const fullCmd = input.value.trim().toLowerCase();
-            const output = document.createElement('div');
+            const val = input.value.trim().toLowerCase();
+            const p = document.createElement('div');
+            p.innerHTML = `<br><span>sterling@jacksontech:~$</span> ${val}`;
             
-            output.innerHTML = `<br><span class="prompt">sterling@jacksontech:~$</span> ${fullCmd}`;
-            
-            if (fullCmd === 'clear') {
-                terminal.innerHTML = "[SYSTEM REBOOTED]";
-            } else if (commands[fullCmd]) {
-                output.innerHTML += `<br>${commands[fullCmd]}`;
-            } else if (fullCmd !== "") {
-                output.innerHTML += `<br><span class="error-msg">Command not found: ${fullCmd}</span>`;
-            }
+            if (val === 'clear') { term.innerHTML = "[SYSTEM RESET]"; }
+            else if (responses[val]) { p.innerHTML += `<br>${responses[val].replace(/\n/g, '<br>')}`; }
+            else if (val !== "") { p.innerHTML += `<br><span style="color:red">ERROR: CMD NOT RECOGNIZED</span>`; }
 
-            terminal.appendChild(output);
+            term.appendChild(p);
             input.value = "";
-            terminal.scrollTop = terminal.scrollHeight;
+            term.scrollTop = term.scrollHeight;
         }
     });
 </script>
