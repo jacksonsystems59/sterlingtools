@@ -52,18 +52,49 @@
         }
         @keyframes statusBreathStrong { 0% { box-shadow: 0 0 5px rgba(0, 255, 102, 0.2); } 50% { box-shadow: 0 0 35px rgba(0, 255, 102, 0.6); } 100% { box-shadow: 0 0 5px rgba(0, 255, 102, 0.2); } }
 
+        .master-fail {
+            background: rgba(255, 51, 51, 0.05); color: var(--red); border-color: var(--red);
+            animation: statusBreathFail 2s ease-in-out infinite;
+            box-shadow: 0 0 15px rgba(255, 51, 51, 0.3);
+        }
+        @keyframes statusBreathFail { 0% { box-shadow: 0 0 5px rgba(255, 51, 51, 0.2); } 50% { box-shadow: 0 0 35px rgba(255, 51, 51, 0.6); } 100% { box-shadow: 0 0 5px rgba(255, 51, 51, 0.2); } }
+
+        .master-warn {
+            background: rgba(251, 191, 36, 0.05); color: var(--gold); border-color: var(--gold);
+            animation: statusBreathWarn 2s ease-in-out infinite;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+        }
+        @keyframes statusBreathWarn { 0% { box-shadow: 0 0 5px rgba(251, 191, 36, 0.2); } 50% { box-shadow: 0 0 35px rgba(251, 191, 36, 0.6); } 100% { box-shadow: 0 0 5px rgba(251, 191, 36, 0.2); } }
+
         .results-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
         .small-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; border-left: 3px solid var(--blue); position: relative; backdrop-filter: var(--glass); }
         .card.special { border-left-color: var(--gold); }
+        .card.card-pass { border-left-color: var(--green); }
+        .card.card-fail { border-left-color: var(--red); }
+        .card.card-warn { border-left-color: var(--gold); }
         
         .title { font-weight: 800; font-size: 0.7rem; text-transform: uppercase; color: #fff; margin-bottom: 2px; display: block; }
         .explanation { font-size: 0.65rem; color: var(--text-dim); margin-bottom: 6px; font-style: italic; }
 
+        .check-badge { font-size: 0.6rem; font-weight: 900; padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; display: inline-block; border: 1px solid; }
+        .badge-pass { color: var(--green); background: rgba(0, 255, 102, 0.1); border-color: var(--green); }
+        .badge-fail { color: var(--red); background: rgba(255, 51, 51, 0.1); border-color: var(--red); }
+        .badge-warn { color: var(--gold); background: rgba(251, 191, 36, 0.1); border-color: var(--gold); }
+
+        .fail-reason { font-size: 0.65rem; color: var(--red); background: rgba(255, 51, 51, 0.08); border: 1px solid rgba(255, 51, 51, 0.3); border-radius: 4px; padding: 5px 8px; margin-top: 5px; }
+        .warn-reason { font-size: 0.65rem; color: var(--gold); background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 4px; padding: 5px 8px; margin-top: 5px; }
+
+        .fail-list { margin-bottom: 8px; }
+        .fail-list-item { font-size: 0.7rem; color: var(--red); padding: 2px 0; }
+        .fail-list-item::before { content: '✗ '; font-weight: bold; }
+
         .provider-badge { font-size: 0.6rem; color: var(--blue); font-weight: 900; background: rgba(0, 122, 255, 0.1); padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; display: inline-block; border: 1px solid var(--blue); }
         .days-badge { font-size: 0.6rem; color: var(--gold); font-weight: 900; background: rgba(251, 191, 36, 0.1); padding: 2px 6px; border-radius: 4px; display: inline-block; border: 1px solid var(--gold); margin-top: 5px; }
+        .days-badge-warn { font-size: 0.6rem; color: var(--red); font-weight: 900; background: rgba(255, 51, 51, 0.1); padding: 2px 6px; border-radius: 4px; display: inline-block; border: 1px solid var(--red); margin-top: 5px; }
 
         .record-box { background: #0d1117; border: 1px solid var(--border); padding: 6px 35px 6px 8px; border-radius: 4px; position: relative; font-family: monospace; font-size: 0.75rem; color: #7dd3fc; margin-top: 4px; word-break: break-all; min-height: 26px; display: flex; align-items: center; }
+        .record-box.not-found { color: var(--red); border-color: rgba(255,51,51,0.4); background: rgba(255,51,51,0.05); }
         .copy-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: #21262d; border: 1px solid var(--border); color: #8b949e; padding: 2px 4px; font-size: 0.55rem; border-radius: 2px; cursor: pointer; }
 
         footer { text-align: center; margin-top: 20px; padding: 10px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.65rem; text-transform: uppercase; margin-bottom: 40px; }
@@ -136,33 +167,156 @@
         } catch { document.getElementById('tenantResult').innerText = "Not Found"; }
     }
 
+    function evaluateSPF(spf) {
+        if (spf === "NOT FOUND") return { pass: false, level: 'fail', reason: "No SPF record found. Unauthenticated senders can spoof this domain." };
+        if (!spf.startsWith('v=spf1')) return { pass: false, level: 'fail', reason: "SPF record malformed — must begin with v=spf1." };
+        if (spf.includes('+all')) return { pass: false, level: 'fail', reason: "SPF uses '+all' — allows ANY server to send mail. This is a critical misconfiguration." };
+        if (spf.includes('?all')) return { pass: false, level: 'warn', reason: "SPF uses '?all' (neutral) — does not actively block unauthorised senders. Recommended: use '~all' or '-all'." };
+        if (!spf.includes('~all') && !spf.includes('-all')) return { pass: false, level: 'warn', reason: "SPF record has no 'all' mechanism. Add '~all' (softfail) or '-all' (hardfail) to restrict senders." };
+        if (spf.includes('~all')) return { pass: true, level: 'warn', reason: "SPF uses '~all' (softfail). Consider upgrading to '-all' for stricter enforcement." };
+        return { pass: true, level: 'pass', reason: null };
+    }
+
+    function evaluateDMARC(dmarc) {
+        if (dmarc === "NOT FOUND") return { pass: false, level: 'fail', reason: "No DMARC record found. Without DMARC, spoofed emails may reach inboxes with no reporting." };
+        if (!dmarc.includes('v=DMARC1')) return { pass: false, level: 'fail', reason: "DMARC record malformed — must begin with v=DMARC1." };
+        const pMatch = dmarc.match(/p=([a-z]+)/i);
+        const policy = pMatch ? pMatch[1].toLowerCase() : null;
+        if (!policy) return { pass: false, level: 'fail', reason: "DMARC record is missing the required 'p=' policy tag." };
+        if (policy === 'none') return { pass: false, level: 'warn', reason: "DMARC policy is 'p=none' — monitoring only, no enforcement. Spoofed emails are not blocked. Upgrade to 'p=quarantine' or 'p=reject'." };
+        if (policy === 'quarantine') return { pass: true, level: 'warn', reason: "DMARC policy is 'p=quarantine'. Spoofed mail goes to spam. For full protection, consider upgrading to 'p=reject'." };
+        if (policy === 'reject') return { pass: true, level: 'pass', reason: null };
+        return { pass: false, level: 'warn', reason: `Unknown DMARC policy value: '${policy}'.` };
+    }
+
+    function evaluateDKIM(dkim) {
+        if (dkim === "NOT FOUND") return { pass: false, level: 'fail', reason: "No DKIM record found for 'selector1'. Emails cannot be cryptographically signed, making them easier to spoof or tamper with." };
+        if (!dkim.includes('v=DKIM1')) return { pass: false, level: 'fail', reason: "DKIM record malformed — must include v=DKIM1." };
+        if (!dkim.includes('p=') || dkim.includes('p=;') || dkim.includes('p= ')) return { pass: false, level: 'fail', reason: "DKIM record has an empty or revoked public key ('p='). The key has been revoked and email signing is broken." };
+        return { pass: true, level: 'pass', reason: null };
+    }
+
+    function evaluateMX(mxList) {
+        if (!mxList.length) return { pass: false, level: 'fail', reason: "No MX records found. This domain cannot receive email." };
+        return { pass: true, level: 'pass', reason: null };
+    }
+
+    function evaluateExpiry(days) {
+        const n = parseInt(days);
+        if (isNaN(n)) return { level: 'pass', reason: null };
+        if (n <= 0) return { level: 'fail', reason: "Domain has expired!" };
+        if (n <= 30) return { level: 'fail', reason: `Domain expires in ${n} days — renew immediately.` };
+        if (n <= 60) return { level: 'warn', reason: `Domain expires in ${n} days — renewal advised soon.` };
+        return { level: 'pass', reason: null };
+    }
+
+    function badgeHTML(level) {
+        if (level === 'pass') return `<span class="check-badge badge-pass">✓ PASS</span>`;
+        if (level === 'fail') return `<span class="check-badge badge-fail">✗ FAIL</span>`;
+        return `<span class="check-badge badge-warn">⚠ WARNING</span>`;
+    }
+
+    function reasonHTML(check) {
+        if (!check.reason) return '';
+        if (check.level === 'fail') return `<div class="fail-reason">⚠ ${check.reason}</div>`;
+        if (check.level === 'warn') return `<div class="warn-reason">⚠ ${check.reason}</div>`;
+        return '';
+    }
+
+    function cardClass(level) {
+        if (level === 'pass') return 'card card-pass';
+        if (level === 'fail') return 'card card-fail';
+        return 'card card-warn';
+    }
+
+    function createBox(v) {
+        const missing = (v === "NOT FOUND");
+        return `<div class="record-box${missing ? ' not-found' : ''}"><span>${v}</span>${!missing ? `<button class="copy-btn" onclick="navigator.clipboard.writeText('${v.replace(/'/g,"\\'")}')">COPY</button>` : ''}</div>`;
+    }
+
     async function runAudit() {
         const domain = document.getElementById('domainInput').value.trim().toLowerCase();
         if (!domain) return;
         document.getElementById('loading').style.display = 'block';
+        document.getElementById('statContainer').style.display = 'none';
+        document.getElementById('results').innerHTML = '';
         
         try {
             const [spfD, dmarcD, dkimD, mxD, nsD, rdap] = await Promise.all([
                 fetchDNS(domain, 'TXT'), fetchDNS(`_dmarc.${domain}`, 'TXT'), fetchDNS(`selector1._domainkey.${domain}`, 'TXT'), fetchDNS(domain, 'MX'), fetchDNS(domain, 'NS'), fetchRDAP(domain)
             ]);
 
-            const spf = (spfD.Answer || []).find(r => r.data.includes('v=spf1'))?.data.replace(/"/g,'') || "NOT FOUND";
+            const spf   = (spfD.Answer || []).find(r => r.data.includes('v=spf1'))?.data.replace(/"/g,'') || "NOT FOUND";
             const dmarc = (dmarcD.Answer || []).find(r => r.data.includes('v=DMARC1'))?.data.replace(/"/g,'') || "NOT FOUND";
-            const dkim = (dkimD.Answer || []).find(r => r.data.includes('v=DKIM1'))?.data.replace(/"/g,'') || "NOT FOUND";
-            const mxL = (mxD.Answer || []).map(r => r.data);
-            const nsL = (nsD.Answer || []).map(r => r.data);
+            const dkim  = (dkimD.Answer || []).find(r => r.data.includes('v=DKIM1'))?.data.replace(/"/g,'') || "NOT FOUND";
+            const mxL   = (mxD.Answer || []).map(r => r.data);
+            const nsL   = (nsD.Answer || []).map(r => r.data);
 
-            let mxProv = "PRIVATE";
+            const spfCheck    = evaluateSPF(spf);
+            const dmarcCheck  = evaluateDMARC(dmarc);
+            const dkimCheck   = evaluateDKIM(dkim);
+            const mxCheck     = evaluateMX(mxL);
+            const expiryCheck = evaluateExpiry(rdap.days);
+
+            const checks = [spfCheck, dmarcCheck, dkimCheck, mxCheck];
+            const passCount = checks.filter(c => c.pass).length;
+            const score = Math.round((passCount / checks.length) * 100);
+            const hasFailures = checks.some(c => c.level === 'fail') || expiryCheck.level === 'fail';
+            const hasWarnings = checks.some(c => c.level === 'warn') || expiryCheck.level === 'warn';
+
+            const failures = [];
+            if (!spfCheck.pass) failures.push(`SPF: ${spfCheck.reason}`);
+            if (!dmarcCheck.pass) failures.push(`DMARC: ${dmarcCheck.reason}`);
+            if (!dkimCheck.pass) failures.push(`DKIM: ${dkimCheck.reason}`);
+            if (!mxCheck.pass) failures.push(`MX: ${mxCheck.reason}`);
+            if (expiryCheck.level !== 'pass') failures.push(`EXPIRY: ${expiryCheck.reason}`);
+
+            const scoreEl = document.getElementById('scoreCircle');
+            const statusEl = document.getElementById('masterStatus');
+            scoreEl.innerText = score;
+
+            if (hasFailures) {
+                scoreEl.style.borderColor = 'var(--red)';
+                scoreEl.style.color = 'var(--red)';
+                statusEl.className = 'master-fail';
+                const failItems = failures.map(f => `<div class="fail-list-item">${f}</div>`).join('');
+                statusEl.innerHTML = `STERLING AUDIT: FAIL — ${passCount}/${checks.length} CHECKS PASSED<div class="fail-list" style="margin-top:6px;">${failItems}</div>`;
+            } else if (hasWarnings) {
+                scoreEl.style.borderColor = 'var(--gold)';
+                scoreEl.style.color = 'var(--gold)';
+                statusEl.className = 'master-warn';
+                const warnItems = failures.map(f => `<div class="fail-list-item" style="color:var(--gold);">⚠ ${f}</div>`).join('');
+                statusEl.innerHTML = `STERLING AUDIT: WARNING — ISSUES REQUIRE ATTENTION<div class="fail-list" style="margin-top:6px;">${warnItems}</div>`;
+            } else {
+                scoreEl.style.borderColor = 'var(--green)';
+                scoreEl.style.color = 'var(--green)';
+                statusEl.className = 'master-pass';
+                statusEl.innerHTML = `STERLING AUDIT: PASS — ALL CHECKS CLEARED. INFRASTRUCTURE SECURE.`;
+            }
+
+            document.getElementById('statContainer').style.display = 'grid';
+
+            let mxProv = mxL.length ? "PRIVATE" : "NONE";
             if (mxL.join(' ').includes('outlook')) {
                 const match = mxL.join(' ').match(/([a-zA-Z0-9-]+)\.mail\.protection\.outlook\.com/);
                 mxProv = match ? `MICROSOFT (${match[1].replace(/-/g, '')}.onmicrosoft.com)` : "MICROSOFT";
+            } else if (mxL.join(' ').includes('google')) {
+                mxProv = "GOOGLE WORKSPACE";
             }
-            
+
             const nsText = nsL.join(' ').toLowerCase();
             const nsProv = nsText.includes('cloudflare') ? "CLOUDFLARE" : nsText.includes('google') ? "GOOGLE" : "PRIVATE";
 
+            const daysBadge = expiryCheck.level === 'fail'
+                ? `<div class="days-badge-warn">⚠ ${rdap.days} DAYS REMAINING</div>`
+                : expiryCheck.level === 'warn'
+                    ? `<div class="days-badge-warn">${rdap.days} DAYS REMAINING</div>`
+                    : `<div class="days-badge">${rdap.days} DAYS REMAINING</div>`;
+
             document.getElementById('results').innerHTML = `
-                <div class="card special"><span class="title">Domain Lifecycle</span><div class="explanation">Registration details.</div>
+                <div class="${cardClass(expiryCheck.level)} special">
+                    <span class="title">Domain Lifecycle</span>
+                    <div class="explanation">Registration details.</div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:5px;">
                         <div style="background:#0d1117;padding:6px;border-radius:4px;border:1px solid var(--border);">
                             <span style="font-size:0.55rem;color:var(--text-dim);display:block;">REGISTRAR</span>
@@ -173,21 +327,47 @@
                             <span style="font-family:monospace;font-size:0.75rem;color:var(--gold);font-weight:bold;">${rdap.exp}</span>
                         </div>
                     </div>
-                    <div class="days-badge">${rdap.days} DAYS REMAINING</div>
+                    ${daysBadge}
+                    ${reasonHTML(expiryCheck)}
                 </div>
-                <div class="card"><span class="title">SPF Record</span><div class="explanation">Authorized senders.</div>${createBox(spf)}</div>
-                <div class="card"><span class="title">DMARC Record</span><div class="explanation">Policy instructions.</div>${createBox(dmarc)}</div>
-                <div class="card"><span class="title">DKIM Record</span><div class="explanation">Signature verification.</div>${createBox(dkim)}</div>
+                <div class="${cardClass(spfCheck.level)}">
+                    <span class="title">SPF Record</span>
+                    <div class="explanation">Authorized senders — controls which servers can send mail for this domain.</div>
+                    ${badgeHTML(spfCheck.level)}
+                    ${createBox(spf)}
+                    ${reasonHTML(spfCheck)}
+                </div>
+                <div class="${cardClass(dmarcCheck.level)}">
+                    <span class="title">DMARC Record</span>
+                    <div class="explanation">Policy instructions — defines what to do with emails that fail SPF/DKIM checks.</div>
+                    ${badgeHTML(dmarcCheck.level)}
+                    ${createBox(dmarc)}
+                    ${reasonHTML(dmarcCheck)}
+                </div>
+                <div class="${cardClass(dkimCheck.level)}">
+                    <span class="title">DKIM Record</span>
+                    <div class="explanation">Signature verification — cryptographic proof that emails haven't been tampered with.</div>
+                    ${badgeHTML(dkimCheck.level)}
+                    ${createBox(dkim)}
+                    ${reasonHTML(dkimCheck)}
+                </div>
                 <div class="small-row">
-                    <div class="card"><span class="title">MX Records</span><div class="explanation">DNS infrastructure.</div><div class="provider-badge">${mxProv}</div>${mxL.map(createBox).join('')}</div>
-                    <div class="card"><span class="title">Nameservers</span><div class="explanation">DNS infrastructure.</div><div class="provider-badge">${nsProv}</div>${nsL.map(createBox).join('')}</div>
+                    <div class="${cardClass(mxCheck.level)}">
+                        <span class="title">MX Records</span>
+                        <div class="explanation">Mail exchange servers.</div>
+                        ${badgeHTML(mxCheck.level)}
+                        <div class="provider-badge">${mxProv}</div>
+                        ${mxL.length ? mxL.map(createBox).join('') : createBox("NOT FOUND")}
+                        ${reasonHTML(mxCheck)}
+                    </div>
+                    <div class="card">
+                        <span class="title">Nameservers</span>
+                        <div class="explanation">DNS infrastructure.</div>
+                        <div class="provider-badge">${nsProv}</div>
+                        ${nsL.length ? nsL.map(createBox).join('') : createBox("NOT FOUND")}
+                    </div>
                 </div>
             `;
-
-            document.getElementById('scoreCircle').innerText = "100";
-            document.getElementById('masterStatus').innerText = "STERLING AUDIT: PASS - INFRASTRUCTURE SECURE";
-            document.getElementById('masterStatus').className = "master-pass";
-            document.getElementById('statContainer').style.display = 'grid';
 
         } finally { document.getElementById('loading').style.display = 'none'; }
     }
@@ -203,7 +383,6 @@
     }
 
     async function fetchDNS(n, t) { return (await fetch(`https://cloudflare-dns.com/dns-query?name=${n}&type=${t}`, { headers: {'Accept': 'application/dns-json'} })).json(); }
-    function createBox(v) { return `<div class="record-box"><span>${v}</span><button class="copy-btn" onclick="navigator.clipboard.writeText('${v}')">COPY</button></div>`; }
 </script>
 </body>
 </html>
