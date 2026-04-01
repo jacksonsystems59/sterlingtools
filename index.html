@@ -144,6 +144,7 @@
 <script>
     const names = ["MERCURY", "MARS", "JUPITER", "VADER", "RIPLEY", "SPOCK", "HADES", "ZEUS", "KRAKEN", "CHIEF"];
     let history = new Set();
+    const recordMap = {};
 
     function initApp() {
         fetch('https://ipapi.co/json/').then(r => r.json()).then(d => document.getElementById('clientIP').innerText = d.ip);
@@ -231,7 +232,27 @@
 
     function createBox(v) {
         const missing = (v === "NOT FOUND");
-        return `<div class="record-box${missing ? ' not-found' : ''}"><span>${v}</span>${!missing ? `<button class="copy-btn" onclick="navigator.clipboard.writeText('${v.replace(/'/g,"\\'")}')">COPY</button>` : ''}</div>`;
+        const id = 'rec-' + Math.random().toString(36).substr(2, 9);
+        if (!missing) recordMap[id] = v;
+        return `<div class="record-box${missing ? ' not-found' : ''}" id="${id}"><span>${v}</span>${!missing ? `<button class="copy-btn" onclick="copyRecord('${id}', this)">COPY</button>` : ''}</div>`;
+    }
+
+    function copyRecord(id, btn) {
+        const text = recordMap[id];
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(() => {
+            btn.innerText = 'COPIED';
+            setTimeout(() => btn.innerText = 'COPY', 1500);
+        }).catch(() => {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            btn.innerText = 'COPIED';
+            setTimeout(() => btn.innerText = 'COPY', 1500);
+        });
     }
 
     async function runAudit() {
@@ -240,7 +261,7 @@
         document.getElementById('loading').style.display = 'block';
         document.getElementById('statContainer').style.display = 'none';
         document.getElementById('results').innerHTML = '';
-        
+
         try {
             const [spfD, dmarcD, dkimD, mxD, nsD, rdap] = await Promise.all([
                 fetchDNS(domain, 'TXT'), fetchDNS(`_dmarc.${domain}`, 'TXT'), fetchDNS(`selector1._domainkey.${domain}`, 'TXT'), fetchDNS(domain, 'MX'), fetchDNS(domain, 'NS'), fetchRDAP(domain)
@@ -378,7 +399,8 @@
             const data = await r.json();
             const expDate = data.events.find(e => e.eventAction === 'expiration').eventDate;
             const reg = data.entities.find(e => e.roles.includes('registrar'))?.vcardArray[1].find(v => v[0] === 'fn')[3] || "UNKNOWN";
-            return { exp: expDate.split('T')[0], registrar: reg.toUpperCase(), days: Math.ceil((new Date(expDate) - new Date()) / (86400000)) };
+            const [y,m,day] = expDate.split('T')[0].split('-');
+            return { exp: `${day}-${m}-${y}`, registrar: reg.toUpperCase(), days: Math.ceil((new Date(expDate) - new Date()) / (86400000)) };
         } catch { return { exp: "N/A", registrar: "N/A", days: "???" }; }
     }
 
