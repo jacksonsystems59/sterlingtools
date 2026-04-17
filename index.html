@@ -97,6 +97,137 @@
         .record-box.not-found { color: var(--red); border-color: rgba(255,51,51,0.4); background: rgba(255,51,51,0.05); }
         .copy-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: #21262d; border: 1px solid var(--border); color: #8b949e; padding: 2px 4px; font-size: 0.55rem; border-radius: 2px; cursor: pointer; }
 
+        /* ── SPEED TEST WIDGET ── */
+        .speedtest-bar {
+            background: #1a1f29;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            border-left: 3px solid #00d4ff;
+            position: relative;
+            overflow: hidden;
+        }
+        .speedtest-bar::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(0,212,255,0.03) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .speedtest-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .speedtest-title {
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .speedtest-title span {
+            font-size: 0.55rem;
+            color: var(--text-dim);
+            font-weight: 400;
+            text-transform: none;
+        }
+        #speedRunBtn {
+            background: #00d4ff;
+            color: #000;
+            padding: 4px 12px;
+            font-size: 0.65rem;
+            font-weight: 900;
+            border-radius: 3px;
+            cursor: pointer;
+            border: none;
+            text-transform: uppercase;
+            transition: opacity 0.2s;
+        }
+        #speedRunBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .speedtest-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        .speed-metric {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 6px 8px;
+            text-align: center;
+            position: relative;
+        }
+        .speed-metric-label {
+            font-size: 0.5rem;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            display: block;
+            margin-bottom: 3px;
+            letter-spacing: 0.05em;
+        }
+        .speed-metric-value {
+            font-family: monospace;
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: #00d4ff;
+            display: block;
+            line-height: 1;
+        }
+        .speed-metric-unit {
+            font-size: 0.5rem;
+            color: var(--text-dim);
+            display: block;
+            margin-top: 2px;
+        }
+        .speed-metric-value.val-good { color: var(--green); }
+        .speed-metric-value.val-warn { color: var(--gold); }
+        .speed-metric-value.val-bad  { color: var(--red); }
+
+        /* animated scanner line during test */
+        .speed-scanning .speedtest-bar::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; bottom: 0; width: 60%;
+            background: linear-gradient(90deg, transparent, rgba(0,212,255,0.08), transparent);
+            animation: scanLine 1.4s linear infinite;
+        }
+        @keyframes scanLine { to { left: 140%; } }
+
+        .speedtest-verdict {
+            margin-top: 8px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            display: none;
+            border: 1px solid;
+        }
+        .verdict-good { background: rgba(0,255,102,0.06); color: var(--green); border-color: var(--green); }
+        .verdict-warn { background: rgba(251,191,36,0.06); color: var(--gold); border-color: var(--gold); }
+        .verdict-bad  { background: rgba(255,51,51,0.06);  color: var(--red);  border-color: var(--red); }
+
+        .speedtest-progress {
+            height: 2px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-bottom: 8px;
+            overflow: hidden;
+            display: none;
+        }
+        .speedtest-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #007aff, #00d4ff);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
         footer { text-align: center; margin-top: 20px; padding: 10px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.65rem; text-transform: uppercase; margin-bottom: 40px; }
     </style>
 </head>
@@ -123,6 +254,43 @@
             <input type="text" class="tenant-input" id="tenantInput" placeholder="Enter onmicrosoft.com domain..." onkeyup="lookupTenantID(this.value)">
             <div id="tenantResult" style="font-size:0.65rem; color:var(--purple); margin-top:4px; font-family:monospace; word-break:break-all;">---</div>
         </div>
+    </div>
+
+    <!-- ── SPEED TEST WIDGET ── -->
+    <div class="speedtest-bar" id="speedtestWidget">
+        <div class="speedtest-header">
+            <div class="speedtest-title">
+                ◈ CONNECTION SPEED TEST
+                <span>via Cloudflare — tests download, latency &amp; jitter from your location</span>
+            </div>
+            <button id="speedRunBtn" onclick="runSpeedTest()">RUN TEST</button>
+        </div>
+        <div class="speedtest-progress" id="speedProgress">
+            <div class="speedtest-progress-fill" id="speedProgressFill"></div>
+        </div>
+        <div class="speedtest-metrics">
+            <div class="speed-metric">
+                <span class="speed-metric-label">Download</span>
+                <span class="speed-metric-value" id="smDown">—</span>
+                <span class="speed-metric-unit">Mbps</span>
+            </div>
+            <div class="speed-metric">
+                <span class="speed-metric-label">Upload</span>
+                <span class="speed-metric-value" id="smUp">—</span>
+                <span class="speed-metric-unit">Mbps</span>
+            </div>
+            <div class="speed-metric">
+                <span class="speed-metric-label">Latency</span>
+                <span class="speed-metric-value" id="smLatency">—</span>
+                <span class="speed-metric-unit">ms</span>
+            </div>
+            <div class="speed-metric">
+                <span class="speed-metric-label">Jitter</span>
+                <span class="speed-metric-value" id="smJitter">—</span>
+                <span class="speed-metric-unit">ms</span>
+            </div>
+        </div>
+        <div class="speedtest-verdict" id="speedVerdict"></div>
     </div>
 
     <div class="controls">
@@ -167,6 +335,203 @@
             document.getElementById('tenantResult').innerText = id;
         } catch { document.getElementById('tenantResult').innerText = "Not Found"; }
     }
+
+    // ─────────────────────────────────────────────
+    //  SPEED TEST
+    // ─────────────────────────────────────────────
+
+    function setProgress(pct) {
+        document.getElementById('speedProgressFill').style.width = pct + '%';
+    }
+
+    async function measureLatencyJitter(samples = 8) {
+        const timings = [];
+        const url = 'https://cloudflare-dns.com/dns-query?name=example.com&type=A';
+        for (let i = 0; i < samples; i++) {
+            const t0 = performance.now();
+            try { await fetch(url, { cache: 'no-store', headers: { Accept: 'application/dns-json' } }); }
+            catch(e) {}
+            timings.push(performance.now() - t0);
+            await new Promise(r => setTimeout(r, 80));
+        }
+        // drop worst outlier
+        timings.sort((a, b) => a - b);
+        const trimmed = timings.slice(0, samples - 1);
+        const avg = trimmed.reduce((a, b) => a + b, 0) / trimmed.length;
+        const diffs = [];
+        for (let i = 1; i < trimmed.length; i++) diffs.push(Math.abs(trimmed[i] - trimmed[i-1]));
+        const jitter = diffs.reduce((a, b) => a + b, 0) / diffs.length;
+        return { latency: Math.round(avg), jitter: Math.round(jitter) };
+    }
+
+    async function measureDownload() {
+        // fetch a ~10MB payload from Cloudflare's speed test endpoint
+        const sizes = [
+            { url: 'https://speed.cloudflare.com/__down?bytes=1000000',  bytes: 1000000 },
+            { url: 'https://speed.cloudflare.com/__down?bytes=5000000',  bytes: 5000000 },
+            { url: 'https://speed.cloudflare.com/__down?bytes=10000000', bytes: 10000000 },
+        ];
+        let totalBytes = 0, totalMs = 0;
+        for (const { url, bytes } of sizes) {
+            try {
+                const t0 = performance.now();
+                const r = await fetch(url, { cache: 'no-store' });
+                await r.arrayBuffer();
+                const ms = performance.now() - t0;
+                totalBytes += bytes;
+                totalMs += ms;
+            } catch(e) {}
+        }
+        if (totalMs === 0) return null;
+        return (totalBytes * 8) / (totalMs / 1000) / 1_000_000; // Mbps
+    }
+
+    async function measureUpload() {
+        const sizes = [
+            { bytes: 500000 },
+            { bytes: 2000000 },
+        ];
+        let totalBytes = 0, totalMs = 0;
+        for (const { bytes } of sizes) {
+            try {
+                const payload = new Uint8Array(bytes);
+                const t0 = performance.now();
+                await fetch('https://speed.cloudflare.com/__up', {
+                    method: 'POST',
+                    body: payload,
+                    cache: 'no-store'
+                });
+                const ms = performance.now() - t0;
+                totalBytes += bytes;
+                totalMs += ms;
+            } catch(e) {}
+        }
+        if (totalMs === 0) return null;
+        return (totalBytes * 8) / (totalMs / 1000) / 1_000_000;
+    }
+
+    function colorVal(el, val, goodBelow, warnBelow, higherIsBetter = false) {
+        el.className = 'speed-metric-value';
+        if (val === null || isNaN(val)) { el.classList.add('val-warn'); return; }
+        if (higherIsBetter) {
+            if (val >= goodBelow) el.classList.add('val-good');
+            else if (val >= warnBelow) el.classList.add('val-warn');
+            else el.classList.add('val-bad');
+        } else {
+            if (val <= goodBelow) el.classList.add('val-good');
+            else if (val <= warnBelow) el.classList.add('val-warn');
+            else el.classList.add('val-bad');
+        }
+    }
+
+    function buildVerdict(dl, ul, latency, jitter) {
+        const el = document.getElementById('speedVerdict');
+        el.style.display = 'block';
+
+        const issues = [];
+        const notes  = [];
+
+        // Download
+        if (dl === null) { issues.push("Download speed could not be measured."); }
+        else if (dl < 5)  { issues.push(`Download is very slow (${dl.toFixed(1)} Mbps) — unsuitable for remote working or video calls.`); }
+        else if (dl < 25) { notes.push(`Download of ${dl.toFixed(1)} Mbps is adequate but may struggle with multiple concurrent users or large file transfers.`); }
+
+        // Upload
+        if (ul === null) { issues.push("Upload speed could not be measured."); }
+        else if (ul < 2)  { issues.push(`Upload is very low (${ul.toFixed(1)} Mbps) — video conferencing and cloud backups will be impaired.`); }
+        else if (ul < 10) { notes.push(`Upload of ${ul.toFixed(1)} Mbps is acceptable for light use but may bottleneck cloud sync or Teams calls.`); }
+
+        // Latency
+        if (latency > 150) { issues.push(`High latency (${latency} ms) — expect noticeable lag on VoIP, RDP, and interactive applications.`); }
+        else if (latency > 80) { notes.push(`Latency of ${latency} ms is moderate — adequate for most uses but not ideal for RDP/VoIP.`); }
+
+        // Jitter
+        if (jitter > 30) { issues.push(`High jitter (${jitter} ms) — unstable connection that will cause audio/video stuttering on calls.`); }
+        else if (jitter > 15) { notes.push(`Jitter of ${jitter} ms is slightly elevated — call quality may occasionally degrade.`); }
+
+        if (issues.length > 0) {
+            el.className = 'speedtest-verdict verdict-bad';
+            el.innerHTML = '⚠ CONNECTION ISSUES DETECTED — ' + issues.join(' ') + (notes.length ? ' ' + notes.join(' ') : '');
+        } else if (notes.length > 0) {
+            el.className = 'speedtest-verdict verdict-warn';
+            el.innerHTML = '⚠ CONNECTION ACCEPTABLE — ' + notes.join(' ');
+        } else {
+            el.className = 'speedtest-verdict verdict-good';
+            el.innerHTML = `✓ CONNECTION HEALTHY — Download ${dl ? dl.toFixed(0) : '?'} Mbps · Upload ${ul ? ul.toFixed(0) : '?'} Mbps · Latency ${latency} ms · Jitter ${jitter} ms. Suitable for remote work, VoIP, RDP, and cloud services.`;
+        }
+    }
+
+    async function runSpeedTest() {
+        const btn = document.getElementById('speedRunBtn');
+        btn.disabled = true;
+        btn.innerText = 'TESTING…';
+        document.getElementById('speedVerdict').style.display = 'none';
+
+        const prog = document.getElementById('speedProgress');
+        prog.style.display = 'block';
+        setProgress(0);
+
+        // reset metric displays
+        ['smDown','smUp','smLatency','smJitter'].forEach(id => {
+            const el = document.getElementById(id);
+            el.innerText = '…';
+            el.className = 'speed-metric-value';
+        });
+
+        document.getElementById('speedtestWidget').classList.add('speed-scanning');
+
+        try {
+            // Phase 1: Latency + Jitter
+            btn.innerText = 'PINGING…';
+            setProgress(10);
+            const { latency, jitter } = await measureLatencyJitter(10);
+            setProgress(30);
+
+            const latEl = document.getElementById('smLatency');
+            latEl.innerText = latency;
+            colorVal(latEl, latency, 50, 100, false);
+
+            const jitEl = document.getElementById('smJitter');
+            jitEl.innerText = jitter;
+            colorVal(jitEl, jitter, 10, 30, false);
+
+            // Phase 2: Download
+            btn.innerText = 'DOWNLOADING…';
+            setProgress(35);
+            const dl = await measureDownload();
+            setProgress(75);
+
+            const dlEl = document.getElementById('smDown');
+            dlEl.innerText = dl !== null ? dl.toFixed(1) : 'ERR';
+            colorVal(dlEl, dl, 50, 10, true);
+
+            // Phase 3: Upload
+            btn.innerText = 'UPLOADING…';
+            setProgress(80);
+            const ul = await measureUpload();
+            setProgress(100);
+
+            const ulEl = document.getElementById('smUp');
+            ulEl.innerText = ul !== null ? ul.toFixed(1) : 'ERR';
+            colorVal(ulEl, ul, 20, 5, true);
+
+            buildVerdict(dl, ul, latency, jitter);
+
+        } catch(e) {
+            document.getElementById('speedVerdict').style.display = 'block';
+            document.getElementById('speedVerdict').className = 'speedtest-verdict verdict-bad';
+            document.getElementById('speedVerdict').innerText = '✗ Speed test failed — check network connectivity.';
+        }
+
+        document.getElementById('speedtestWidget').classList.remove('speed-scanning');
+        setTimeout(() => { prog.style.display = 'none'; setProgress(0); }, 600);
+        btn.disabled = false;
+        btn.innerText = 'RE-RUN';
+    }
+
+    // ─────────────────────────────────────────────
+    //  DNS AUDIT (unchanged)
+    // ─────────────────────────────────────────────
 
     function evaluateSPF(spf) {
         if (spf === "NOT FOUND") return { pass: false, level: 'fail', reason: "No SPF record found. Unauthenticated senders can spoof this domain." };
