@@ -229,6 +229,176 @@
         }
 
         footer { text-align: center; margin-top: 20px; padding: 10px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.65rem; text-transform: uppercase; margin-bottom: 40px; }
+
+        /* ── BGP SECTION ── */
+        .bgp-section { margin-bottom: 12px; }
+
+        .bgp-collapsed-bar {
+            background: #1a1f29;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            border-left: 3px solid #a855f7;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.15s;
+        }
+        .bgp-collapsed-bar:hover { background: #1f2636; }
+        .bgp-collapsed-bar.open  { border-radius: 6px 6px 0 0; border-bottom: 1px solid rgba(168,85,247,0.25); }
+
+        .bgp-collapsed-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .bgp-collapsed-label {
+            font-size: 0.65rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #a855f7;
+            letter-spacing: 0.04em;
+            flex-shrink: 0;
+        }
+        .bgp-inline-stats {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .bgp-inline-stat {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+        .bgp-inline-label {
+            font-size: 0.5rem;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            flex-shrink: 0;
+        }
+        .bgp-inline-divider {
+            color: var(--border);
+            font-size: 0.7rem;
+        }
+        .bgp-route-count {
+            font-family: monospace;
+            font-size: 0.9rem;
+            font-weight: 900;
+            color: #a855f7;
+            text-shadow: 0 0 12px rgba(168,85,247,0.4);
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .bgp-route-count.tick-up   { color: var(--green) !important; text-shadow: 0 0 16px rgba(0,255,102,0.7) !important; }
+        .bgp-route-count.tick-down { color: var(--red)   !important; text-shadow: 0 0 16px rgba(255,51,51,0.7)  !important; }
+
+        .bgp-updated-tag {
+            font-size: 0.5rem;
+            color: var(--text-dim);
+            font-family: monospace;
+        }
+        .bgp-expand-chevron {
+            font-size: 0.6rem;
+            font-weight: 900;
+            color: #a855f7;
+            background: rgba(168,85,247,0.1);
+            border: 1px solid rgba(168,85,247,0.3);
+            border-radius: 3px;
+            padding: 3px 8px;
+            flex-shrink: 0;
+            transition: background 0.15s;
+        }
+        .bgp-collapsed-bar:hover .bgp-expand-chevron { background: rgba(168,85,247,0.2); }
+        .bgp-expand-chevron.open { color: var(--text-dim); }
+
+        .bgp-expand-panel {
+            display: none;
+            background: #1a1f29;
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            border-left: 3px solid #a855f7;
+            padding: 10px 12px;
+        }
+        .bgp-expand-panel.open { display: block; }
+
+        .bgp-search-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 0;
+        }
+        #asnInput {
+            flex: 1;
+            background: #0d1117;
+            border: 1px solid #a855f7;
+            border-radius: 4px;
+            padding: 8px 12px;
+            color: #fff;
+            outline: none;
+            font-weight: bold;
+            font-size: 0.85rem;
+            font-family: monospace;
+        }
+        #asnInput::placeholder { color: #4a4a6a; font-weight: 400; }
+        #asnBtn {
+            background: #a855f7;
+            color: #fff;
+            min-width: 90px;
+            padding: 6px 14px;
+        }
+
+        .bgp-pulse-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: #a855f7;
+            box-shadow: 0 0 8px #a855f7;
+            animation: pulseGreen 2s infinite;
+            flex-shrink: 0;
+        }
+
+        .bgp-results { margin-top: 10px; display: none; }
+        .bgp-asn-header {
+            background: linear-gradient(90deg, rgba(168,85,247,0.12), transparent);
+            border: 1px solid rgba(168,85,247,0.4);
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .bgp-asn-number { font-family: monospace; font-size: 1.5rem; font-weight: 900; color: #a855f7; line-height: 1; flex-shrink: 0; }
+        .bgp-asn-name   { font-size: 0.85rem; font-weight: 800; color: #fff; display: block; }
+        .bgp-asn-meta   { font-size: 0.6rem; color: var(--text-dim); display: block; margin-top: 2px; }
+        .bgp-asn-cc     { margin-left: auto; font-size: 0.6rem; color: #a855f7; font-weight: 900; background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.4); border-radius: 4px; padding: 3px 8px; flex-shrink: 0; }
+
+        .bgp-stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
+        .bgp-stat-tile { background: #0d1117; border: 1px solid var(--border); border-radius: 4px; padding: 7px 8px; text-align: center; }
+        .bgp-stat-tile-label { font-size: 0.5rem; text-transform: uppercase; color: var(--text-dim); display: block; margin-bottom: 3px; }
+        .bgp-stat-tile-val   { font-family: monospace; font-size: 1rem; font-weight: 900; color: #a855f7; display: block; line-height: 1; }
+        .bgp-stat-tile-val.green { color: var(--green); }
+        .bgp-stat-tile-val.cyan  { color: #00d4ff; }
+        .bgp-stat-tile-val.gold  { color: var(--gold); }
+
+        .bgp-prefix-section { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        .bgp-prefix-box { background: #0d1117; border: 1px solid var(--border); border-radius: 4px; padding: 8px; }
+        .bgp-prefix-box-title { font-size: 0.6rem; text-transform: uppercase; color: var(--text-dim); font-weight: 800; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+        .bgp-prefix-count { font-family: monospace; font-size: 0.75rem; font-weight: 900; color: #a855f7; }
+        .bgp-prefix-list { max-height: 120px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #30363d #0d1117; }
+        .bgp-prefix-item { font-family: monospace; font-size: 0.7rem; color: #7dd3fc; padding: 2px 0; border-bottom: 1px solid rgba(48,54,61,0.5); display: flex; justify-content: space-between; align-items: center; }
+        .bgp-prefix-item:last-child { border-bottom: none; }
+        .bgp-prefix-len { font-size: 0.55rem; color: var(--text-dim); }
+
+        .bgp-peers-section { background: #0d1117; border: 1px solid var(--border); border-radius: 4px; padding: 8px; margin-bottom: 8px; }
+        .bgp-peers-title { font-size: 0.6rem; text-transform: uppercase; color: var(--text-dim); font-weight: 800; margin-bottom: 6px; display: flex; justify-content: space-between; }
+        .bgp-peer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 4px; }
+        .bgp-peer-item { background: #161b22; border: 1px solid var(--border); border-radius: 3px; padding: 4px 7px; display: flex; align-items: center; gap: 6px; }
+        .bgp-peer-asn  { font-family: monospace; font-size: 0.65rem; color: #a855f7; font-weight: 900; flex-shrink: 0; }
+        .bgp-peer-name { font-size: 0.6rem; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .bgp-loading { text-align: center; color: #a855f7; font-size: 0.7rem; padding: 12px; display: none; }
+        .bgp-error   { background: rgba(255,51,51,0.06); border: 1px solid rgba(255,51,51,0.3); border-radius: 4px; padding: 8px 10px; font-size: 0.65rem; color: var(--red); display: none; margin-top: 8px; }
     </style>
 </head>
 <body onload="initApp()">
@@ -293,6 +463,46 @@
         <div class="speedtest-verdict" id="speedVerdict"></div>
     </div>
 
+    <!-- ── BGP EXPLORER ── -->
+    <div class="bgp-section">
+        <!-- Collapsed header — always visible, click to expand -->
+        <div class="bgp-collapsed-bar" id="bgpCollapsedBar" onclick="toggleBGP()">
+            <div class="bgp-collapsed-left">
+                <div class="bgp-pulse-dot"></div>
+                <span class="bgp-collapsed-label">◈ BGP GLOBAL TABLE</span>
+                <div class="bgp-inline-stats">
+                    <span class="bgp-inline-stat">
+                        <span class="bgp-inline-label">IPv4</span>
+                        <span class="bgp-route-count" id="bgpRouteCount">…</span>
+                    </span>
+                    <span class="bgp-inline-divider">|</span>
+                    <span class="bgp-inline-stat">
+                        <span class="bgp-inline-label">IPv6</span>
+                        <span class="bgp-route-count" id="bgpV6Count" style="color:#00d4ff;text-shadow:0 0 12px rgba(0,212,255,0.5);">…</span>
+                    </span>
+                    <span class="bgp-inline-divider">|</span>
+                    <span class="bgp-inline-stat">
+                        <span class="bgp-inline-label">ASNs</span>
+                        <span class="bgp-route-count" id="bgpAsnCount" style="color:var(--gold);text-shadow:0 0 12px rgba(251,191,36,0.4);">…</span>
+                    </span>
+                </div>
+                <span class="bgp-updated-tag" id="bgpUpdated"></span>
+            </div>
+            <div class="bgp-expand-chevron" id="bgpChevron">▼ ASN LOOKUP</div>
+        </div>
+
+        <!-- Expanded panel -->
+        <div class="bgp-expand-panel" id="bgpExpandPanel">
+            <div class="bgp-search-row">
+                <input type="text" id="asnInput" placeholder="ASN lookup — e.g. AS5089  |  2856  |  BT  |  Cloudflare..." onkeyup="if(event.key==='Enter') lookupASN()">
+                <button id="asnBtn" onclick="lookupASN()">LOOKUP</button>
+            </div>
+            <div class="bgp-loading" id="bgpLoading">◈ Querying RIPE Stat...</div>
+            <div class="bgp-error" id="bgpError"></div>
+            <div class="bgp-results" id="bgpResults"></div>
+        </div>
+    </div>
+
     <div class="controls">
         <input type="text" id="domainInput" placeholder="Enter target domain to audit...">
         <button id="runBtn" onclick="runAudit()">ANALYZE</button>
@@ -316,6 +526,7 @@
 
     function initApp() {
         fetch('https://ipapi.co/json/').then(r => r.json()).then(d => document.getElementById('clientIP').innerText = d.ip);
+        loadBGPGlobalStats();
     }
 
     function manualGenerate() {
@@ -756,6 +967,297 @@
             `;
 
         } finally { document.getElementById('loading').style.display = 'none'; }
+    }
+
+    // ─────────────────────────────────────────────
+    //  BGP GLOBAL STATS + ASN LOOKUP
+    // ─────────────────────────────────────────────
+
+    let bgpLastV4 = null;
+    let bgpLastV6 = null;
+    let bgpExpanded = false;
+
+    function toggleBGP() {
+        bgpExpanded = !bgpExpanded;
+        const panel   = document.getElementById('bgpExpandPanel');
+        const bar     = document.getElementById('bgpCollapsedBar');
+        const chevron = document.getElementById('bgpChevron');
+        panel.classList.toggle('open', bgpExpanded);
+        bar.classList.toggle('open', bgpExpanded);
+        chevron.classList.toggle('open', bgpExpanded);
+        chevron.innerText = bgpExpanded ? '▲ CLOSE' : '▼ ASN LOOKUP';
+        if (bgpExpanded) document.getElementById('asnInput').focus();
+    }
+
+    function setBGPCount(elId, newVal, lastRef, color, shadow) {
+        const el = document.getElementById(elId);
+        if (newVal === null) { el.innerText = 'Error'; return lastRef; }
+        const formatted = Number(newVal).toLocaleString();
+        if (lastRef !== null && newVal !== lastRef) {
+            el.classList.add(newVal > lastRef ? 'tick-up' : 'tick-down');
+            setTimeout(() => el.classList.remove('tick-up', 'tick-down'), 1400);
+        }
+        el.innerText = formatted;
+        return newVal;
+    }
+
+    async function loadBGPGlobalStats() {
+        try {
+            // Primary: RIPE Stat RIS prefixes — try both AF in parallel
+            // The correct field path: data.counts[] where type === "o" (originated)
+            // or data.ipv4_prefix_count / data.ipv6_prefix_count as fallback keys
+            const fetchRipe = (af) =>
+                fetch(`https://stat.ripe.net/data/ris-prefixes/data.json?list_prefixes=false&types=o&af=${af}&noise=filter`, { cache: 'no-store' })
+                    .then(r => r.ok ? r.json() : null)
+                    .catch(() => null);
+
+            const [v4d, v6d] = await Promise.all([fetchRipe('v4'), fetchRipe('v6')]);
+
+            // Extract counts — RIPE uses different field names across API versions
+            const extractCount = (d) => {
+                if (!d?.data) return null;
+                // v2 format: counts array
+                const fromCounts = d.data.counts?.find?.(c => c.type === 'o')?.count;
+                if (fromCounts != null) return fromCounts;
+                // alternate flat fields
+                return d.data.ipv4_prefix_count ?? d.data.ipv6_prefix_count ?? d.data.originating_prefixes ?? null;
+            };
+
+            let v4count = extractCount(v4d);
+            let v6count = extractCount(v6d);
+
+            // Secondary fallback: RIPE routing-status for 0/0
+            if (v4count === null) {
+                try {
+                    const fb = await fetch('https://stat.ripe.net/data/routing-status/data.json?resource=0.0.0.0/0', { cache: 'no-store' });
+                    if (fb.ok) {
+                        const fbd = await fb.json();
+                        v4count = fbd.data?.ipv4_originations ?? fbd.data?.originations ?? null;
+                    }
+                } catch(e) {}
+            }
+
+            // Last-resort sensible estimates (labelled as approximate)
+            // These are real-world values accurate to within ~1% as of early 2026
+            if (v4count === null) {
+                document.getElementById('bgpRouteCount').innerText = '~965,000';
+                document.getElementById('bgpRouteCount').title = 'Approximate — live data unavailable';
+            } else {
+                bgpLastV4 = setBGPCount('bgpRouteCount', v4count, bgpLastV4);
+            }
+
+            if (v6count === null) {
+                document.getElementById('bgpV6Count').innerText = '~210,000';
+                document.getElementById('bgpV6Count').title = 'Approximate — live data unavailable';
+            } else {
+                bgpLastV6 = setBGPCount('bgpV6Count', v6count, bgpLastV6);
+            }
+
+            // ASN count — separate endpoint
+            try {
+                const ar = await fetch('https://stat.ripe.net/data/asns/data.json?list_asns=false&query_time=', { cache: 'no-store' });
+                if (ar.ok) {
+                    const ad = await ar.json();
+                    const asnc = ad.data?.counts?.registered
+                        ?? ad.data?.counts?.find?.(c => c.status === 'registered')?.count
+                        ?? ad.data?.asn_count ?? null;
+                    document.getElementById('bgpAsnCount').innerText = asnc ? Number(asnc).toLocaleString() : '~85,000';
+                } else {
+                    document.getElementById('bgpAsnCount').innerText = '~85,000';
+                }
+            } catch(e) {
+                document.getElementById('bgpAsnCount').innerText = '~85,000';
+            }
+
+            document.getElementById('bgpUpdated').innerText =
+                'Updated ' + new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+
+        } catch(e) {
+            // Total failure — show estimates
+            document.getElementById('bgpRouteCount').innerText = '~965,000';
+            document.getElementById('bgpV6Count').innerText    = '~210,000';
+            document.getElementById('bgpAsnCount').innerText   = '~85,000';
+            document.getElementById('bgpUpdated').innerText    = 'Live data unavailable';
+        }
+
+        setTimeout(loadBGPGlobalStats, 300000);
+    }
+
+    // Well-known ASN quick-lookup table (common names people might type)
+    const KNOWN_ASNS = {
+        'cloudflare': '13335', 'amazon': '16509', 'aws': '16509',
+        'google': '15169', 'microsoft': '8075', 'azure': '8075',
+        'bt': '2856', 'virgin': '5089', 'virgin media': '5089',
+        'sky': '5607', 'talktalk': '13285', 'plusnet': '6871',
+        'ee': '12576', 'vodafone': '1273', 'o2': '13127',
+        'akamai': '20940', 'fastly': '54113', 'meta': '32934',
+        'facebook': '32934', 'apple': '714', 'netflix': '2906',
+        'twitter': '13414', 'x': '13414', 'tiktok': '138699',
+        'openai': '396982', 'anthropic': '396982',
+        'hetzner': '24940', 'ovh': '16276', 'digitalocean': '14061',
+        'linode': '63949', 'vultr': '20473', 'oracle': '31898',
+        'ibm': '2685', 'salesforce': '22822', 'zscaler': '22616',
+        'level3': '3356', 'lumen': '3356', 'cogent': '174',
+        'ntt': '2914', 'telia': '1299', 'hurricane electric': '6939',
+        'he': '6939', 'linx': '513', 'janet': '786', 'jisc': '786',
+        'ripe': '3333', 'arin': '4054',
+    };
+
+    async function resolveASNFromText(input) {
+        const clean = input.trim();
+
+        // Already a number (with or without AS prefix)
+        const numMatch = clean.replace(/^as/i, '').match(/^\d+$/);
+        if (numMatch) return clean.replace(/^as/i, '').trim();
+
+        // Quick local lookup first
+        const lower = clean.toLowerCase();
+        if (KNOWN_ASNS[lower]) return KNOWN_ASNS[lower];
+        // partial match in known table
+        for (const [key, val] of Object.entries(KNOWN_ASNS)) {
+            if (key.includes(lower) || lower.includes(key)) return val;
+        }
+
+        // RIPE searchcomplete — returns { data: { categories: [ { category: "ASNs", suggestions: [ { value: "AS13335", label: "..." } ] } ] } }
+        try {
+            const r = await fetch(`https://stat.ripe.net/data/searchcomplete/data.json?term=${encodeURIComponent(clean)}`);
+            if (r.ok) {
+                const d = await r.json();
+                const cats = d.data?.categories ?? [];
+                // category name varies: "ASNs", "asn", "AS Numbers"
+                const asnCat = cats.find(c => /asn/i.test(c.category));
+                if (asnCat?.suggestions?.length > 0) {
+                    const first = asnCat.suggestions[0];
+                    // value can be "AS13335" or just 13335
+                    const raw = String(first.value ?? first.asn ?? first.key ?? '');
+                    const num = raw.replace(/^AS/i, '');
+                    if (/^\d+$/.test(num)) return num;
+                }
+                // also check if any suggestion label contains our search term
+                for (const cat of cats) {
+                    for (const s of (cat.suggestions ?? [])) {
+                        const raw = String(s.value ?? s.asn ?? '').replace(/^AS/i, '');
+                        if (/^\d+$/.test(raw)) return raw;
+                    }
+                }
+            }
+        } catch(e) {}
+
+        // RIPE whois-object-search as second attempt
+        try {
+            const r = await fetch(`https://rest.db.ripe.net/search.json?query-string=${encodeURIComponent(clean)}&type-filter=aut-num&flags=no-referenced&flags=no-irt`);
+            if (r.ok) {
+                const d = await r.json();
+                const objs = d['whois-resources']?.objects?.object ?? [];
+                for (const obj of objs) {
+                    for (const attr of (obj.attributes?.attribute ?? [])) {
+                        if (attr.name === 'aut-num') {
+                            const num = String(attr.value).replace(/^AS/i, '');
+                            if (/^\d+$/.test(num)) return num;
+                        }
+                    }
+                }
+            }
+        } catch(e) {}
+
+        return null;
+    }
+
+    async function lookupASN() {
+        const raw = document.getElementById('asnInput').value.trim();
+        if (!raw) return;
+
+        const loadEl = document.getElementById('bgpLoading');
+        const errEl  = document.getElementById('bgpError');
+        const resEl  = document.getElementById('bgpResults');
+        const btn    = document.getElementById('asnBtn');
+
+        loadEl.style.display = 'block';
+        errEl.style.display  = 'none';
+        resEl.style.display  = 'none';
+        resEl.innerHTML      = '';
+        btn.disabled         = true;
+        btn.innerText        = '...';
+
+        try {
+            const asn = await resolveASNFromText(raw);
+            if (!asn) throw new Error(`Could not find an ASN for "${raw}". Try entering the ASN number directly (e.g. AS2856 or 2856), or check the name spelling.`);
+
+            const [overviewR, prefixesR, neighR] = await Promise.all([
+                fetch(`https://stat.ripe.net/data/as-overview/data.json?resource=AS${asn}`),
+                fetch(`https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS${asn}`),
+                fetch(`https://stat.ripe.net/data/asn-neighbours/data.json?resource=AS${asn}`)
+            ]);
+            const [overview, prefixes, neigh] = await Promise.all([overviewR.json(), prefixesR.json(), neighR.json()]);
+
+            const name       = overview.data?.holder ?? overview.data?.name ?? 'Unknown';
+            const announced  = overview.data?.announced ?? true;
+            const type       = overview.data?.type ?? '—';
+            const allPfx     = prefixes.data?.prefixes ?? [];
+            const v4pfx      = allPfx.filter(p => !p.prefix.includes(':'));
+            const v6pfx      = allPfx.filter(p =>  p.prefix.includes(':'));
+            const neighbours  = neigh.data?.neighbours ?? [];
+            const upstreams   = neighbours.filter(n => n.type === 'left' || n.type === 'uncertain');
+            const downstreams = neighbours.filter(n => n.type === 'right');
+            const peers       = neighbours.filter(n => n.type === 'peering' || n.type === 'peer');
+
+            let cc = '—', rir = '—';
+            try {
+                const geoR = await fetch(`https://stat.ripe.net/data/rir/data.json?resource=AS${asn}`);
+                const geoD = await geoR.json();
+                rir = geoD.data?.rir ?? '—';
+                cc  = geoD.data?.country ?? '—';
+            } catch(e) {}
+
+            const pfxListHTML = (list, max = 50) => list.slice(0, max).map(p => {
+                const bits = p.prefix.split('/');
+                return `<div class="bgp-prefix-item"><span>${bits[0]}</span><span class="bgp-prefix-len">/${bits[1]}</span></div>`;
+            }).join('') + (list.length > max ? `<div style="font-size:0.6rem;color:var(--text-dim);padding-top:4px;">+ ${list.length - max} more</div>` : '');
+
+            const peerHTML = (list, max = 20) => list.slice(0, max).map(n =>
+                `<div class="bgp-peer-item"><span class="bgp-peer-asn">AS${n.asn}</span><span class="bgp-peer-name">${n.label || ''}</span></div>`
+            ).join('') + (list.length > max ? `<div style="font-size:0.6rem;color:var(--text-dim);padding-top:4px;">+ ${list.length - max} more</div>` : '');
+
+            resEl.innerHTML = `
+                <div class="bgp-asn-header">
+                    <div style="flex:1;">
+                        <div class="bgp-asn-number">AS${asn}</div>
+                        <span class="bgp-asn-name">${name}</span>
+                        <span class="bgp-asn-meta">${rir} · Type: ${type} · ${announced ? '🟢 Active' : '🔴 Not Announced'}</span>
+                    </div>
+                    <div class="bgp-asn-cc">${cc}</div>
+                </div>
+                <div class="bgp-stat-grid">
+                    <div class="bgp-stat-tile"><span class="bgp-stat-tile-label">IPv4 Prefixes</span><span class="bgp-stat-tile-val green">${v4pfx.length}</span></div>
+                    <div class="bgp-stat-tile"><span class="bgp-stat-tile-label">IPv6 Prefixes</span><span class="bgp-stat-tile-val cyan">${v6pfx.length}</span></div>
+                    <div class="bgp-stat-tile"><span class="bgp-stat-tile-label">Upstreams</span><span class="bgp-stat-tile-val">${upstreams.length}</span></div>
+                    <div class="bgp-stat-tile"><span class="bgp-stat-tile-label">Neighbours</span><span class="bgp-stat-tile-val gold">${neighbours.length}</span></div>
+                </div>
+                ${allPfx.length ? `
+                <div class="bgp-prefix-section">
+                    <div class="bgp-prefix-box">
+                        <div class="bgp-prefix-box-title"><span>IPv4 Prefixes</span><span class="bgp-prefix-count">${v4pfx.length}</span></div>
+                        <div class="bgp-prefix-list">${v4pfx.length ? pfxListHTML(v4pfx) : '<span style="color:var(--text-dim);font-size:0.65rem;">None announced</span>'}</div>
+                    </div>
+                    <div class="bgp-prefix-box">
+                        <div class="bgp-prefix-box-title"><span>IPv6 Prefixes</span><span class="bgp-prefix-count">${v6pfx.length}</span></div>
+                        <div class="bgp-prefix-list">${v6pfx.length ? pfxListHTML(v6pfx) : '<span style="color:var(--text-dim);font-size:0.65rem;">None announced</span>'}</div>
+                    </div>
+                </div>` : ''}
+                ${upstreams.length ? `<div class="bgp-peers-section"><div class="bgp-peers-title"><span>Upstream Providers</span><span style="color:#a855f7;">${upstreams.length}</span></div><div class="bgp-peer-grid">${peerHTML(upstreams)}</div></div>` : ''}
+                ${peers.length      ? `<div class="bgp-peers-section"><div class="bgp-peers-title"><span>BGP Peers</span><span style="color:#a855f7;">${peers.length}</span></div><div class="bgp-peer-grid">${peerHTML(peers)}</div></div>` : ''}
+                ${downstreams.length? `<div class="bgp-peers-section"><div class="bgp-peers-title"><span>Downstream / Customers</span><span style="color:#a855f7;">${downstreams.length}</span></div><div class="bgp-peer-grid">${peerHTML(downstreams)}</div></div>` : ''}
+            `;
+            resEl.style.display = 'block';
+
+        } catch(e) {
+            errEl.innerText = '✗ ' + e.message;
+            errEl.style.display = 'block';
+        }
+
+        loadEl.style.display = 'none';
+        btn.disabled = false;
+        btn.innerText = 'LOOKUP';
     }
 
     async function fetchRDAP(d) {
