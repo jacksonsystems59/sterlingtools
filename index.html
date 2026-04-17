@@ -411,6 +411,7 @@
         <div class="bar">
             <span style="font-size:0.55rem; display:block; color:var(--text-dim)">LOCAL WAN IP</span>
             <div class="ip-wrap"><div class="live-dot"></div><span id="clientIP">Loading...</span></div>
+            <div id="wanAsnBadge" style="display:none; margin-top:4px; font-size:0.65rem;"></div>
         </div>
         <div class="bar gold-acc">
             <span style="font-size:0.55rem; display:block; color:var(--text-dim)">FQDN GENERATOR</span>
@@ -525,8 +526,50 @@
     const recordMap = {};
 
     function initApp() {
-        fetch('https://ipapi.co/json/').then(r => r.json()).then(d => document.getElementById('clientIP').innerText = d.ip);
+        fetch('https://ipapi.co/json/').then(r => r.json()).then(d => {
+            document.getElementById('clientIP').innerText = d.ip;
+            // ipapi.co also returns ASN info directly
+            if (d.asn) {
+                showWanASN(d.asn, d.org || '');
+            } else {
+                // fallback: RIPE network-info
+                fetchASNForIP(d.ip);
+            }
+        }).catch(() => fetchASNForIP(null));
         loadBGPGlobalStats();
+    }
+
+    function showWanASN(asn, org) {
+        const asnNum = String(asn).replace(/^AS/i, '');
+        const label  = org ? org.replace(/^AS\d+\s*/i, '').trim() : '';
+        const el = document.getElementById('wanAsnBadge');
+        if (el) {
+            el.innerHTML = `<span title="${label}" onclick="fillAndSearchASN('${asnNum}')" style="cursor:pointer;">
+                <span style="color:var(--text-dim);font-size:0.55rem;">ASN </span><span style="color:#a855f7;font-weight:900;font-family:monospace;">AS${asnNum}</span>
+                ${label ? `<span style="color:var(--text-dim);font-size:0.55rem;"> · ${label.substring(0,28)}${label.length>28?'…':''}</span>` : ''}
+                <span style="color:#a855f7;font-size:0.5rem;margin-left:4px;opacity:0.7;">↗</span>
+            </span>`;
+            el.style.display = 'block';
+        }
+    }
+
+    async function fetchASNForIP(ip) {
+        if (!ip) return;
+        try {
+            const r = await fetch(`https://stat.ripe.net/data/network-info/data.json?resource=${ip}`);
+            const d = await r.json();
+            const asns = d.data?.asns ?? [];
+            if (asns.length > 0) showWanASN(asns[0], '');
+        } catch(e) {}
+    }
+
+    function fillAndSearchASN(asnNum) {
+        // Open BGP panel if collapsed
+        if (!bgpExpanded) toggleBGP();
+        const input = document.getElementById('asnInput');
+        input.value = 'AS' + asnNum;
+        // slight delay so panel animation finishes
+        setTimeout(() => lookupASN(), 150);
     }
 
     function manualGenerate() {
