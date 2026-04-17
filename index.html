@@ -231,6 +231,69 @@
 
         footer { text-align: center; margin-top: 20px; padding: 10px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.65rem; text-transform: uppercase; margin-bottom: 40px; }
 
+        /* ── Section headings ── */
+        .section-heading {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.65rem; font-weight: 900; text-transform: uppercase;
+            color: #fff; letter-spacing: 0.06em;
+            margin-bottom: 8px; padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+        }
+        .section-heading-icon { font-size: 0.85rem; }
+        .section-heading-sub {
+            font-size: 0.55rem; font-weight: 400; color: var(--text-dim);
+            text-transform: none; letter-spacing: 0;
+        }
+
+        /* ── Nerd Tools accordion ── */
+        .nt-section {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .nt-bar {
+            background: #1a1f29;
+            padding: 8px 12px;
+            display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; user-select: none;
+            transition: background 0.15s;
+        }
+        .nt-bar:hover { background: #1f2636; }
+        .nt-bar-left { display: flex; align-items: center; gap: 8px; }
+        .nt-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .nt-label { font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; }
+        .nt-sub { font-size: 0.55rem; color: var(--text-dim); font-weight: 400; }
+        .nt-chevron { font-size: 0.6rem; color: var(--text-dim); font-weight: 900; transition: transform 0.2s; }
+        .nt-chevron.open { transform: rotate(180deg); }
+        .nt-panel {
+            display: none;
+            background: #161b22;
+            border-top: 1px solid var(--border);
+        }
+        .nt-panel.open { display: block; }
+
+        /* BGP and traceroute bars inside nt-section override rounded corners */
+        .nt-bar-override {
+            border-radius: 0 !important;
+            border: none !important;
+        }
+        .nt-section .bgp-expand-panel,
+        .nt-section .tr-expand-panel {
+            border-radius: 0 !important;
+            border-left: none !important;
+            border-right: none !important;
+            border-bottom: none !important;
+        }
+
+        /* speedtest-bar borderless when inside top grid */
+        .speedtest-bar-inline {
+            background: #1a1f29;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 10px 14px;
+            border-left: 3px solid #00d4ff;
+        }
+
         /* ── TRACEROUTE ── */
         .tr-collapsed-bar {
             background: #1a1f29;
@@ -605,67 +668,119 @@
         <h1>STERLING TECH AUDITOR</h1>
     </div>
 
-    <div class="util-grid">
-        <div class="bar">
+    <!-- ═══ TOP ROW: WAN IP + SPEED TEST ═══ -->
+    <div style="display:grid;grid-template-columns:220px 1fr;gap:10px;margin-bottom:12px;">
+        <div class="bar" style="display:flex;flex-direction:column;justify-content:center;">
             <span style="font-size:0.55rem; display:block; color:var(--text-dim)">LOCAL WAN IP</span>
             <div class="ip-wrap"><div class="live-dot"></div><span id="clientIP">Loading...</span></div>
             <div id="wanAsnBadge" style="display:none; margin-top:4px; font-size:0.65rem;"></div>
         </div>
-        <div class="bar gold-acc">
-            <span style="font-size:0.55rem; display:block; color:var(--text-dim)">FQDN GENERATOR</span>
-            <div class="gen-row">
-                <div class="gen-display" id="genDisplay">---</div>
+        <div class="speedtest-bar" id="speedtestWidget" style="margin-bottom:0;">
+            <div class="speedtest-header">
+                <div class="speedtest-title">
+                    ◈ CONNECTION SPEED TEST
+                    <span>via Cloudflare — tests download, latency &amp; jitter from your location</span>
+                </div>
+                <button id="speedRunBtn" onclick="runSpeedTest()">RUN TEST</button>
+            </div>
+            <div class="speedtest-progress" id="speedProgress">
+                <div class="speedtest-progress-fill" id="speedProgressFill"></div>
+            </div>
+            <div class="speedtest-metrics">
+                <div class="speed-metric">
+                    <span class="speed-metric-label">Download</span>
+                    <span class="speed-metric-value" id="smDown">—</span>
+                    <span class="speed-metric-unit">Mbps</span>
+                </div>
+                <div class="speed-metric">
+                    <span class="speed-metric-label">Upload</span>
+                    <span class="speed-metric-value" id="smUp">—</span>
+                    <span class="speed-metric-unit">Mbps</span>
+                </div>
+                <div class="speed-metric">
+                    <span class="speed-metric-label">Latency</span>
+                    <span class="speed-metric-value" id="smLatency">—</span>
+                    <span class="speed-metric-unit">ms</span>
+                </div>
+                <div class="speed-metric">
+                    <span class="speed-metric-label">Jitter</span>
+                    <span class="speed-metric-value" id="smJitter">—</span>
+                    <span class="speed-metric-unit">ms</span>
+                </div>
+            </div>
+            <div class="speedtest-verdict" id="speedVerdict"></div>
+        </div>
+    </div>
+
+    <!-- ═══ DOMAIN AUDITOR ═══ -->
+    <div class="section-heading">
+        <span class="section-heading-icon">🔍</span>
+        DOMAIN AUDITOR
+        <span class="section-heading-sub">DNS health, email auth &amp; registration check</span>
+    </div>
+
+    <div class="controls">
+        <input type="text" id="domainInput" placeholder="Enter target domain to audit — e.g. example.co.uk">
+        <button id="runBtn" onclick="runAudit()">ANALYZE</button>
+    </div>
+
+    <div id="loading" style="display:none; text-align:center; color:var(--blue); margin-bottom:10px; font-size:0.7rem;">Scanning Infrastructure...</div>
+
+    <div class="status-container" id="statContainer">
+        <div class="score-circle" id="scoreCircle">0</div>
+        <div id="masterStatus"></div>
+    </div>
+
+    <div class="results-grid" id="results"></div>
+
+    <!-- ═══ NERD TOOLS ═══ -->
+    <div class="section-heading" style="margin-top:16px;">
+        <span class="section-heading-icon">🛠</span>
+        NERD TOOLS
+        <span class="section-heading-sub">BGP, traceroute, FQDN gen, MS tenant lookup — expand a tool to use it</span>
+    </div>
+
+    <!-- ── FQDN Generator ── -->
+    <div class="nt-section" style="margin-bottom:6px;">
+        <div class="nt-bar" onclick="toggleNT('fqdn')">
+            <div class="nt-bar-left">
+                <span class="nt-dot" style="background:var(--gold);box-shadow:0 0 7px var(--gold);"></span>
+                <span class="nt-label" style="color:var(--gold);">◈ FQDN GENERATOR</span>
+                <span class="nt-sub">generate random hostnames for a domain</span>
+            </div>
+            <div class="nt-chevron" id="nt-chevron-fqdn">▼</div>
+        </div>
+        <div class="nt-panel" id="nt-panel-fqdn">
+            <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;">
+                <span style="font-size:0.6rem;color:var(--text-dim);">Domain (optional):</span>
+                <input type="text" id="fqdnDomain" placeholder="e.g. sterling.tech" style="background:#0d1117;border:1px solid var(--border);color:var(--gold);padding:4px 8px;border-radius:4px;font-size:0.7rem;outline:none;width:180px;">
+                <div class="gen-display" id="genDisplay" style="flex:1;min-width:120px;">---</div>
                 <button class="gen-btn" onclick="manualGenerate()">GEN</button>
             </div>
         </div>
-        <div class="bar purple-acc">
-            <span style="font-size:0.55rem; display:block; color:var(--text-dim)">MS TENANT ID LOOKUP</span>
-            <input type="text" class="tenant-input" id="tenantInput" placeholder="Enter onmicrosoft.com domain..." onkeyup="lookupTenantID(this.value)">
-            <div id="tenantResult" style="font-size:0.65rem; color:var(--purple); margin-top:4px; font-family:monospace; word-break:break-all;">---</div>
+    </div>
+
+    <!-- ── MS Tenant ID Lookup ── -->
+    <div class="nt-section" style="margin-bottom:6px;">
+        <div class="nt-bar" onclick="toggleNT('tenant')">
+            <div class="nt-bar-left">
+                <span class="nt-dot" style="background:var(--purple);box-shadow:0 0 7px var(--purple);"></span>
+                <span class="nt-label" style="color:var(--purple);">◈ MS TENANT ID LOOKUP</span>
+                <span class="nt-sub">resolve Microsoft 365 tenant ID from an onmicrosoft.com domain</span>
+            </div>
+            <div class="nt-chevron" id="nt-chevron-tenant">▼</div>
+        </div>
+        <div class="nt-panel" id="nt-panel-tenant">
+            <div style="padding:10px 12px;">
+                <input type="text" class="tenant-input" id="tenantInput" placeholder="Enter onmicrosoft.com domain — e.g. contoso.onmicrosoft.com" onkeyup="lookupTenantID(this.value)" style="width:100%;">
+                <div id="tenantResult" style="font-size:0.65rem; color:var(--purple); margin-top:6px; font-family:monospace; word-break:break-all;">---</div>
+            </div>
         </div>
     </div>
 
-    <!-- ── SPEED TEST WIDGET ── -->
-    <div class="speedtest-bar" id="speedtestWidget">
-        <div class="speedtest-header">
-            <div class="speedtest-title">
-                ◈ CONNECTION SPEED TEST
-                <span>via Cloudflare — tests download, latency &amp; jitter from your location</span>
-            </div>
-            <button id="speedRunBtn" onclick="runSpeedTest()">RUN TEST</button>
-        </div>
-        <div class="speedtest-progress" id="speedProgress">
-            <div class="speedtest-progress-fill" id="speedProgressFill"></div>
-        </div>
-        <div class="speedtest-metrics">
-            <div class="speed-metric">
-                <span class="speed-metric-label">Download</span>
-                <span class="speed-metric-value" id="smDown">—</span>
-                <span class="speed-metric-unit">Mbps</span>
-            </div>
-            <div class="speed-metric">
-                <span class="speed-metric-label">Upload</span>
-                <span class="speed-metric-value" id="smUp">—</span>
-                <span class="speed-metric-unit">Mbps</span>
-            </div>
-            <div class="speed-metric">
-                <span class="speed-metric-label">Latency</span>
-                <span class="speed-metric-value" id="smLatency">—</span>
-                <span class="speed-metric-unit">ms</span>
-            </div>
-            <div class="speed-metric">
-                <span class="speed-metric-label">Jitter</span>
-                <span class="speed-metric-value" id="smJitter">—</span>
-                <span class="speed-metric-unit">ms</span>
-            </div>
-        </div>
-        <div class="speedtest-verdict" id="speedVerdict"></div>
-    </div>
-
-    <!-- ── BGP EXPLORER ── -->
-    <div class="bgp-section">
-        <!-- Collapsed header — always visible, click to expand -->
-        <div class="bgp-collapsed-bar" id="bgpCollapsedBar" onclick="toggleBGP()">
+    <!-- ── BGP Explorer ── -->
+    <div class="nt-section" style="margin-bottom:6px;">
+        <div class="bgp-collapsed-bar nt-bar-override" id="bgpCollapsedBar" onclick="toggleBGP()">
             <div class="bgp-collapsed-left">
                 <div class="bgp-pulse-dot"></div>
                 <span class="bgp-collapsed-label">◈ BGP GLOBAL TABLE</span>
@@ -696,7 +811,7 @@
         <!-- Expanded panel -->
         <div class="bgp-expand-panel" id="bgpExpandPanel">
 
-            <!-- Global history panel — shown/hidden by history button -->
+            <!-- Global history panel -->
             <div id="bgpHistoryPanel" style="display:none;margin-bottom:10px;">
                 <div style="font-size:0.6rem;font-weight:900;text-transform:uppercase;color:#fbbf24;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
                     📈 GLOBAL BGP TABLE HISTORY
@@ -713,7 +828,8 @@
             <div class="bgp-loading" id="bgpLoading">◈ Querying RIPE Stat...</div>
             <div class="bgp-error" id="bgpError"></div>
             <div class="bgp-results" id="bgpResults"></div>
-            <!-- ASN history panel — populated after ASN lookup -->
+
+            <!-- ASN history panel -->
             <div id="asnHistoryPanel" style="display:none;margin-top:10px;">
                 <div style="font-size:0.6rem;font-weight:900;text-transform:uppercase;color:#fbbf24;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
                     📈 PREFIX HISTORY
@@ -723,7 +839,7 @@
                 <div id="asnHistoryContent"></div>
             </div>
 
-            <!-- ASN Peer Map — shown after lookup -->
+            <!-- ASN Peer Map -->
             <div id="asnPeerMapSection" style="display:none;margin-top:10px;">
                 <div style="font-size:0.6rem;font-weight:900;text-transform:uppercase;color:#a855f7;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;">
                     <div style="display:flex;align-items:center;gap:6px;">
@@ -744,9 +860,9 @@
         </div>
     </div>
 
-    <!-- ── TRACEROUTE VISUALISER ── -->
-    <div class="bgp-section" style="margin-bottom:12px;">
-        <div class="tr-collapsed-bar" id="trCollapsedBar" onclick="toggleTraceroute()">
+    <!-- ── Traceroute Visualiser ── -->
+    <div class="nt-section" style="margin-bottom:6px;">
+        <div class="tr-collapsed-bar nt-bar-override" id="trCollapsedBar" onclick="toggleTraceroute()">
             <div class="tr-collapsed-label">
                 <div class="tr-pulse-dot"></div>
                 ◈ TRACEROUTE VISUALISER
@@ -807,7 +923,7 @@
                 <div class="tr-progress" id="trProgress"><div class="tr-progress-fill" id="trProgressFill"></div></div>
             </div>
 
-            <!-- Shared results area -->
+            <!-- Shared results -->
             <div id="trMap"></div>
             <table class="tr-hops-table" id="trHopsTable">
                 <thead><tr>
@@ -822,21 +938,8 @@
         </div>
     </div>
 
-    <div class="controls">
-        <input type="text" id="domainInput" placeholder="Enter target domain to audit...">
-        <button id="runBtn" onclick="runAudit()">ANALYZE</button>
-    </div>
-
-    <div id="loading" style="display:none; text-align:center; color:var(--blue); margin-bottom:10px; font-size:0.7rem;">Scanning Infrastructure...</div>
-
-    <div class="status-container" id="statContainer">
-        <div class="score-circle" id="scoreCircle">0</div>
-        <div id="masterStatus"></div>
-    </div>
-    
-    <div class="results-grid" id="results"></div>
-
     <footer>&copy; 2026 Sterling Tech</footer>
+
 
 <script>
     const names = ["MERCURY", "MARS", "JUPITER", "VADER", "RIPLEY", "SPOCK", "HADES", "ZEUS", "KRAKEN", "CHIEF"];
@@ -891,11 +994,19 @@
     }
 
     function manualGenerate() {
-        const d = document.getElementById('domainInput').value.trim();
+        const d = document.getElementById('fqdnDomain')?.value.trim() || document.getElementById('domainInput').value.trim();
         const pool = names.filter(n => !history.has(n));
         const word = pool[Math.floor(Math.random() * pool.length)] || "HOST";
         history.add(word);
         document.getElementById('genDisplay').innerText = d ? `${word}.${d}` : word;
+    }
+
+    function toggleNT(id) {
+        const panel   = document.getElementById('nt-panel-' + id);
+        const chevron = document.getElementById('nt-chevron-' + id);
+        const isOpen  = panel.classList.contains('open');
+        panel.classList.toggle('open', !isOpen);
+        chevron.classList.toggle('open', !isOpen);
     }
 
     async function lookupTenantID(domain) {
@@ -1908,9 +2019,10 @@
         if (asnPeerMap) { asnPeerMap.remove(); asnPeerMap = null; }
 
         // Initialise map
-        asnPeerMap = L.map('asnPeerMap', { zoomControl: true });
+        asnPeerMap = L.map('asnPeerMap', { zoomControl: true, worldCopyJump: false, maxBoundsViscosity: 1.0 });
+        asnPeerMap.setMaxBounds([[-90, -180], [90, 180]]);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://carto.com/">CARTO</a>', maxZoom: 18
+            attribution: '&copy; <a href="https://carto.com/">CARTO</a>', maxZoom: 18, noWrap: true
         }).addTo(asnPeerMap);
 
         // Colour scheme per neighbour type
@@ -2372,9 +2484,10 @@
         const mapEl = document.getElementById('trMap');
         mapEl.style.display = 'block';
         if (trMap) { trMap.remove(); trMap = null; }
-        trMap = L.map('trMap', { zoomControl:true });
+        trMap = L.map('trMap', { zoomControl:true, worldCopyJump: false, maxBoundsViscosity: 1.0 });
+        trMap.setMaxBounds([[-90, -180], [90, 180]]);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution:'&copy; <a href="https://carto.com/">CARTO</a>', maxZoom:18
+            attribution:'&copy; <a href="https://carto.com/">CARTO</a>', maxZoom:18, noWrap: true
         }).addTo(trMap);
         const points=[], plotted=[];
         for (const hop of hops) {
