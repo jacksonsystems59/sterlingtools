@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sterling Tech | DNS Auditor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'SF Pro Display', 'Segoe UI', system-ui, sans-serif; background: var(--bg, #0b0e14); color: var(--text, #e2e8f0); padding: 12px; line-height: 1.2; font-size: 13px; transition: all 0.3s; min-height: 100vh; }
@@ -229,6 +230,109 @@
         }
 
         footer { text-align: center; margin-top: 20px; padding: 10px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.65rem; text-transform: uppercase; margin-bottom: 40px; }
+
+        /* ── TRACEROUTE ── */
+        .tr-collapsed-bar {
+            background: #1a1f29;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            border-left: 3px solid #22d3ee;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.15s;
+        }
+        .tr-collapsed-bar:hover { background: #1f2636; }
+        .tr-collapsed-bar.open  { border-radius: 6px 6px 0 0; }
+        .tr-collapsed-label {
+            font-size: 0.65rem; font-weight: 900; text-transform: uppercase;
+            color: #22d3ee; letter-spacing: 0.04em;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .tr-pulse-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: #22d3ee; box-shadow: 0 0 8px #22d3ee;
+            animation: pulseGreen 2s infinite; flex-shrink: 0;
+        }
+        .tr-expand-chevron {
+            font-size: 0.6rem; font-weight: 900; color: #22d3ee;
+            background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.3);
+            border-radius: 3px; padding: 3px 8px; flex-shrink: 0;
+        }
+        .tr-expand-panel {
+            display: none;
+            background: #1a1f29;
+            border: 1px solid var(--border); border-top: none;
+            border-radius: 0 0 6px 6px;
+            border-left: 3px solid #22d3ee;
+            padding: 10px 12px;
+        }
+        .tr-expand-panel.open { display: block; }
+
+        .tr-search-row { display: flex; gap: 6px; margin-bottom: 8px; }
+        #trInput {
+            flex: 1; background: #0d1117; border: 1px solid #22d3ee;
+            border-radius: 4px; padding: 8px 12px; color: #fff;
+            outline: none; font-weight: bold; font-size: 0.85rem; font-family: monospace;
+        }
+        #trInput::placeholder { color: #2a4a50; font-weight: 400; }
+        #trBtn { background: #22d3ee; color: #000; min-width: 110px; padding: 6px 14px; font-weight: 900; }
+        #trBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .tr-progress { height: 2px; background: var(--border); border-radius: 2px; margin-bottom: 8px; overflow: hidden; display: none; }
+        .tr-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #22d3ee, #a855f7); border-radius: 2px; transition: width 0.4s ease; }
+
+        #trMap {
+            height: 280px; border-radius: 4px; border: 1px solid var(--border);
+            margin-bottom: 8px; display: none;
+            background: #0d1117;
+        }
+
+        .tr-hops-table {
+            width: 100%; border-collapse: collapse;
+            font-size: 0.65rem; display: none; margin-bottom: 4px;
+        }
+        .tr-hops-table th {
+            background: #0d1117; color: var(--text-dim);
+            font-size: 0.55rem; text-transform: uppercase;
+            padding: 5px 7px; text-align: left; border-bottom: 1px solid var(--border);
+        }
+        .tr-hops-table td { padding: 4px 7px; border-bottom: 1px solid rgba(48,54,61,0.4); font-family: monospace; vertical-align: middle; }
+        .tr-hops-table tr:last-child td { border-bottom: none; }
+        .tr-hop-num  { color: #22d3ee; font-weight: 900; width: 28px; }
+        .tr-hop-ip   { color: #7dd3fc; }
+        .tr-hop-host { color: var(--text-dim); font-size: 0.6rem; }
+        .tr-hop-ms   { text-align: right; font-weight: 900; width: 60px; }
+        .tr-hop-loss { text-align: right; width: 50px; }
+        .tr-hop-loc  { color: var(--text-dim); }
+        .tr-hop-asn  { color: #a855f7; font-size: 0.6rem; cursor: pointer; }
+        .tr-hop-asn:hover { text-decoration: underline; }
+        .ms-good { color: var(--green); }
+        .ms-warn { color: var(--gold); }
+        .ms-bad  { color: var(--red); }
+        .ms-star { color: #4a5568; }
+        .tr-error { background: rgba(255,51,51,0.06); border: 1px solid rgba(255,51,51,0.3); border-radius: 4px; padding: 8px 10px; font-size: 0.65rem; color: var(--red); display: none; margin-top: 6px; }
+        .tr-note  { font-size: 0.6rem; color: var(--text-dim); margin-top: 4px; }
+
+        .tr-tab {
+            font-size: 0.62rem; font-weight: 900; text-transform: uppercase;
+            padding: 6px 14px; cursor: pointer; color: var(--text-dim);
+            border-bottom: 2px solid transparent; margin-bottom: -1px;
+            letter-spacing: 0.04em; transition: color 0.15s;
+        }
+        .tr-tab:hover { color: #22d3ee; }
+        .tr-tab.active { color: #22d3ee; border-bottom-color: #22d3ee; }
+
+        .gp-quick {
+            font-size: 0.55rem; font-weight: 900; color: #22d3ee;
+            background: rgba(34,211,238,0.08); border: 1px solid rgba(34,211,238,0.25);
+            border-radius: 3px; padding: 2px 7px; cursor: pointer;
+            transition: background 0.12s;
+        }
+        .gp-quick:hover { background: rgba(34,211,238,0.2); }
 
         /* ── BGP SECTION ── */
         .bgp-section { margin-bottom: 12px; }
@@ -501,6 +605,84 @@
             <div class="bgp-loading" id="bgpLoading">◈ Querying RIPE Stat...</div>
             <div class="bgp-error" id="bgpError"></div>
             <div class="bgp-results" id="bgpResults"></div>
+        </div>
+    </div>
+
+    <!-- ── TRACEROUTE VISUALISER ── -->
+    <div class="bgp-section" style="margin-bottom:12px;">
+        <div class="tr-collapsed-bar" id="trCollapsedBar" onclick="toggleTraceroute()">
+            <div class="tr-collapsed-label">
+                <div class="tr-pulse-dot"></div>
+                ◈ TRACEROUTE VISUALISER
+                <span style="font-size:0.5rem;color:var(--text-dim);font-weight:400;text-transform:none;">live global probes via Globalping · or paste local output</span>
+            </div>
+            <div class="tr-expand-chevron" id="trChevron">▼ EXPAND</div>
+        </div>
+        <div class="tr-expand-panel" id="trExpandPanel">
+
+            <!-- Tabs -->
+            <div style="display:flex;gap:0;margin-bottom:10px;border-bottom:1px solid var(--border);">
+                <div class="tr-tab active" id="tabGlobalping" onclick="switchTrTab('globalping')">🌍 GLOBALPING</div>
+                <div class="tr-tab" id="tabPaste" onclick="switchTrTab('paste')">📋 PASTE LOCAL</div>
+            </div>
+
+            <!-- GLOBALPING PANEL -->
+            <div id="trPanelGlobalping">
+                <div style="background:#0d1117;border:1px solid var(--border);border-radius:4px;padding:7px 10px;margin-bottom:8px;font-size:0.62rem;color:var(--text-dim);line-height:1.7;">
+                    <span style="color:#22d3ee;font-weight:900;">GLOBALPING</span> — runs a real traceroute from a community probe anywhere in the world. No key needed.
+                    Unauthenticated limit: <span style="color:var(--gold);">100 tests/hour per IP</span> — each probe location = 1 test.
+                </div>
+                <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;">
+                    <input type="text" id="gpTarget" placeholder="Target — e.g. google.com  |  8.8.8.8  |  1.1.1.1"
+                        style="flex:2;min-width:180px;background:#0d1117;border:1px solid #22d3ee;border-radius:4px;padding:8px 10px;color:#fff;outline:none;font-weight:bold;font-size:0.8rem;font-family:monospace;"
+                        onkeyup="if(event.key==='Enter') runGlobalping()">
+                    <input type="text" id="gpLocation" placeholder="Location — e.g. London · EU · US · GB · AS786"
+                        style="flex:1;min-width:140px;background:#0d1117;border:1px solid var(--border);border-radius:4px;padding:8px 10px;color:#fff;outline:none;font-size:0.8rem;font-family:monospace;"
+                        onkeyup="if(event.key==='Enter') runGlobalping()">
+                    <button id="gpBtn" onclick="runGlobalping()" style="background:#22d3ee;color:#000;font-weight:900;padding:7px 16px;white-space:nowrap;">▶ TRACE</button>
+                </div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+                    <span style="font-size:0.55rem;color:var(--text-dim);">Quick locations:</span>
+                    <span class="gp-quick" onclick="setGPLocation('London')">London</span>
+                    <span class="gp-quick" onclick="setGPLocation('EU')">Europe</span>
+                    <span class="gp-quick" onclick="setGPLocation('US')">USA</span>
+                    <span class="gp-quick" onclick="setGPLocation('JP')">Japan</span>
+                    <span class="gp-quick" onclick="setGPLocation('AU')">Australia</span>
+                    <span class="gp-quick" onclick="setGPLocation('SG')">Singapore</span>
+                    <span class="gp-quick" onclick="setGPLocation('world')">Random</span>
+                </div>
+                <div class="tr-progress" id="gpProgress"><div class="tr-progress-fill" id="gpProgressFill"></div></div>
+                <div id="gpStatus" style="display:none;font-size:0.65rem;color:#22d3ee;padding:6px 0;font-family:monospace;"></div>
+            </div>
+
+            <!-- PASTE PANEL -->
+            <div id="trPanelPaste" style="display:none;">
+                <div style="background:#0d1117;border:1px solid var(--border);border-radius:4px;padding:7px 10px;margin-bottom:8px;font-size:0.62rem;color:var(--text-dim);line-height:1.7;">
+                    <span style="color:#22d3ee;font-weight:900;">HOW TO USE —</span>
+                    Run <span style="color:#7dd3fc;font-family:monospace;">tracert google.com</span> (Windows) or
+                    <span style="color:#7dd3fc;font-family:monospace;">traceroute google.com</span> (Linux/Mac) then paste the full output below.
+                </div>
+                <textarea id="trInput" placeholder="Paste your tracert or traceroute output here..."
+                    style="width:100%;height:100px;background:#0d1117;border:1px solid #22d3ee;border-radius:4px;padding:8px 10px;color:#7dd3fc;font-family:monospace;font-size:0.7rem;outline:none;resize:vertical;line-height:1.5;margin-bottom:6px;"></textarea>
+                <div style="display:flex;gap:6px;margin-bottom:8px;">
+                    <button id="trBtn" onclick="runPasteTrace()" style="background:#22d3ee;color:#000;font-weight:900;padding:7px 16px;">▶ VISUALISE</button>
+                    <button onclick="clearTraceroute()" style="background:#21262d;color:var(--text-dim);padding:7px 12px;">CLEAR</button>
+                </div>
+                <div class="tr-progress" id="trProgress"><div class="tr-progress-fill" id="trProgressFill"></div></div>
+            </div>
+
+            <!-- Shared results area -->
+            <div id="trMap"></div>
+            <table class="tr-hops-table" id="trHopsTable">
+                <thead><tr>
+                    <th>#</th><th>IP / Hostname</th><th>Location</th>
+                    <th style="text-align:right">RTT</th>
+                    <th>ASN</th>
+                </tr></thead>
+                <tbody id="trHopsBody"></tbody>
+            </table>
+            <div class="tr-error" id="trError"></div>
+            <div class="tr-note" id="trNote"></div>
         </div>
     </div>
 
@@ -1347,6 +1529,294 @@
     }
 
     async function fetchDNS(n, t) { return (await fetch(`https://cloudflare-dns.com/dns-query?name=${n}&type=${t}`, { headers: {'Accept': 'application/dns-json'} })).json(); }
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+    // ─────────────────────────────────────────────
+    //  TRACEROUTE VISUALISER — Globalping + Paste
+    // ─────────────────────────────────────────────
+
+    let trExpanded = false;
+    let trMap = null;
+    let currentTrTab = 'globalping';
+
+    function toggleTraceroute() {
+        trExpanded = !trExpanded;
+        document.getElementById('trExpandPanel').classList.toggle('open', trExpanded);
+        document.getElementById('trCollapsedBar').classList.toggle('open', trExpanded);
+        document.getElementById('trChevron').innerText = trExpanded ? '▲ CLOSE' : '▼ EXPAND';
+    }
+
+    function switchTrTab(tab) {
+        currentTrTab = tab;
+        document.getElementById('trPanelGlobalping').style.display = tab === 'globalping' ? 'block' : 'none';
+        document.getElementById('trPanelPaste').style.display       = tab === 'paste'      ? 'block' : 'none';
+        document.getElementById('tabGlobalping').classList.toggle('active', tab === 'globalping');
+        document.getElementById('tabPaste').classList.toggle('active', tab === 'paste');
+        clearTrResults();
+    }
+
+    function setGPLocation(loc) { document.getElementById('gpLocation').value = loc; }
+
+    function clearTrResults() {
+        document.getElementById('trHopsTable').style.display = 'none';
+        document.getElementById('trHopsBody').innerHTML = '';
+        document.getElementById('trError').style.display = 'none';
+        document.getElementById('trNote').innerText = '';
+        document.getElementById('trMap').style.display = 'none';
+        if (trMap) { trMap.remove(); trMap = null; }
+    }
+
+    function clearTraceroute() {
+        document.getElementById('trInput').value = '';
+        clearTrResults();
+    }
+
+    function setTrProgress(prefix, pct) {
+        const el = document.getElementById(prefix + 'ProgressFill');
+        if (el) el.style.width = pct + '%';
+    }
+
+    // ── GLOBALPING ──────────────────────────────
+
+    async function runGlobalping() {
+        const target   = document.getElementById('gpTarget').value.trim();
+        const location = document.getElementById('gpLocation').value.trim() || 'world';
+        if (!target) return;
+
+        const btn    = document.getElementById('gpBtn');
+        const prog   = document.getElementById('gpProgress');
+        const status = document.getElementById('gpStatus');
+        btn.disabled = true; btn.innerText = 'TRACING...';
+        prog.style.display = 'block';
+        status.style.display = 'block';
+        status.innerText = 'Creating measurement on Globalping...';
+        setTrProgress('gp', 5);
+        clearTrResults();
+
+        try {
+            const postR = await fetch('https://api.globalping.io/v1/measurements', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    target,
+                    type: 'traceroute',
+                    measurementOptions: { protocol: 'ICMP' },
+                    locations: [{ magic: location }]
+                })
+            });
+            if (!postR.ok) {
+                const err = await postR.json().catch(() => ({}));
+                throw new Error(err.error?.message || 'API error ' + postR.status);
+            }
+            const { id } = await postR.json();
+            setTrProgress('gp', 20);
+            status.innerText = 'Probe found (' + id.substring(0,8) + '...) - running traceroute...';
+
+            let result = null;
+            for (let i = 0; i < 30; i++) {
+                await new Promise(r => setTimeout(r, 1500));
+                const getR = await fetch('https://api.globalping.io/v1/measurements/' + id);
+                if (!getR.ok) throw new Error('Poll failed: ' + getR.status);
+                const data = await getR.json();
+                setTrProgress('gp', 20 + Math.min(i * 3, 50));
+                status.innerText = 'Running... ' + ((i+1)*1.5).toFixed(1) + 's';
+                if (data.status !== 'in-progress') { result = data; break; }
+            }
+            if (!result) throw new Error('Timed out waiting for probe result (>45s)');
+            setTrProgress('gp', 75);
+
+            const probeResult = result.results?.[0];
+            if (!probeResult) throw new Error('No probe results returned - try a different location');
+
+            const probe   = probeResult.probe;
+            const rawHops = probeResult.result?.hops ?? [];
+            status.innerText = 'Done: ' + probe.city + ', ' + probe.country + ' - AS' + probe.asn;
+
+            const hops = rawHops.map((h, idx) => {
+                const timings = (h.timings ?? []).map(t => t.rtt).filter(t => t != null);
+                const avg = timings.length ? Math.round(timings.reduce((a,b) => a+b,0) / timings.length) : null;
+                return { hop: idx + 1, ip: h.resolvedAddress || null, hostname: h.resolvedHostname || null, avg };
+            });
+
+            const allIPs = [...new Set(hops.map(h => h.ip).filter(Boolean))];
+            const geoMap = await geolocateIPs(allIPs);
+            setTrProgress('gp', 95);
+            renderHopsTable(hops, geoMap);
+            renderMap(hops, geoMap);
+            setTrProgress('gp', 100);
+
+            const geoCount = hops.filter(h => h.ip && geoMap[h.ip]).length;
+            document.getElementById('trNote').innerHTML =
+                'Probe: <span style="color:#22d3ee;">' + probe.city + ', ' + probe.country + '</span> &middot; AS' + probe.asn + ' &middot; ' + (probe.network||'') + ' &nbsp;|&nbsp; ' + hops.length + ' hops &middot; ' + geoCount + ' geolocated &middot; ASN badges click to BGP lookup';
+
+        } catch(e) {
+            document.getElementById('trError').innerText = 'x ' + e.message;
+            document.getElementById('trError').style.display = 'block';
+        }
+
+        setTimeout(() => { prog.style.display = 'none'; setTrProgress('gp', 0); }, 800);
+        status.style.display = 'none';
+        btn.disabled = false; btn.innerText = 'TRACE';
+    }
+
+    // ── PASTE LOCAL ──────────────────────────────
+
+    function parseTraceroute(text) {
+        const hops = [], lines = text.split('\n');
+        for (const line of lines) {
+            const winMatch = line.match(/^\s*(\d+)\s+([\d*]+\s+ms|[*]+)\s+([\d*]+\s+ms|[*]+)\s+([\d*]+\s+ms|[*]+)\s+(.+)/i);
+            if (winMatch) {
+                const times = [parseFloat(winMatch[2]),parseFloat(winMatch[3]),parseFloat(winMatch[4])].filter(t=>t>0);
+                const avg   = times.length ? Math.round(times.reduce((a,b)=>a+b,0)/times.length) : null;
+                const rest  = winMatch[5].trim();
+                let ip = null, hostname = null;
+                const ipB = rest.match(/\[(\d+\.\d+\.\d+\.\d+)\]/);
+                const ipR = rest.match(/^(\d+\.\d+\.\d+\.\d+)$/);
+                if (ipB) { ip = ipB[1]; hostname = rest.split('[')[0].trim(); }
+                else if (ipR) { ip = ipR[1]; }
+                else if (!rest.includes('timed out') && !rest.includes('*')) { hostname = rest; }
+                if (parseInt(winMatch[1]) && (ip||hostname))
+                    hops.push({ hop: parseInt(winMatch[1]), ip, hostname: hostname||null, avg });
+                continue;
+            }
+            const linuxMatch = line.match(/^\s*(\d+)\s+(.+)/);
+            if (linuxMatch) {
+                const hopNum = parseInt(linuxMatch[1]), rest = linuxMatch[2].trim();
+                if (!hopNum) continue;
+                if (rest.match(/^\*[\s*]*$/)) { hops.push({ hop:hopNum, ip:null, hostname:null, avg:null }); continue; }
+                const ipP = rest.match(/\((\d+\.\d+\.\d+\.\d+)\)/);
+                const ipR = rest.match(/^(\d+\.\d+\.\d+\.\d+)\s/);
+                const ip  = ipP ? ipP[1] : (ipR ? ipR[1] : null);
+                const hn  = ipP ? rest.split('(')[0].trim() : null;
+                const ms  = [...rest.matchAll(/([\d.]+)\s*ms/g)].map(m=>parseFloat(m[1]));
+                const avg = ms.length ? Math.round(ms.reduce((a,b)=>a+b,0)/ms.length) : null;
+                if (ip||hn) hops.push({ hop:hopNum, ip, hostname:hn||null, avg });
+            }
+        }
+        const seen = new Set();
+        return hops.filter(h => { if(seen.has(h.hop)) return false; seen.add(h.hop); return true; });
+    }
+
+    async function runPasteTrace() {
+        const text = document.getElementById('trInput').value.trim();
+        if (!text) return;
+        const btn = document.getElementById('trBtn');
+        const prog = document.getElementById('trProgress');
+        btn.disabled = true; btn.innerText = 'PROCESSING...';
+        prog.style.display = 'block'; setTrProgress('tr', 10);
+        clearTrResults();
+        try {
+            const hops = parseTraceroute(text);
+            if (!hops.length) throw new Error('Could not parse hops - paste the full tracert/traceroute output.');
+            setTrProgress('tr', 35);
+            const geoMap = await geolocateIPs([...new Set(hops.map(h=>h.ip).filter(Boolean))]);
+            setTrProgress('tr', 80);
+            renderHopsTable(hops, geoMap);
+            renderMap(hops, geoMap);
+            setTrProgress('tr', 100);
+            const gc = hops.filter(h=>h.ip&&geoMap[h.ip]).length, sc = hops.filter(h=>!h.ip).length;
+            document.getElementById('trNote').innerHTML =
+                '<span style="color:#22d3ee;">' + hops.length + '</span> hops &middot; <span style="color:var(--green);">' + gc + '</span> geolocated &middot; <span style="color:var(--text-dim);">' + sc + '</span> non-responsive &middot; ASN badges click to BGP lookup';
+        } catch(e) {
+            document.getElementById('trError').innerText = 'x ' + e.message;
+            document.getElementById('trError').style.display = 'block';
+        }
+        setTimeout(()=>{ prog.style.display='none'; setTrProgress('tr',0); }, 600);
+        btn.disabled=false; btn.innerText='VISUALISE';
+    }
+
+    // ── SHARED ──────────────────────────────────
+
+    async function geolocateIPs(ips) {
+        const valid = ips.filter(ip => ip &&
+            !ip.startsWith('10.') && !ip.startsWith('192.168.') &&
+            !(ip.startsWith('172.') && +ip.split('.')[1]>=16 && +ip.split('.')[1]<=31) &&
+            ip !== '???' && ip !== '0.0.0.0');
+        if (!valid.length) return {};
+        try {
+            const body = valid.map(ip => ({ query: ip, fields: 'query,status,country,regionName,city,lat,lon,org,as,isp' }));
+            const r = await fetch('http://ip-api.com/batch?fields=query,status,country,regionName,city,lat,lon,org,as,isp', {
+                method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+            });
+            if (!r.ok) throw new Error();
+            const data = await r.json();
+            const map = {};
+            for (const d of data) if (d.status==='success') map[d.query]=d;
+            return map;
+        } catch(e) {
+            const map = {};
+            for (const ip of valid.slice(0,15)) {
+                try {
+                    const r = await fetch('https://ipapi.co/' + ip + '/json/');
+                    const d = await r.json();
+                    if (d.latitude) map[ip] = { lat:d.latitude, lon:d.longitude, city:d.city, country:d.country_name, org:d.org, as:d.asn };
+                } catch(e2) {}
+                await new Promise(res=>setTimeout(res,80));
+            }
+            return map;
+        }
+    }
+
+    function msClass(ms) { return ms===null?'ms-star':ms<50?'ms-good':ms<150?'ms-warn':'ms-bad'; }
+
+    function renderHopsTable(hops, geoMap) {
+        const bodyEl = document.getElementById('trHopsBody');
+        bodyEl.innerHTML = hops.map(hop => {
+            const geo    = hop.ip ? geoMap[hop.ip] : null;
+            const msStr  = hop.avg!==null ? '<span class="' + msClass(hop.avg) + '">' + hop.avg + ' ms</span>' : '<span class="ms-star">*</span>';
+            const loc    = geo ? [geo.city,geo.country].filter(Boolean).join(', ') : (hop.ip?'no geo data':'No response');
+            const asnRaw = geo&&geo.as ? geo.as : '';
+            const asnNum = asnRaw.match(/\d+/) ? asnRaw.match(/\d+/)[0] : '';
+            const asnName= asnRaw.replace(/^AS\d+\s*/i,'').substring(0,22);
+            const asnCell= asnNum ? '<span class="tr-hop-asn" onclick="fillAndSearchASN(\'' + asnNum + '\')" title="' + asnRaw + '">AS' + asnNum + ' <span style="color:var(--text-dim);font-size:0.55rem;">' + asnName + '</span></span>' : '&mdash;';
+            const isPriv = hop.ip&&(hop.ip.startsWith('10.')||hop.ip.startsWith('192.168.')||hop.ip.startsWith('172.'));
+            const priv   = isPriv?' <span style="font-size:0.5rem;color:var(--gold);background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:2px;padding:1px 4px;">PRIV</span>':'';
+            const hn     = hop.hostname&&hop.hostname!==hop.ip?'<div style="font-size:0.55rem;color:var(--text-dim);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + hop.hostname + '</div>':'';
+            const dispIP = hop.ip?'<span style="color:#7dd3fc;">' + hop.ip + '</span>' + priv:'<span class="ms-star">* * *</span>';
+            return '<tr><td class="tr-hop-num">' + hop.hop + '</td><td>' + dispIP + hn + '</td><td class="tr-hop-loc">' + loc + '</td><td class="tr-hop-ms" style="text-align:right;">' + msStr + '</td><td>' + asnCell + '</td></tr>';
+        }).join('');
+        document.getElementById('trHopsTable').style.display = 'table';
+    }
+
+    function renderMap(hops, geoMap) {
+        const mapEl = document.getElementById('trMap');
+        mapEl.style.display = 'block';
+        if (trMap) { trMap.remove(); trMap = null; }
+        trMap = L.map('trMap', { zoomControl:true });
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution:'&copy; <a href="https://carto.com/">CARTO</a>', maxZoom:18
+        }).addTo(trMap);
+        const points=[], plotted=[];
+        for (const hop of hops) {
+            if (!hop.ip) continue;
+            const geo = geoMap[hop.ip];
+            if (!geo||!geo.lat) continue;
+            points.push([geo.lat,geo.lon]); plotted.push({hop,geo});
+        }
+        if (!points.length) { mapEl.style.display='none'; return; }
+        if (points.length>1) L.polyline(points,{color:'#22d3ee',weight:2,opacity:0.8,dashArray:'6,4'}).addTo(trMap);
+        plotted.forEach(function(item, idx) {
+            var hop=item.hop, geo=item.geo;
+            var isFirst=idx===0, isLast=idx===plotted.length-1;
+            var color=isLast?'#00ff66':isFirst?'#a855f7':'#22d3ee', size=isFirst||isLast?13:9;
+            var icon=L.divIcon({className:'',
+                html:'<div style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:' + color + ';border:2px solid #0d1117;box-shadow:0 0 10px ' + color + ';"></div>',
+                iconSize:[size,size],iconAnchor:[size/2,size/2]});
+            var ms_color = hop.avg===null?'#94a3b8':hop.avg<50?'#00ff66':hop.avg<150?'#fbbf24':'#ff3333';
+            var popup='<div style="font-family:monospace;font-size:11px;color:#e2e8f0;background:#161b22;padding:7px 9px;border-radius:4px;border:1px solid #30363d;min-width:170px;line-height:1.6;">'
+                +'<b style="color:#22d3ee;">Hop ' + hop.hop + '</b><br>'
+                +'<span style="color:#7dd3fc;">' + (hop.ip||'') + '</span><br>'
+                +(hop.hostname?'<span style="color:#94a3b8;font-size:10px;">' + hop.hostname + '</span><br>':'')
+                +(geo.city?'<span style="color:#94a3b8;">' + geo.city + ', ' + geo.country + '</span><br>':'')
+                +(hop.avg!==null?'<span style="color:' + ms_color + ';">' + hop.avg + ' ms</span><br>':'')
+                +(geo.as?'<span style="color:#a855f7;">' + geo.as + '</span>':'')
+                +'</div>';
+            L.marker([geo.lat,geo.lon],{icon:icon}).bindPopup(popup).addTo(trMap);
+        });
+        if (points.length===1) { trMap.setView(points[0],7); } else { trMap.fitBounds(L.latLngBounds(points).pad(0.25)); }
+    }
+
 </script>
 </body>
 </html>
