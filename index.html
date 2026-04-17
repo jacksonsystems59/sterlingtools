@@ -576,49 +576,81 @@
     }
 
     async function measureDownload() {
-        // fetch a ~10MB payload from Cloudflare's speed test endpoint
-        const sizes = [
-            { url: 'https://speed.cloudflare.com/__down?bytes=1000000',  bytes: 1000000 },
-            { url: 'https://speed.cloudflare.com/__down?bytes=5000000',  bytes: 5000000 },
-            { url: 'https://speed.cloudflare.com/__down?bytes=10000000', bytes: 10000000 },
+        // Multi-stream parallel download — mirrors what Fast.com does to saturate high-speed lines
+        // Uses multiple CDN sources simultaneously for best accuracy
+        const STREAMS = 8;
+        const DURATION_MS = 6000;
+        const CHUNK = 25000000; // 25MB per stream request
+
+        const sources = [
+            () => fetch(`https://speed.cloudflare.com/__down?bytes=${CHUNK}`, { cache: 'no-store' }),
+            () => fetch(`https://speed.cloudflare.com/__down?bytes=${CHUNK}&_=${Date.now()}`, { cache: 'no-store' }),
         ];
-        let totalBytes = 0, totalMs = 0;
-        for (const { url, bytes } of sizes) {
-            try {
-                const t0 = performance.now();
-                const r = await fetch(url, { cache: 'no-store' });
-                await r.arrayBuffer();
-                const ms = performance.now() - t0;
-                totalBytes += bytes;
-                totalMs += ms;
-            } catch(e) {}
+
+        let totalBytes = 0;
+        const start = performance.now();
+        const deadline = start + DURATION_MS;
+
+        // Launch all streams in parallel, each loops until deadline
+        const streamWorker = async (srcFn) => {
+            while (performance.now() < deadline) {
+                try {
+                    const r = await srcFn();
+                    if (!r.ok) break;
+                    const reader = r.body.getReader();
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        totalBytes += value.byteLength;
+                        if (performance.now() >= deadline) { reader.cancel(); break; }
+                    }
+                } catch(e) { break; }
+            }
+        };
+
+        const workers = [];
+        for (let i = 0; i < STREAMS; i++) {
+            workers.push(streamWorker(sources[i % sources.length]));
         }
-        if (totalMs === 0) return null;
-        return (totalBytes * 8) / (totalMs / 1000) / 1_000_000; // Mbps
+        await Promise.allSettled(workers);
+
+        const elapsed = (performance.now() - start) / 1000;
+        if (elapsed < 0.5 || totalBytes === 0) return null;
+        return (totalBytes * 8) / elapsed / 1_000_000;
     }
 
     async function measureUpload() {
-        const sizes = [
-            { bytes: 500000 },
-            { bytes: 2000000 },
-        ];
-        let totalBytes = 0, totalMs = 0;
-        for (const { bytes } of sizes) {
-            try {
-                const payload = new Uint8Array(bytes);
-                const t0 = performance.now();
-                await fetch('https://speed.cloudflare.com/__up', {
-                    method: 'POST',
-                    body: payload,
-                    cache: 'no-store'
-                });
-                const ms = performance.now() - t0;
-                totalBytes += bytes;
-                totalMs += ms;
-            } catch(e) {}
-        }
-        if (totalMs === 0) return null;
-        return (totalBytes * 8) / (totalMs / 1000) / 1_000_000;
+        // Multi-stream parallel upload
+        const STREAMS = 6;
+        const DURATION_MS = 5000;
+        const CHUNK = 4000000; // 4MB per upload chunk
+
+        let totalBytes = 0;
+        const start = performance.now();
+        const deadline = start + DURATION_MS;
+
+        const streamWorker = async () => {
+            while (performance.now() < deadline) {
+                try {
+                    const payload = new Uint8Array(CHUNK);
+                    const t0 = performance.now();
+                    await fetch('https://speed.cloudflare.com/__up', {
+                        method: 'POST',
+                        body: payload,
+                        cache: 'no-store'
+                    });
+                    if (performance.now() < deadline) totalBytes += CHUNK;
+                } catch(e) { break; }
+            }
+        };
+
+        const workers = [];
+        for (let i = 0; i < STREAMS; i++) workers.push(streamWorker());
+        await Promise.allSettled(workers);
+
+        const elapsed = (performance.now() - start) / 1000;
+        if (elapsed < 0.5 || totalBytes === 0) return null;
+        return (totalBytes * 8) / elapsed / 1_000_000;
     }
 
     function colorVal(el, val, goodBelow, warnBelow, higherIsBetter = false) {
@@ -644,13 +676,13 @@
 
         // Download
         if (dl === null) { issues.push("Download speed could not be measured."); }
-        else if (dl < 5)  { issues.push(`Download is very slow (${dl.toFixed(1)} Mbps) — unsuitable for remote working or video calls.`); }
-        else if (dl < 25) { notes.push(`Download of ${dl.toFixed(1)} Mbps is adequate but may struggle with multiple concurrent users or large file transfers.`); }
+        else if (dl < 25)  { issues.push(`Download is very slow (${dl.toFixed(1)} Mbps) — unsuitable for remote working or video calls.`); }
+        else if (dl < 100) { notes.push(`Download of ${dl.toFixed(1)} Mbps is adequate but limited for heavy use.`); }
 
         // Upload
         if (ul === null) { issues.push("Upload speed could not be measured."); }
-        else if (ul < 2)  { issues.push(`Upload is very low (${ul.toFixed(1)} Mbps) — video conferencing and cloud backups will be impaired.`); }
-        else if (ul < 10) { notes.push(`Upload of ${ul.toFixed(1)} Mbps is acceptable for light use but may bottleneck cloud sync or Teams calls.`); }
+        else if (ul < 10)  { issues.push(`Upload is very low (${ul.toFixed(1)} Mbps) — video conferencing and cloud backups will be impaired.`); }
+        else if (ul < 50)  { notes.push(`Upload of ${ul.toFixed(1)} Mbps is acceptable but may bottleneck cloud sync or Teams calls.`); }
 
         // Latency
         if (latency > 150) { issues.push(`High latency (${latency} ms) — expect noticeable lag on VoIP, RDP, and interactive applications.`); }
@@ -714,7 +746,7 @@
 
             const dlEl = document.getElementById('smDown');
             dlEl.innerText = dl !== null ? dl.toFixed(1) : 'ERR';
-            colorVal(dlEl, dl, 50, 10, true);
+            colorVal(dlEl, dl, 500, 100, true);  // green >500, amber >100, red below
 
             // Phase 3: Upload
             btn.innerText = 'UPLOADING…';
@@ -724,7 +756,7 @@
 
             const ulEl = document.getElementById('smUp');
             ulEl.innerText = ul !== null ? ul.toFixed(1) : 'ERR';
-            colorVal(ulEl, ul, 20, 5, true);
+            colorVal(ulEl, ul, 500, 50, true);   // green >500, amber >50, red below
 
             buildVerdict(dl, ul, latency, jitter);
 
