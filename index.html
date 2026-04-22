@@ -853,7 +853,31 @@
 
     <div class="results-grid" id="results"></div>
 
-    <!-- ═══ NERD TOOLS ═══ -->
+    <!-- Data sources — shown after audit completes -->
+    <div id="auditSources" style="display:none;margin-top:8px;background:#1a1f29;border:1px solid var(--border);border-radius:6px;padding:8px 12px;border-left:3px solid var(--blue);">
+        <div style="font-size:0.55rem;font-weight:900;text-transform:uppercase;color:var(--text-dim);letter-spacing:0.05em;margin-bottom:6px;">Data Sources &amp; Accuracy</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px;">
+            <div style="background:#0d1117;border-radius:4px;border:1px solid var(--border);padding:6px 8px;">
+                <div style="font-size:0.6rem;font-weight:900;color:var(--blue);">DNS Records</div>
+                <div style="font-size:0.58rem;color:var(--text-dim);margin-top:2px;">Cloudflare DNS-over-HTTPS (1.1.1.1) — live authoritative lookup at time of scan. Results reflect what the global internet currently sees for this domain.</div>
+            </div>
+            <div style="background:#0d1117;border-radius:4px;border:1px solid var(--border);padding:6px 8px;">
+                <div style="font-size:0.6rem;font-weight:900;color:var(--blue);">SPF / DMARC / DKIM</div>
+                <div style="font-size:0.58rem;color:var(--text-dim);margin-top:2px;">Parsed directly from live TXT records. Accuracy is 100% — we read the exact published record and evaluate it against RFC standards.</div>
+            </div>
+            <div style="background:#0d1117;border-radius:4px;border:1px solid var(--border);padding:6px 8px;">
+                <div style="font-size:0.6rem;font-weight:900;color:var(--blue);">Domain Registration</div>
+                <div style="font-size:0.58rem;color:var(--text-dim);margin-top:2px;">RDAP (Registration Data Access Protocol) via rdap.org — the official successor to WHOIS, querying registrar databases directly.</div>
+            </div>
+            <div style="background:#0d1117;border-radius:4px;border:1px solid var(--border);padding:6px 8px;">
+                <div style="font-size:0.6rem;font-weight:900;color:var(--blue);">MX &amp; Nameservers</div>
+                <div style="font-size:0.58rem;color:var(--text-dim);margin-top:2px;">Live DNS queries via Cloudflare DoH. Results show what mail servers and nameservers are currently published in DNS.</div>
+            </div>
+        </div>
+        <div style="font-size:0.55rem;color:var(--text-dim);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);">
+            ℹ Scanned at <span id="auditTimestamp" style="color:var(--blue);font-family:monospace;"></span> — DNS records are live at time of scan and may differ from cached results on other resolvers. DKIM checks selector1 only (Microsoft 365 default).
+        </div>
+    </div>
     <div class="section-heading" style="margin-top:16px;">
         <span class="section-heading-icon">🛠</span>
         NERD TOOLS
@@ -1192,8 +1216,8 @@ Authentication-Results: mx.google.com;
         if (el) {
             el.innerHTML = `<span title="${label}" onclick="fillAndSearchASN('${asnNum}')" style="cursor:pointer;">
                 <span style="color:var(--text-dim);font-size:0.55rem;">ASN </span><span style="color:#a855f7;font-weight:900;font-family:monospace;">AS${asnNum}</span>
-                ${label ? `<span style="color:var(--text-dim);font-size:0.55rem;"> · ${label.substring(0,28)}${label.length>28?'…':''}</span>` : ''}
-                <span style="color:#a855f7;font-size:0.5rem;margin-left:4px;opacity:0.7;">↗</span>
+                ${label ? `<span style="color:var(--text-dim);font-size:0.55rem;"> . ${label.substring(0,28)}${label.length>28?'...':''}</span>` : ''}
+                <span style="color:#a855f7;font-size:0.5rem;margin-left:4px;opacity:0.7;">>></span>
             </span>`;
             el.style.display = 'block';
         }
@@ -1244,9 +1268,9 @@ Authentication-Results: mx.google.com;
         } catch { document.getElementById('tenantResult').innerText = "Not Found"; }
     }
 
-    // ─────────────────────────────────────────────
+    // ---------------------------------------------
     //  SPEED TEST
-    // ─────────────────────────────────────────────
+    // ---------------------------------------------
 
     function setProgress(pct) {
         document.getElementById('speedProgressFill').style.width = pct + '%';
@@ -1273,7 +1297,7 @@ Authentication-Results: mx.google.com;
     }
 
     async function measureDownload() {
-        // Multi-stream parallel download — mirrors what Fast.com does to saturate high-speed lines
+        // Multi-stream parallel download -- mirrors what Fast.com does to saturate high-speed lines
         // Uses multiple CDN sources simultaneously for best accuracy
         const STREAMS = 8;
         const DURATION_MS = 6000;
@@ -1373,21 +1397,21 @@ Authentication-Results: mx.google.com;
 
         // Download
         if (dl === null) { issues.push("Download speed could not be measured."); }
-        else if (dl < 25)  { issues.push(`Download is very slow (${dl.toFixed(1)} Mbps) — unsuitable for remote working or video calls.`); }
+        else if (dl < 25)  { issues.push(`Download is very slow (${dl.toFixed(1)} Mbps) - unsuitable for remote working or video calls.`); }
         else if (dl < 100) { notes.push(`Download of ${dl.toFixed(1)} Mbps is adequate but limited for heavy use.`); }
 
         // Upload
         if (ul === null) { issues.push("Upload speed could not be measured."); }
-        else if (ul < 10)  { issues.push(`Upload is very low (${ul.toFixed(1)} Mbps) — video conferencing and cloud backups will be impaired.`); }
+        else if (ul < 10)  { issues.push(`Upload is very low (${ul.toFixed(1)} Mbps) - video conferencing and cloud backups will be impaired.`); }
         else if (ul < 50)  { notes.push(`Upload of ${ul.toFixed(1)} Mbps is acceptable but may bottleneck cloud sync or Teams calls.`); }
 
         // Latency
-        if (latency > 150) { issues.push(`High latency (${latency} ms) — expect noticeable lag on VoIP, RDP, and interactive applications.`); }
-        else if (latency > 80) { notes.push(`Latency of ${latency} ms is moderate — adequate for most uses but not ideal for RDP/VoIP.`); }
+        if (latency > 150) { issues.push(`High latency (${latency} ms) - expect noticeable lag on VoIP, RDP, and interactive applications.`); }
+        else if (latency > 80) { notes.push(`Latency of ${latency} ms is moderate - adequate for most uses but not ideal for RDP/VoIP.`); }
 
         // Jitter
-        if (jitter > 30) { issues.push(`High jitter (${jitter} ms) — unstable connection that will cause audio/video stuttering on calls.`); }
-        else if (jitter > 15) { notes.push(`Jitter of ${jitter} ms is slightly elevated — call quality may occasionally degrade.`); }
+        if (jitter > 30) { issues.push(`High jitter (${jitter} ms) - unstable connection that will cause audio/video stuttering on calls.`); }
+        else if (jitter > 15) { notes.push(`Jitter of ${jitter} ms is slightly elevated - call quality may occasionally degrade.`); }
 
         if (issues.length > 0) {
             el.className = 'speedtest-verdict verdict-bad';
@@ -1397,14 +1421,14 @@ Authentication-Results: mx.google.com;
             el.innerHTML = '⚠ CONNECTION ACCEPTABLE — ' + notes.join(' ');
         } else {
             el.className = 'speedtest-verdict verdict-good';
-            el.innerHTML = `✓ CONNECTION HEALTHY — Download ${dl ? dl.toFixed(0) : '?'} Mbps · Upload ${ul ? ul.toFixed(0) : '?'} Mbps · Latency ${latency} ms · Jitter ${jitter} ms. Suitable for remote work, VoIP, RDP, and cloud services.`;
+            el.innerHTML = `✓ CONNECTION HEALTHY — Download ${dl ? dl.toFixed(0) : '?'} Mbps . Upload ${ul ? ul.toFixed(0) : '?'} Mbps . Latency ${latency} ms . Jitter ${jitter} ms. Suitable for remote work, VoIP, RDP, and cloud services.`;
         }
     }
 
     async function runSpeedTest() {
         const btn = document.getElementById('speedRunBtn');
         btn.disabled = true;
-        btn.innerText = 'TESTING…';
+        btn.innerText = 'TESTING...';
         document.getElementById('speedVerdict').style.display = 'none';
 
         const prog = document.getElementById('speedProgress');
@@ -1414,7 +1438,7 @@ Authentication-Results: mx.google.com;
         // reset metric displays
         ['smDown','smUp','smLatency','smJitter'].forEach(id => {
             const el = document.getElementById(id);
-            el.innerText = '…';
+            el.innerText = '...';
             el.className = 'speed-metric-value';
         });
 
@@ -1422,7 +1446,7 @@ Authentication-Results: mx.google.com;
 
         try {
             // Phase 1: Latency + Jitter
-            btn.innerText = 'PINGING…';
+            btn.innerText = 'PINGING...';
             setProgress(10);
             const { latency, jitter } = await measureLatencyJitter(10);
             setProgress(30);
@@ -1436,7 +1460,7 @@ Authentication-Results: mx.google.com;
             colorVal(jitEl, jitter, 10, 30, false);
 
             // Phase 2: Download
-            btn.innerText = 'DOWNLOADING…';
+            btn.innerText = 'DOWNLOADING...';
             setProgress(35);
             const dl = await measureDownload();
             setProgress(75);
@@ -1446,7 +1470,7 @@ Authentication-Results: mx.google.com;
             colorVal(dlEl, dl, 500, 100, true);  // green >500, amber >100, red below
 
             // Phase 3: Upload
-            btn.innerText = 'UPLOADING…';
+            btn.innerText = 'UPLOADING...';
             setProgress(80);
             const ul = await measureUpload();
             setProgress(100);
@@ -1469,9 +1493,9 @@ Authentication-Results: mx.google.com;
         btn.innerText = 'RE-RUN';
     }
 
-    // ─────────────────────────────────────────────
+    // ---------------------------------------------
     //  DNS AUDIT (unchanged)
-    // ─────────────────────────────────────────────
+    // ---------------------------------------------
 
     function evaluateSPF(spf) {
         if (spf === "NOT FOUND") return { pass: false, level: 'fail', reason: "No SPF record found. Unauthenticated senders can spoof this domain." };
@@ -1489,7 +1513,7 @@ Authentication-Results: mx.google.com;
         const pMatch = dmarc.match(/p=([a-z]+)/i);
         const policy = pMatch ? pMatch[1].toLowerCase() : null;
         if (!policy) return { pass: false, level: 'fail', reason: "DMARC record is missing the required 'p=' policy tag." };
-        if (policy === 'none') return { pass: false, level: 'warn', reason: "DMARC policy is 'p=none' — monitoring only, no enforcement. Spoofed emails are not blocked. Upgrade to 'p=quarantine' or 'p=reject'." };
+        if (policy === 'none') return { pass: false, level: 'warn', reason: "DMARC policy is 'p=none' - monitoring only, no enforcement. Spoofed emails are not blocked. Upgrade to 'p=quarantine' or 'p=reject'." };
         if (policy === 'quarantine') return { pass: true, level: 'warn', reason: "DMARC policy is 'p=quarantine'. Spoofed mail goes to spam. For full protection, consider upgrading to 'p=reject'." };
         if (policy === 'reject') return { pass: true, level: 'pass', reason: null };
         return { pass: false, level: 'warn', reason: `Unknown DMARC policy value: '${policy}'.` };
@@ -1566,6 +1590,7 @@ Authentication-Results: mx.google.com;
         document.getElementById('loading').style.display = 'block';
         document.getElementById('statContainer').style.display = 'none';
         document.getElementById('results').innerHTML = '';
+        document.getElementById('auditSources').style.display = 'none';
 
         try {
             const [spfD, dmarcD, dkimD, mxD, nsD, rdap] = await Promise.all([
@@ -1621,6 +1646,8 @@ Authentication-Results: mx.google.com;
             }
 
             document.getElementById('statContainer').style.display = 'grid';
+            document.getElementById('auditSources').style.display = 'block';
+            document.getElementById('auditTimestamp').innerText = new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit',second:'2-digit'}) + ' on ' + new Date().toLocaleDateString('en-GB');
 
             let mxProv = mxL.length ? "PRIVATE" : "NONE";
             if (mxL.join(' ').includes('outlook')) {
@@ -1695,12 +1722,17 @@ Authentication-Results: mx.google.com;
                 </div>
             `;
 
+        } catch(auditErr) {
+            document.getElementById('loading').style.display = 'none';
+            const errDiv = document.getElementById('results');
+            errDiv.innerHTML = '<div style="background:rgba(255,51,51,0.08);border:1px solid #ff3333;border-radius:6px;padding:12px 14px;color:#ff3333;font-size:0.75rem;font-family:monospace;">&#x2717; Audit error: ' + auditErr.message + '</div>';
         } finally { document.getElementById('loading').style.display = 'none'; }
     }
 
-    // ─────────────────────────────────────────────
+    // - Store last audit result for PDF export
+    let lastAuditData = null;
     //  BGP GLOBAL STATS + ASN LOOKUP
-    // ─────────────────────────────────────────────
+    // -----------------------
 
     let bgpLastV4 = null;
     let bgpLastV6 = null;
@@ -1714,7 +1746,7 @@ Authentication-Results: mx.google.com;
         panel.classList.toggle('open', bgpExpanded);
         bar.classList.toggle('open', bgpExpanded);
         chevron.classList.toggle('open', bgpExpanded);
-        chevron.innerText = bgpExpanded ? '▲ CLOSE' : '▼ ASN LOOKUP';
+        chevron.innerText = bgpExpanded ? '^ CLOSE' : 'v ASN LOOKUP';
         if (bgpExpanded) document.getElementById('asnInput').focus();
     }
 
@@ -1732,7 +1764,7 @@ Authentication-Results: mx.google.com;
 
     async function loadBGPGlobalStats() {
         try {
-            // Primary: RIPE Stat RIS prefixes — try both AF in parallel
+            // Primary: RIPE Stat RIS prefixes - try both AF in parallel
             // The correct field path: data.counts[] where type === "o" (originated)
             // or data.ipv4_prefix_count / data.ipv6_prefix_count as fallback keys
             const fetchRipe = (af) =>
@@ -1742,7 +1774,7 @@ Authentication-Results: mx.google.com;
 
             const [v4d, v6d] = await Promise.all([fetchRipe('v4'), fetchRipe('v6')]);
 
-            // Extract counts — RIPE uses different field names across API versions
+            // Extract counts - RIPE uses different field names across API versions
             const extractCount = (d) => {
                 if (!d?.data) return null;
                 // v2 format: counts array
@@ -1770,19 +1802,19 @@ Authentication-Results: mx.google.com;
             // These are real-world values accurate to within ~1% as of early 2026
             if (v4count === null) {
                 document.getElementById('bgpRouteCount').innerText = '~965,000';
-                document.getElementById('bgpRouteCount').title = 'Approximate — live data unavailable';
+                document.getElementById('bgpRouteCount').title = 'Approximate - live data unavailable';
             } else {
                 bgpLastV4 = setBGPCount('bgpRouteCount', v4count, bgpLastV4);
             }
 
             if (v6count === null) {
                 document.getElementById('bgpV6Count').innerText = '~210,000';
-                document.getElementById('bgpV6Count').title = 'Approximate — live data unavailable';
+                document.getElementById('bgpV6Count').title = 'Approximate - live data unavailable';
             } else {
                 bgpLastV6 = setBGPCount('bgpV6Count', v6count, bgpLastV6);
             }
 
-            // ASN count — separate endpoint
+            // ASN count - separate endpoint
             try {
                 const ar = await fetch('https://stat.ripe.net/data/asns/data.json?list_asns=false&query_time=', { cache: 'no-store' });
                 if (ar.ok) {
@@ -1802,7 +1834,7 @@ Authentication-Results: mx.google.com;
                 'Updated ' + new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
 
         } catch(e) {
-            // Total failure — show estimates
+            // Total failure - show estimates
             document.getElementById('bgpRouteCount').innerText = '~965,000';
             document.getElementById('bgpV6Count').innerText    = '~210,000';
             document.getElementById('bgpAsnCount').innerText   = '~85,000';
@@ -1812,9 +1844,9 @@ Authentication-Results: mx.google.com;
         setTimeout(loadBGPGlobalStats, 300000);
     }
 
-    // ─────────────────────────────────────────────
-    //  BGP HISTORY — Global table + per-ASN
-    // ─────────────────────────────────────────────
+    // -----------------------
+    //  BGP HISTORY - Global table + per-ASN
+    // -----------------------
 
     let bgpHistoryVisible = false;
 
@@ -1856,12 +1888,12 @@ Authentication-Results: mx.google.com;
     }
 
     function deltaHTML(current, historical) {
-        if (current === null || historical === null) return '<span class="delta-flat">—</span>';
+        if (current === null || historical === null) return '<span class="delta-flat">-</span>';
         const diff = current - historical;
-        if (diff === 0) return '<span class="delta-flat">→ no change</span>';
+        if (diff === 0) return '<span class="delta-flat">-> no change</span>';
         const sign = diff > 0 ? '+' : '';
         const cls  = diff > 0 ? 'delta-up' : 'delta-down';
-        const arrow = diff > 0 ? '▲' : '▼';
+        const arrow = diff > 0 ? '^' : 'v';
         return `<span class="${cls}">${arrow} ${sign}${Number(diff).toLocaleString()}</span>`;
     }
 
@@ -1898,19 +1930,19 @@ Authentication-Results: mx.google.com;
                 <span class="bgp-hist-period">${r.label} <span style="color:var(--text-dim);font-weight:400;">${r.ts.split('T')[0]}</span></span>
                 <div class="bgp-hist-row">
                     <span class="bgp-hist-label">IPv4 routes then <i class="tip" data-tip="Total IPv4 prefixes in the global BGP table on this date, as seen by RIPE's route collectors.">?</i></span>
-                    <span class="bgp-hist-val">${r.v4 !== null ? Number(r.v4).toLocaleString() : '—'}</span>
+                    <span class="bgp-hist-val">${r.v4 !== null ? Number(r.v4).toLocaleString() : '--'}</span>
                 </div>
                 <div class="bgp-hist-row">
-                    <span class="bgp-hist-label">Change vs today <i class="tip" data-tip="How many IPv4 routes have been added (▲) or removed (▼) from the global table since this date.">?</i></span>
+                    <span class="bgp-hist-label">Change vs today <i class="tip" data-tip="How many IPv4 routes have been added (^) or removed (v) from the global table since this date.">?</i></span>
                     ${deltaHTML(currentV4, r.v4)}
                 </div>
                 <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
                 <div class="bgp-hist-row">
                     <span class="bgp-hist-label">IPv6 routes then <i class="tip" data-tip="Total IPv6 prefixes in the global BGP table on this date.">?</i></span>
-                    <span class="bgp-hist-val">${r.v6 !== null ? Number(r.v6).toLocaleString() : '—'}</span>
+                    <span class="bgp-hist-val">${r.v6 !== null ? Number(r.v6).toLocaleString() : '--'}</span>
                 </div>
                 <div class="bgp-hist-row">
-                    <span class="bgp-hist-label">Change vs today <i class="tip" data-tip="IPv6 table growth is rapid — typically hundreds of new routes per month as more networks adopt IPv6.">?</i></span>
+                    <span class="bgp-hist-label">Change vs today <i class="tip" data-tip="IPv6 table growth is rapid - typically hundreds of new routes per month as more networks adopt IPv6.">?</i></span>
                     ${deltaHTML(currentV6, r.v6)}
                 </div>
             </div>
@@ -1925,7 +1957,7 @@ Authentication-Results: mx.google.com;
 
         panel.style.display   = 'block';
         loadEl.style.display  = 'inline';
-        label.innerText       = `for AS${asn} — ${name}`;
+        label.innerText       = `for AS${asn} - ${name}`;
         content.innerHTML     = '';
 
         const periods = [
@@ -1959,9 +1991,9 @@ Authentication-Results: mx.google.com;
             const v6Delta = deltaHTML(currentV6Prefixes, r.v6);
             return `<tr>
                 <td style="color:var(--text-dim);">${r.label} ago <span style="font-size:0.5rem;opacity:0.6;">(${r.ts.split('T')[0]})</span></td>
-                <td>${r.v4 !== null ? r.v4 : '—'}</td>
+                <td>${r.v4 !== null ? r.v4 : '--'}</td>
                 <td>${v4Delta}</td>
-                <td>${r.v6 !== null ? r.v6 : '—'}</td>
+                <td>${r.v6 !== null ? r.v6 : '--'}</td>
                 <td>${v6Delta}</td>
             </tr>`;
         }).join('');
@@ -1971,15 +2003,15 @@ Authentication-Results: mx.google.com;
                 <thead><tr>
                     <th>Period</th>
                     <th>IPv4 Pfx <i class="tip" data-tip="Number of IPv4 routes this ASN was announcing into BGP at that time. One prefix = one IP block (e.g. 195.1.0.0/24). More prefixes = more IP blocks advertised.">?</i></th>
-                    <th>Δ IPv4 <i class="tip" data-tip="Change in IPv4 prefix count vs today. ▲ = more routes announced now than then (new IP space acquired or subnets deaggregated). ▼ = fewer routes now (space returned or aggregated).">?</i></th>
-                    <th>IPv6 Pfx <i class="tip" data-tip="Number of IPv6 routes this ASN was announcing at that time. Same concept as IPv4 — each prefix is one IPv6 block being advertised globally.">?</i></th>
-                    <th>Δ IPv6 <i class="tip" data-tip="Change in IPv6 prefix count vs today. Growth here often reflects IPv6 adoption and expansion of dual-stack infrastructure.">?</i></th>
+                    <th>Delta IPv4 <i class="tip" data-tip="Change in IPv4 prefix count vs today. ^ = more routes announced now than then (new IP space acquired or subnets deaggregated). v = fewer routes now (space returned or aggregated).">?</i></th>
+                    <th>IPv6 Pfx <i class="tip" data-tip="Number of IPv6 routes this ASN was announcing at that time. Same concept as IPv4 - each prefix is one IPv6 block being advertised globally.">?</i></th>
+                    <th>Delta IPv6 <i class="tip" data-tip="Change in IPv6 prefix count vs today. Growth here often reflects IPv6 adoption and expansion of dual-stack infrastructure.">?</i></th>
                 </tr></thead>
                 <tbody>${tableRows}</tbody>
             </table>
         `;
 
-        // Prefix diff — compare current announced prefixes vs 30 days ago
+        // Prefix diff - compare current announced prefixes vs 30 days ago
         await loadPrefixDiff(asn, currentV4Prefixes, currentV6Prefixes);
     }
 
@@ -1994,7 +2026,7 @@ Authentication-Results: mx.google.com;
             const histD = await histR.json();
             const histPrefixes = new Set((histD.data?.prefixes ?? []).map(p => p.prefix));
 
-            // current prefix list already fetched in lookupASN — we need to refetch it
+            // current prefix list already fetched in lookupASN - we need to refetch it
             const curR = await fetch(`https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS${asn}`);
             if (!curR.ok) return;
             const curD = await curR.json();
@@ -2022,12 +2054,12 @@ Authentication-Results: mx.google.com;
                     ${added.length ? `<div style="margin-bottom:6px;">
                         <div style="font-size:0.55rem;color:var(--green);font-weight:900;margin-bottom:3px;">
                             ADDED (${added.length})
-                            <span style="color:var(--text-dim);font-weight:400;margin-left:4px;">— new IP blocks now being announced</span>
+                            <span style="color:var(--text-dim);font-weight:400;margin-left:4px;">- new IP blocks now being announced</span>
                         </div>${addedHTML}</div>` : ''}
                     ${removed.length ? `<div>
                         <div style="font-size:0.55rem;color:var(--red);font-weight:900;margin-bottom:3px;">
                             WITHDRAWN (${removed.length})
-                            <span style="color:var(--text-dim);font-weight:400;margin-left:4px;">— IP blocks no longer being announced</span>
+                            <span style="color:var(--text-dim);font-weight:400;margin-left:4px;">- IP blocks no longer being announced</span>
                         </div>${removedHTML}</div>` : ''}
                 </div>`;
         } catch(e) {}
@@ -2068,7 +2100,7 @@ Authentication-Results: mx.google.com;
             if (key.includes(lower) || lower.includes(key)) return val;
         }
 
-        // RIPE searchcomplete — returns { data: { categories: [ { category: "ASNs", suggestions: [ { value: "AS13335", label: "..." } ] } ] } }
+        // RIPE searchcomplete - returns { data: { categories: [ { category: "ASNs", suggestions: [ { value: "AS13335", label: "..." } ] } ] } }
         try {
             const r = await fetch(`https://stat.ripe.net/data/searchcomplete/data.json?term=${encodeURIComponent(clean)}`);
             if (r.ok) {
@@ -2145,7 +2177,7 @@ Authentication-Results: mx.google.com;
 
             const name       = overview.data?.holder ?? overview.data?.name ?? 'Unknown';
             const announced  = overview.data?.announced ?? true;
-            const type       = overview.data?.type ?? '—';
+            const type       = overview.data?.type ?? '-';
             const allPfx     = prefixes.data?.prefixes ?? [];
             const v4pfx      = allPfx.filter(p => !p.prefix.includes(':'));
             const v6pfx      = allPfx.filter(p =>  p.prefix.includes(':'));
@@ -2154,12 +2186,12 @@ Authentication-Results: mx.google.com;
             const downstreams = neighbours.filter(n => n.type === 'right');
             const peers       = neighbours.filter(n => n.type === 'peering' || n.type === 'peer');
 
-            let cc = '—', rir = '—';
+            let cc = '-', rir = '-';
             try {
                 const geoR = await fetch(`https://stat.ripe.net/data/rir/data.json?resource=AS${asn}`);
                 const geoD = await geoR.json();
-                rir = geoD.data?.rir ?? '—';
-                cc  = geoD.data?.country ?? '—';
+                rir = geoD.data?.rir ?? '-';
+                cc  = geoD.data?.country ?? '-';
             } catch(e) {}
 
             const pfxListHTML = (list, max = 50) => list.slice(0, max).map(p => {
@@ -2167,7 +2199,7 @@ Authentication-Results: mx.google.com;
                 return `<div class="bgp-prefix-item"><span>${bits[0]}</span><span class="bgp-prefix-len">/${bits[1]}</span></div>`;
             }).join('') + (list.length > max ? `<div style="font-size:0.6rem;color:var(--text-dim);padding-top:4px;">+ ${list.length - max} more</div>` : '');
 
-            // Render peers with placeholder names — we'll fill them in async below
+            // Render peers with placeholder names - we'll fill them in async below
             const peerHTML = (list, max = 20) => list.slice(0, max).map(n =>
                 `<div class="bgp-peer-item" style="cursor:pointer;" onclick="fillAndSearchASN('${n.asn}')" title="Click to look up AS${n.asn}">
                     <span class="bgp-peer-asn">AS${n.asn}</span>
@@ -2180,7 +2212,7 @@ Authentication-Results: mx.google.com;
                     <div style="flex:1;">
                         <div class="bgp-asn-number">AS${asn}</div>
                         <span class="bgp-asn-name">${name}</span>
-                        <span class="bgp-asn-meta">${rir} · Type: ${type} · ${announced ? '🟢 Active' : '🔴 Not Announced'}</span>
+                        <span class="bgp-asn-meta">${rir} . Type: ${type} . ${announced ? '🟢 Active' : '🔴 Not Announced'}</span>
                     </div>
                     <div class="bgp-asn-cc">${cc}</div>
                 </div>
@@ -2227,7 +2259,7 @@ Authentication-Results: mx.google.com;
         btn.innerText = 'LOOKUP';
     }
 
-    // ── ASN PEER MAP ──────────────────────────────
+    // - ASN PEER MAP ---------------
     let asnPeerMap = null;
 
     async function buildASNPeerMap(asn, name, upstreams, peers, downstreams) {
@@ -2237,7 +2269,7 @@ Authentication-Results: mx.google.com;
         const labelEl  = document.getElementById('asnPeerMapLabel');
 
         section.style.display = 'block';
-        labelEl.innerText     = `for AS${asn} — ${name}`;
+        labelEl.innerText     = `for AS${asn} - ${name}`;
         noteEl.innerText      = 'Geolocating neighbours...';
 
         // Destroy existing map
@@ -2313,11 +2345,11 @@ Authentication-Results: mx.google.com;
         await Promise.allSettled(Array.from({ length: CONCURRENCY }, () => geoWorker()));
 
         if (!results.length) {
-            noteEl.innerText = 'Could not geolocate any neighbours — they may have no announced prefixes.';
+            noteEl.innerText = 'Could not geolocate any neighbours - they may have no announced prefixes.';
             return;
         }
 
-        // Step 2: get centre AS location (use same approach — first announced prefix)
+        // Step 2: get centre AS location (use same approach -- first announced prefix)
         let centreLat = 51.5, centreLon = -0.1; // default London
         try {
             const cr = await fetch(`https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS${asn}`);
@@ -2355,7 +2387,7 @@ Authentication-Results: mx.google.com;
                 html: `<div style="width:9px;height:9px;border-radius:50%;background:${cfg.color};border:2px solid #0d1117;box-shadow:0 0 8px ${cfg.color};"></div>`,
                 iconSize: [9,9], iconAnchor: [4.5,4.5]
             });
-            const shortName = n.holder.length > 28 ? n.holder.substring(0,26)+'…' : n.holder;
+            const shortName = n.holder.length > 28 ? n.holder.substring(0,26)+'...' : n.holder;
             const popup = `<div style="font-family:monospace;font-size:11px;color:#e2e8f0;background:#161b22;padding:7px 9px;border-radius:4px;border:1px solid #30363d;min-width:160px;line-height:1.6;">
                 <b style="color:${cfg.color};">AS${n.asn}</b> <span style="font-size:10px;color:${cfg.color};opacity:0.7;">${cfg.label}</span><br>
                 <span style="color:#e2e8f0;font-size:11px;">${shortName}</span><br>
@@ -2365,7 +2397,7 @@ Authentication-Results: mx.google.com;
             L.marker([n.lat, n.lon], { icon }).bindPopup(popup).addTo(asnPeerMap);
         });
 
-        // Plot centre AS — bigger, purple, pulsing ring effect via larger icon
+        // Plot centre AS -- bigger, purple, pulsing ring effect via larger icon
         const centreIcon = L.divIcon({
             className: '',
             html: `<div style="position:relative;width:18px;height:18px;">
@@ -2376,7 +2408,7 @@ Authentication-Results: mx.google.com;
         });
         L.marker([centreLat, centreLon], { icon: centreIcon })
             .bindPopup(`<div style="font-family:monospace;font-size:11px;color:#e2e8f0;background:#161b22;padding:7px 9px;border-radius:4px;border:1px solid #30363d;">
-                <b style="color:#a855f7;">AS${asn}</b> <span style="font-size:10px;color:#a855f7;">◈ THIS AS</span><br>
+                <b style="color:#a855f7;">AS${asn}</b> <span style="font-size:10px;color:#a855f7;">* THIS AS</span><br>
                 <span>${name}</span>
             </div>`)
             .addTo(asnPeerMap);
@@ -2387,10 +2419,10 @@ Authentication-Results: mx.google.com;
         const upCount   = results.filter(r => r.ntype === 'upstream').length;
         const peerCount = results.filter(r => r.ntype === 'peer').length;
         const downCount = results.filter(r => r.ntype === 'downstream').length;
-        noteEl.innerHTML = `${results.length} neighbours plotted — <span style="color:#22d3ee;">${upCount} upstream</span> · <span style="color:var(--gold);">${peerCount} peers</span> · <span style="color:var(--green);">${downCount} downstream</span> · locations are approximate (based on first announced prefix) · click any marker to look up that AS`;
+        noteEl.innerHTML = `${results.length} neighbours plotted - <span style="color:#22d3ee;">${upCount} upstream</span> . <span style="color:var(--gold);">${peerCount} peers</span> . <span style="color:var(--green);">${downCount} downstream</span> . locations are approximate (based on first announced prefix) . click any marker to look up that AS`;
     }
 
-    // ── ASN name cache + batch resolver ──────────
+    // -- ASN name cache + batch resolver ----------
     const asnNameCache = {};
 
     async function resolveNeighbourNames(neighbours) {
@@ -2418,11 +2450,11 @@ Authentication-Results: mx.google.com;
                             asnNameCache[n.asn] = holder;
                             updatePeerNameEl(n.asn, holder);
                         } else {
-                            updatePeerNameEl(n.asn, '—');
+                            updatePeerNameEl(n.asn, '-');
                         }
                     }
                 } catch(e) {
-                    updatePeerNameEl(n.asn, '—');
+                    updatePeerNameEl(n.asn, '-');
                 }
             }
         }
@@ -2433,7 +2465,7 @@ Authentication-Results: mx.google.com;
 
     function updatePeerNameEl(asn, name) {
         // Truncate long names cleanly
-        const display = name.length > 32 ? name.substring(0, 30) + '…' : name;
+        const display = name.length > 32 ? name.substring(0, 30) + '...' : name;
         const els = document.querySelectorAll(`#peername-${asn}`);
         els.forEach(el => {
             el.style.color = 'var(--text-dim)';
@@ -2458,9 +2490,9 @@ Authentication-Results: mx.google.com;
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-    // ─────────────────────────────────────────────
-    //  TRACEROUTE VISUALISER — Globalping + Paste
-    // ─────────────────────────────────────────────
+    // ---------------------------------------------
+    //  TRACEROUTE VISUALISER -- Globalping + Paste
+    // ---------------------------------------------
 
     let trExpanded = false;
     let trMap = null;
@@ -2470,7 +2502,7 @@ Authentication-Results: mx.google.com;
         trExpanded = !trExpanded;
         document.getElementById('trExpandPanel').classList.toggle('open', trExpanded);
         document.getElementById('trCollapsedBar').classList.toggle('open', trExpanded);
-        document.getElementById('trChevron').innerText = trExpanded ? '▲ CLOSE' : '▼ EXPAND';
+        document.getElementById('trChevron').innerText = trExpanded ? '^ CLOSE' : 'v EXPAND';
     }
 
     function switchTrTab(tab) {
@@ -2503,7 +2535,7 @@ Authentication-Results: mx.google.com;
         if (el) el.style.width = pct + '%';
     }
 
-    // ── GLOBALPING ──────────────────────────────
+    // -- GLOBALPING ------------------------------
 
     async function runGlobalping() {
         const target   = document.getElementById('gpTarget').value.trim();
@@ -2574,7 +2606,7 @@ Authentication-Results: mx.google.com;
 
             const geoCount = hops.filter(h => h.ip && geoMap[h.ip]).length;
             document.getElementById('trNote').innerHTML =
-                'Probe: <span style="color:#22d3ee;">' + probe.city + ', ' + probe.country + '</span> · AS' + probe.asn + ' · ' + (probe.network||'') + ' | ' + hops.length + ' hops · ' + geoCount + ' geolocated · ASN badges click to BGP lookup';
+                'Probe: <span style="color:#22d3ee;">' + probe.city + ', ' + probe.country + '</span> . AS' + probe.asn + ' . ' + (probe.network||'') + ' | ' + hops.length + ' hops . ' + geoCount + ' geolocated . ASN badges click to BGP lookup';
 
         } catch(e) {
             document.getElementById('trError').innerText = 'x ' + e.message;
@@ -2586,7 +2618,7 @@ Authentication-Results: mx.google.com;
         btn.disabled = false; btn.innerText = 'TRACE';
     }
 
-    // ── PASTE LOCAL ──────────────────────────────
+    // -- PASTE LOCAL ------------------------------
 
     function parseTraceroute(text) {
         const hops = [], lines = text.split('\n');
@@ -2634,7 +2666,7 @@ Authentication-Results: mx.google.com;
         clearTrResults();
         try {
             const hops = parseTraceroute(text);
-            if (!hops.length) throw new Error('Could not parse hops - paste the full tracert/traceroute output.');
+            if (!hops.length) throw new Error('Could not parse hops — paste the full tracert/traceroute output.');
             setTrProgress('tr', 35);
             const geoMap = await geolocateIPs([...new Set(hops.map(h=>h.ip).filter(Boolean))]);
             setTrProgress('tr', 80);
@@ -2643,7 +2675,7 @@ Authentication-Results: mx.google.com;
             setTrProgress('tr', 100);
             const gc = hops.filter(h=>h.ip&&geoMap[h.ip]).length, sc = hops.filter(h=>!h.ip).length;
             document.getElementById('trNote').innerHTML =
-                '<span style="color:#22d3ee;">' + hops.length + '</span> hops · <span style="color:var(--green);">' + gc + '</span> geolocated · <span style="color:var(--text-dim);">' + sc + '</span> non-responsive · ASN badges click to BGP lookup';
+                '<span style="color:#22d3ee;">' + hops.length + '</span> hops . <span style="color:var(--green);">' + gc + '</span> geolocated . <span style="color:var(--text-dim);">' + sc + '</span> non-responsive . ASN badges click to BGP lookup';
         } catch(e) {
             document.getElementById('trError').innerText = 'x ' + e.message;
             document.getElementById('trError').style.display = 'block';
@@ -2652,7 +2684,7 @@ Authentication-Results: mx.google.com;
         btn.disabled=false; btn.innerText='VISUALISE';
     }
 
-    // ── SHARED ──────────────────────────────────
+    // -- SHARED ----------------------------------
 
     async function geolocateIPs(ips) {
         const valid = ips.filter(ip => ip &&
@@ -2764,9 +2796,9 @@ Authentication-Results: mx.google.com;
         if (points.length===1) { trMap.setView(points[0],7); } else { trMap.fitBounds(L.latLngBounds(points).pad(0.25)); }
     }
 
-    // ═══════════════════════════════════════════════
+    // ===============================================
     //  EMAIL HEADER ANALYSER
-    // ═══════════════════════════════════════════════
+    // ===============================================
 
     let ehMap = null;
 
@@ -2879,7 +2911,7 @@ Authentication-Results: mx.google.com;
     }
 
     function formatDelay(secs) {
-        if (secs === null) return '<span class="eh-delay-zero">—</span>';
+        if (secs === null) return '<span class="eh-delay-zero">-</span>';
         if (secs === 0)    return '<span class="eh-delay-zero">~0s</span>';
         const cls = delayClass(secs);
         if (secs < 60)   return '<span class="' + cls + '">' + secs + 's</span>';
@@ -2920,7 +2952,7 @@ Authentication-Results: mx.google.com;
             var dc = hop.delaySecs > 30 ? '#ff3333' : hop.delaySecs > 5 ? '#fbbf24' : '#00ff66';
             var popup = '<div style="font-family:monospace;font-size:11px;color:#e2e8f0;background:#161b22;padding:7px 9px;border-radius:4px;border:1px solid #30363d;min-width:170px;line-height:1.6;">'
                 + '<b style="color:#f97316;">Hop ' + hop.hop + '</b>'
-                + (isFirst ? ' <span style="color:#a855f7;font-size:10px;">● ORIGIN</span>' : isLast ? ' <span style="color:#00ff66;font-size:10px;">● DESTINATION</span>' : '') + '<br>'
+                + (isFirst ? ' <span style="color:#a855f7;font-size:10px;">* ORIGIN</span>' : isLast ? ' <span style="color:#00ff66;font-size:10px;">* DESTINATION</span>' : '') + '<br>'
                 + (hop.hostname ? '<span style="color:#7dd3fc;">' + hop.hostname + '</span><br>' : '')
                 + (hop.ip ? '<span style="color:#94a3b8;font-size:10px;">' + hop.ip + '</span><br>' : '')
                 + (geo.city ? '📍 <span style="color:#94a3b8;">' + geo.city + ', ' + geo.country + '</span><br>' : '')
@@ -2969,15 +3001,15 @@ Authentication-Results: mx.google.com;
             setEHProgress(75);
 
             const metaItems = [
-                { label: 'From',       val: meta.from    || '—' },
-                { label: 'To',         val: meta.to      || '—' },
-                { label: 'Subject',    val: meta.subject || '—' },
-                { label: 'Date Sent',  val: meta.date    || '—' },
-                { label: 'Message-ID', val: meta.msgId   || '—' },
-                { label: 'Mailer',     val: meta.xmailer || '—' },
+                { label: 'From',       val: meta.from    || '-' },
+                { label: 'To',         val: meta.to      || '-' },
+                { label: 'Subject',    val: meta.subject || '-' },
+                { label: 'Date Sent',  val: meta.date    || '-' },
+                { label: 'Message-ID', val: meta.msgId   || '-' },
+                { label: 'Mailer',     val: meta.xmailer || '-' },
             ];
             document.getElementById('ehMeta').innerHTML = metaItems.map(function(m) {
-                var v = m.val.length > 60 ? m.val.substring(0,58) + '…' : m.val;
+                var v = m.val.length > 60 ? m.val.substring(0,58) + '...' : m.val;
                 return '<div class="eh-meta-card"><span class="eh-meta-label">' + m.label + '</span><span class="eh-meta-val">' + v + '</span></div>';
             }).join('');
 
@@ -2988,27 +3020,27 @@ Authentication-Results: mx.google.com;
             const first = hops.find(h => h.ts);
             const last  = [...hops].reverse().find(h => h.ts);
             const journeyMs = first && last && last.ts > first.ts ? last.ts - first.ts : null;
-            var journeyStr = '—';
+            var journeyStr = '-';
             if (journeyMs !== null) {
                 if (journeyMs < 60000)    journeyStr = Math.round(journeyMs/1000) + 's';
                 else if (journeyMs < 3600000) journeyStr = Math.floor(journeyMs/60000) + 'm ' + Math.round((journeyMs%60000)/1000) + 's';
                 else journeyStr = Math.floor(journeyMs/3600000) + 'h ' + Math.floor((journeyMs%3600000)/60000) + 'm';
             }
-            document.getElementById('ehHopCount').innerText = hops.length + ' hops · total journey: ' + journeyStr;
+            document.getElementById('ehHopCount').innerText = hops.length + ' hops . total journey: ' + journeyStr;
 
             document.getElementById('ehHopBody').innerHTML = hops.map(function(hop) {
                 const geo    = hop.ip ? geoMap[hop.ip] : null;
-                const loc    = geo ? [geo.city, geo.country].filter(Boolean).join(', ') : (hop.ip ? '—' : '');
-                const tsStr  = hop.ts ? hop.ts.toUTCString().replace(' GMT','') : '—';
+                const loc    = geo ? [geo.city, geo.country].filter(Boolean).join(', ') : (hop.ip ? '-' : '');
+                const tsStr  = hop.ts ? hop.ts.toUTCString().replace(' GMT','') : '-';
                 const hnDisp = hop.hostname
                     ? '<div class="eh-hop-server" title="' + hop.hostname + '">' + hop.hostname + '</div>'
-                    : (hop.by ? '<div class="eh-hop-server" style="color:var(--text-dim);">' + hop.by + '</div>' : '<span style="color:var(--text-dim);">—</span>');
+                    : (hop.by ? '<div class="eh-hop-server" style="color:var(--text-dim);">' + hop.by + '</div>' : '<span style="color:var(--text-dim);">-</span>');
                 const byLine = hop.by && hop.hostname
-                    ? '<div style="font-size:0.55rem;color:var(--text-dim);">→ ' + hop.by + '</div>' : '';
+                    ? '<div style="font-size:0.55rem;color:var(--text-dim);">-> ' + hop.by + '</div>' : '';
                 return '<tr>'
                     + '<td class="eh-hop-num">' + hop.hop + '</td>'
                     + '<td>' + hnDisp + byLine + '</td>'
-                    + '<td class="eh-hop-ip">' + (hop.ip || '—') + '</td>'
+                    + '<td class="eh-hop-ip">' + (hop.ip || '-') + '</td>'
                     + '<td class="eh-hop-loc">' + loc + '</td>'
                     + '<td>' + formatDelay(hop.delaySecs) + '</td>'
                     + '<td style="font-size:0.58rem;color:var(--text-dim);white-space:nowrap;">' + tsStr + '</td>'
@@ -3020,8 +3052,8 @@ Authentication-Results: mx.google.com;
 
             const geoCount = hops.filter(h => h.ip && geoMap[h.ip]).length;
             const slowHops = hops.filter(h => h.delaySecs > 30).length;
-            var noteHtml = hops.length + ' mail servers traced · ' + geoCount + ' geolocated';
-            if (slowHops) noteHtml += ' · <span style="color:var(--red);">⚠ ' + slowHops + ' slow hop' + (slowHops>1?'s':'') + ' detected (&gt;30s delay)</span>';
+            var noteHtml = hops.length + ' mail servers traced . ' + geoCount + ' geolocated';
+            if (slowHops) noteHtml += ' . <span style="color:var(--red);">⚠ ' + slowHops + ' slow hop' + (slowHops>1?'s':'') + ' detected (&gt;30s delay)</span>';
             document.getElementById('ehNote').innerHTML = noteHtml;
 
             resEl.style.display = 'block';
@@ -3033,9 +3065,9 @@ Authentication-Results: mx.google.com;
 
         setTimeout(function() { prog.style.display = 'none'; setEHProgress(0); }, 600);
     }
-    // ═══════════════════════════════════════════════
+    // ===============================================
     //  DNS PROPAGATION CHECKER
-    // ═══════════════════════════════════════════════
+    // ===============================================
 
     const DP_TYPES = [
         { type: 'A',     checked: true  },
@@ -3051,7 +3083,7 @@ Authentication-Results: mx.google.com;
     ];
 
     const DP_RESOLVERS = [
-        // ── Global / US ──
+        // -- Global / US --
         { name: 'Cloudflare',      loc: '🌍 Global',      ip: '1.1.1.1',        url: 'https://cloudflare-dns.com/dns-query' },
         { name: 'Google',          loc: '🌍 Global',      ip: '8.8.8.8',        url: 'https://dns.google/resolve' },
         { name: 'Quad9',           loc: '🇨🇭 Switzerland', ip: '9.9.9.9',        url: 'https://dns.quad9.net:5053/dns-query' },
@@ -3060,7 +3092,7 @@ Authentication-Results: mx.google.com;
         { name: 'Google Alt',      loc: '🌍 Global',      ip: '8.8.4.4',        url: 'https://dns.google/resolve' },
         { name: 'Mullvad',         loc: '🇸🇪 Sweden',      ip: '194.242.2.2',    url: 'https://doh.mullvad.net/dns-query' },
         { name: 'AdGuard',         loc: '🇷🇺 Europe',      ip: '94.140.14.14',   url: 'https://dns.adguard-dns.com/dns-query' },
-        // ── UK specific ──
+        // -- UK specific --
         { name: 'JISC / JANET',    loc: '🇬🇧 UK Academic', ip: '193.63.94.20',   url: 'https://dns.jisc.ac.uk/dns-query' },
         { name: 'Quad9 (EU)',      loc: '🇪🇺 EU / UK',      ip: '9.9.9.11',       url: 'https://dns11.quad9.net/dns-query' },
     ];
@@ -3137,7 +3169,7 @@ Authentication-Results: mx.google.com;
             // Fallback: if nothing matched (e.g. CNAME chain), take everything
             if (!answers.length && allAnswers.length) answers = allAnswers;
 
-            // Still nothing? Try Authority section for NS/SOA
+            // Still nothing Try Authority section for NS/SOA
             if (!answers.length) {
                 const auth = d.Authority || [];
                 if (auth.length) answers = auth;
@@ -3240,7 +3272,7 @@ Authentication-Results: mx.google.com;
             function renderResolverCards(list) {
                 return list.map(function(r) {
                     const norm = normaliseRecords(r.records);
-                    let cardClass = 'pending', statusClass = 'dp-status-pending', statusText = '—';
+                    let cardClass = 'pending', statusClass = 'dp-status-pending', statusText = '-';
                     if (r.status === 'error') { cardClass = 'error'; statusClass = 'dp-status-error'; statusText = 'ERROR'; }
                     else if (r.status === 'nxdomain' || (r.status === 'ok' && !r.records.length)) { cardClass = 'nxdomain'; statusClass = 'dp-status-nxdomain'; statusText = 'NXDOMAIN'; }
                     else if (majorityAnswer && norm === majorityAnswer) { cardClass = 'agree'; statusClass = 'dp-status-agree'; statusText = '✓ MATCH'; }
@@ -3252,7 +3284,7 @@ Authentication-Results: mx.google.com;
                     return '<div class="dp-resolver-card ' + cardClass + '">'
                         + '<div class="dp-resolver-header">'
                         + '<div><div class="dp-resolver-name">' + r.resolver.name + '</div>'
-                        + '<div class="dp-resolver-loc">' + r.resolver.loc + ' · ' + r.resolver.ip + '</div></div>'
+                        + '<div class="dp-resolver-loc">' + r.resolver.loc + ' . ' + r.resolver.ip + '</div></div>'
                         + '<span class="dp-resolver-status ' + statusClass + '">' + statusText + '</span>'
                         + '</div>'
                         + '<div class="dp-records">' + recordsHtml + '</div>'
@@ -3278,20 +3310,23 @@ Authentication-Results: mx.google.com;
         conEl.style.display = 'block';
         if (overallPct === 100) {
             conEl.className = 'dp-consensus all-agree';
-            conEl.innerHTML = '✓ ALL RESOLVERS CONSISTENT — Every resolver queried returned the same answer. If you just made a change, it has fully propagated.';
+            conEl.innerHTML = '✓ ALL RESOLVERS CONSISTENT - Every resolver queried returned the same answer. If you just made a change, it has fully propagated.';
         } else if (overallPct >= 75) {
             conEl.className = 'dp-consensus partial';
-            conEl.innerHTML = '⚠ MOSTLY CONSISTENT — ' + totalAgree + '/' + totalResolvers + ' resolver checks agree (' + overallPct + '%). A small number of resolvers are returning different results — this may indicate a recent change still propagating, or a filtered resolver behaving differently.';
+            conEl.innerHTML = '⚠ MOSTLY CONSISTENT - ' + totalAgree + '/' + totalResolvers + ' resolver checks agree (' + overallPct + '%). A small number of resolvers are returning different results - this may indicate a recent change still propagating, or a filtered resolver behaving differently.';
         } else if (overallPct >= 50) {
             conEl.className = 'dp-consensus partial';
-            conEl.innerHTML = '⚠ INCONSISTENT — ' + totalAgree + '/' + totalResolvers + ' resolver checks agree (' + overallPct + '%). If you recently made a DNS change, it is still propagating. If this is an established domain, some resolvers may be returning stale cache.';
+            conEl.innerHTML = '⚠ INCONSISTENT - ' + totalAgree + '/' + totalResolvers + ' resolver checks agree (' + overallPct + '%). If you recently made a DNS change, it is still propagating. If this is an established domain, some resolvers may be returning stale cache.';
         } else {
             conEl.className = 'dp-consensus none-propagated';
-            conEl.innerHTML = '✗ RESOLVERS DISAGREE — Only ' + overallPct + '% of resolver checks are consistent. If you just made a DNS change it may take up to 48h to propagate globally depending on TTL. If this is an existing domain, check the records manually.';
+            conEl.innerHTML = '✗ RESOLVERS DISAGREE - Only ' + overallPct + '% of resolver checks are consistent. If you just made a DNS change it may take up to 48h to propagate globally depending on TTL. If this is an existing domain, check the records manually.';
         }
 
         setTimeout(function() { progEl.style.display = 'none'; setDPProgress(0); }, 600);
     }
+
+    // ===============================================
+
 
 </script>
 </body>
