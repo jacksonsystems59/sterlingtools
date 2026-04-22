@@ -660,6 +660,49 @@
         .prefix-removed { color: var(--red);   font-family: monospace; font-size: 0.65rem; padding: 1px 0; }
         .prefix-added::before   { content: '+ '; }
         .prefix-removed::before { content: '- '; }
+
+        /* ── EMAIL HEADER ANALYSER ── */
+        .eh-textarea {
+            width: 100%; height: 130px;
+            background: #0d1117; border: 1px solid #f97316;
+            border-radius: 4px; padding: 8px 10px;
+            color: #7dd3fc; font-family: monospace; font-size: 0.7rem;
+            outline: none; resize: vertical; line-height: 1.5;
+            margin-bottom: 6px;
+        }
+        .eh-hop-table { width: 100%; border-collapse: collapse; font-size: 0.65rem; margin-bottom: 8px; }
+        .eh-hop-table th { background: #0d1117; color: var(--text-dim); font-size: 0.55rem; text-transform: uppercase; padding: 5px 7px; text-align: left; border-bottom: 1px solid var(--border); }
+        .eh-hop-table td { padding: 5px 7px; border-bottom: 1px solid rgba(48,54,61,0.4); font-family: monospace; font-size: 0.65rem; vertical-align: top; }
+        .eh-hop-table tr:last-child td { border-bottom: none; }
+        .eh-hop-num  { color: #f97316; font-weight: 900; width: 24px; }
+        .eh-hop-server { color: #7dd3fc; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .eh-hop-ip   { color: #94a3b8; font-size: 0.6rem; }
+        .eh-hop-loc  { color: var(--text-dim); font-size: 0.6rem; }
+        .eh-delay-good { color: var(--green); font-weight: 900; }
+        .eh-delay-warn { color: var(--gold);  font-weight: 900; }
+        .eh-delay-bad  { color: var(--red);   font-weight: 900; }
+        .eh-delay-zero { color: var(--text-dim); }
+        .eh-auth-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+        .eh-auth-badge {
+            font-size: 0.58rem; font-weight: 900; padding: 3px 8px;
+            border-radius: 4px; border: 1px solid; font-family: monospace;
+        }
+        .eh-auth-pass { color: var(--green); background: rgba(0,255,102,0.08); border-color: var(--green); }
+        .eh-auth-fail { color: var(--red);   background: rgba(255,51,51,0.08);  border-color: var(--red); }
+        .eh-auth-none { color: var(--text-dim); background: rgba(148,163,184,0.08); border-color: var(--border); }
+        .eh-auth-warn { color: var(--gold);  background: rgba(251,191,36,0.08); border-color: var(--gold); }
+        .eh-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+        .eh-meta-card { background: #0d1117; border: 1px solid var(--border); border-radius: 4px; padding: 7px 9px; }
+        .eh-meta-label { font-size: 0.5rem; text-transform: uppercase; color: var(--text-dim); display: block; margin-bottom: 2px; }
+        .eh-meta-val   { font-family: monospace; font-size: 0.7rem; color: #e2e8f0; word-break: break-all; }
+        .eh-rbl-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+        .eh-rbl-hit  { font-size: 0.58rem; color: var(--red);  background: rgba(255,51,51,0.08);  border: 1px solid var(--red);  border-radius: 3px; padding: 2px 6px; font-family: monospace; }
+        .eh-rbl-ok   { font-size: 0.58rem; color: var(--green); background: rgba(0,255,102,0.08); border: 1px solid var(--green); border-radius: 3px; padding: 2px 6px; font-family: monospace; }
+        .eh-section-title { font-size: 0.6rem; font-weight: 900; text-transform: uppercase; color: var(--text-dim); margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+        #ehMap { height: 260px; border-radius: 4px; border: 1px solid var(--border); background: #0d1117; display: none; margin-bottom: 8px; }
+        .eh-error { background: rgba(255,51,51,0.06); border: 1px solid rgba(255,51,51,0.3); border-radius: 4px; padding: 8px 10px; font-size: 0.65rem; color: var(--red); display: none; }
+        .eh-progress { height: 2px; background: var(--border); border-radius: 2px; margin-bottom: 8px; overflow: hidden; display: none; }
+        .eh-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #f97316, #fbbf24); border-radius: 2px; transition: width 0.3s ease; }
     </style>
 </head>
 <body onload="initApp()">
@@ -935,6 +978,69 @@
             </table>
             <div class="tr-error" id="trError"></div>
             <div class="tr-note" id="trNote"></div>
+        </div>
+    </div>
+
+
+    <!-- ── Email Header Analyser ── -->
+    <div class="nt-section" style="margin-bottom:6px;">
+        <div class="nt-bar" onclick="toggleNT('email')">
+            <div class="nt-bar-left">
+                <span class="nt-dot" style="background:#f97316;box-shadow:0 0 7px #f97316;"></span>
+                <span class="nt-label" style="color:#f97316;">◈ EMAIL HEADER ANALYSER</span>
+                <span class="nt-sub">trace the path an email took · auth checks · delay analysis · geo map</span>
+            </div>
+            <div class="nt-chevron" id="nt-chevron-email">▼</div>
+        </div>
+        <div class="nt-panel" id="nt-panel-email">
+            <div style="padding:10px 12px;">
+                <div style="background:#0d1117;border:1px solid var(--border);border-radius:4px;padding:7px 10px;margin-bottom:8px;font-size:0.62rem;color:var(--text-dim);line-height:1.7;">
+                    <span style="color:#f97316;font-weight:900;">HOW TO GET HEADERS —</span>
+                    <span style="color:#e2e8f0;">Outlook:</span> open email → File → Properties → copy Internet headers &nbsp;|&nbsp;
+                    <span style="color:#e2e8f0;">Gmail:</span> ⋮ menu → Show original → copy all &nbsp;|&nbsp;
+                    <span style="color:#e2e8f0;">Apple Mail:</span> View → Message → All Headers
+                </div>
+                <textarea id="ehInput" class="eh-textarea" placeholder="Paste full raw email headers here...
+
+Received: from mail.example.com (mail.example.com [1.2.3.4])
+        by mx.google.com with ESMTPS
+        for <user@gmail.com>; Mon, 22 Apr 2026 10:00:00 +0000
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@example.com;
+       spf=pass smtp.mailfrom=example.com;
+       dmarc=pass ..."></textarea>
+                <div style="display:flex;gap:6px;margin-bottom:8px;">
+                    <button onclick="analyseEmailHeaders()" style="background:#f97316;color:#000;font-weight:900;padding:7px 16px;">▶ ANALYSE</button>
+                    <button onclick="clearEmailHeaders()" style="background:#21262d;color:var(--text-dim);padding:7px 12px;">CLEAR</button>
+                </div>
+                <div class="eh-progress" id="ehProgress"><div class="eh-progress-fill" id="ehProgressFill"></div></div>
+                <div class="eh-error" id="ehError"></div>
+                <div id="ehResults" style="display:none;">
+                    <!-- Meta summary -->
+                    <div class="eh-section-title">📧 MESSAGE SUMMARY</div>
+                    <div class="eh-meta-grid" id="ehMeta"></div>
+                    <!-- Auth results -->
+                    <div class="eh-section-title" style="margin-top:6px;">🔐 AUTHENTICATION RESULTS</div>
+                    <div class="eh-auth-row" id="ehAuth"></div>
+                    <!-- Map -->
+                    <div class="eh-section-title" style="margin-top:6px;">🗺 EMAIL ROUTE MAP <span style="font-size:0.5rem;color:var(--text-dim);font-weight:400;text-transform:none;">origin → destination</span></div>
+                    <div id="ehMap"></div>
+                    <!-- Hop table -->
+                    <div class="eh-section-title">📡 HOP-BY-HOP ANALYSIS <span id="ehHopCount" style="color:#f97316;margin-left:4px;"></span></div>
+                    <table class="eh-hop-table" id="ehHopTable">
+                        <thead><tr>
+                            <th>#</th>
+                            <th>Server / Hostname</th>
+                            <th>IP</th>
+                            <th>Location</th>
+                            <th title="Time between this hop and the previous one">Delay <i class="tip" data-tip="Time this server added to the journey. Green &lt;5s, amber &lt;30s, red &gt;30s. Large delays often indicate spam filtering, greylisting, or overloaded relays.">?</i></th>
+                            <th>Timestamp</th>
+                        </tr></thead>
+                        <tbody id="ehHopBody"></tbody>
+                    </table>
+                    <div id="ehNote" class="tr-note"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2349,7 +2455,7 @@
 
             const geoCount = hops.filter(h => h.ip && geoMap[h.ip]).length;
             document.getElementById('trNote').innerHTML =
-                'Probe: <span style="color:#22d3ee;">' + probe.city + ', ' + probe.country + '</span> &middot; AS' + probe.asn + ' &middot; ' + (probe.network||'') + ' &nbsp;|&nbsp; ' + hops.length + ' hops &middot; ' + geoCount + ' geolocated &middot; ASN badges click to BGP lookup';
+                'Probe: <span style="color:#22d3ee;">' + probe.city + ', ' + probe.country + '</span> · AS' + probe.asn + ' · ' + (probe.network||'') + ' | ' + hops.length + ' hops · ' + geoCount + ' geolocated · ASN badges click to BGP lookup';
 
         } catch(e) {
             document.getElementById('trError').innerText = 'x ' + e.message;
@@ -2418,7 +2524,7 @@
             setTrProgress('tr', 100);
             const gc = hops.filter(h=>h.ip&&geoMap[h.ip]).length, sc = hops.filter(h=>!h.ip).length;
             document.getElementById('trNote').innerHTML =
-                '<span style="color:#22d3ee;">' + hops.length + '</span> hops &middot; <span style="color:var(--green);">' + gc + '</span> geolocated &middot; <span style="color:var(--text-dim);">' + sc + '</span> non-responsive &middot; ASN badges click to BGP lookup';
+                '<span style="color:#22d3ee;">' + hops.length + '</span> hops · <span style="color:var(--green);">' + gc + '</span> geolocated · <span style="color:var(--text-dim);">' + sc + '</span> non-responsive · ASN badges click to BGP lookup';
         } catch(e) {
             document.getElementById('trError').innerText = 'x ' + e.message;
             document.getElementById('trError').style.display = 'block';
@@ -2485,7 +2591,7 @@
         mapEl.style.display = 'block';
         if (trMap) { trMap.remove(); trMap = null; }
         trMap = L.map('trMap', { zoomControl:true, worldCopyJump: false, maxBoundsViscosity: 1.0 });
-        trMap.setMaxBounds([[-90, -180], [90, 180]]);
+        trMap.setMaxBounds([[-90,-180],[90,180]]);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
             attribution:'&copy; <a href="https://carto.com/">CARTO</a>', maxZoom:18, noWrap: true
         }).addTo(trMap);
@@ -2519,6 +2625,275 @@
         if (points.length===1) { trMap.setView(points[0],7); } else { trMap.fitBounds(L.latLngBounds(points).pad(0.25)); }
     }
 
+    // ═══════════════════════════════════════════════
+    //  EMAIL HEADER ANALYSER
+    // ═══════════════════════════════════════════════
+
+    let ehMap = null;
+
+    function setEHProgress(pct) {
+        document.getElementById('ehProgressFill').style.width = pct + '%';
+    }
+
+    function clearEmailHeaders() {
+        document.getElementById('ehInput').value = '';
+        document.getElementById('ehResults').style.display = 'none';
+        document.getElementById('ehError').style.display = 'none';
+        document.getElementById('ehProgress').style.display = 'none';
+        if (ehMap) { ehMap.remove(); ehMap = null; }
+        document.getElementById('ehMap').style.display = 'none';
+    }
+
+    function parseReceivedHeaders(raw) {
+        const unfolded = raw.replace(/\r\n/g, '\n').replace(/\n([ \t])/g, ' $1');
+        const lines = unfolded.split('\n');
+        const received = [];
+        for (const line of lines) {
+            if (/^Received:/i.test(line)) received.push(line);
+        }
+        return received.map((r, idx) => {
+            const fromMatch = r.match(/from\s+(\S+)\s*\(([^)]+)\)/i);
+            const byMatch   = r.match(/by\s+(\S+)/i);
+            const dateMatch = r.match(/;\s*(.+)$/);
+            let hostname = null, ip = null, by = null;
+            if (fromMatch) {
+                hostname = fromMatch[1];
+                const ipInParen = fromMatch[2].match(/[\[(\s]?(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})[\])\s]?/);
+                if (ipInParen) ip = ipInParen[1];
+                if (!ip) {
+                    const bareIP = fromMatch[2].match(/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/);
+                    if (bareIP) ip = bareIP[1];
+                }
+            }
+            if (byMatch) by = byMatch[1];
+            let ts = null;
+            if (dateMatch) {
+                try { ts = new Date(dateMatch[1].trim()); if (isNaN(ts)) ts = null; } catch(e) { ts = null; }
+            }
+            return { hop: received.length - idx, hostname, ip, by, ts, raw: r };
+        }).reverse();
+    }
+
+    function extractMeta(raw) {
+        const get = (pattern) => {
+            const m = raw.match(pattern);
+            return m ? m[1].trim() : null;
+        };
+        return {
+            from:    get(/^From:\s*(.+)$/im),
+            to:      get(/^To:\s*(.+)$/im),
+            subject: get(/^Subject:\s*(.+)$/im),
+            date:    get(/^Date:\s*(.+)$/im),
+            msgId:   get(/^Message-ID:\s*(.+)$/im),
+            xmailer: get(/^X-Mailer:\s*(.+)$/im) || get(/^X-Sender-Info:\s*(.+)$/im),
+        };
+    }
+
+    function parseAuth(raw) {
+        const results = [];
+        const unfolded = raw.replace(/\r\n/g, '\n').replace(/\n([ \t])/g, ' $1');
+        const authHeaders = [];
+        for (const line of unfolded.split('\n')) {
+            if (/^Authentication-Results:/i.test(line)) authHeaders.push(line);
+            if (/^ARC-Authentication-Results:/i.test(line)) authHeaders.push(line);
+        }
+        const combined = authHeaders.join(' ');
+        const spfM   = combined.match(/spf=(pass|fail|softfail|neutral|none|permerror|temperror)/i);
+        if (spfM)   results.push({ name: 'SPF',   result: spfM[1].toLowerCase() });
+        const dkimM  = combined.match(/dkim=(pass|fail|none|permerror|temperror)/i);
+        if (dkimM)  results.push({ name: 'DKIM',  result: dkimM[1].toLowerCase() });
+        const dmarcM = combined.match(/dmarc=(pass|fail|none|bestguesspass)/i);
+        if (dmarcM) results.push({ name: 'DMARC', result: dmarcM[1].toLowerCase() });
+        const spamScore  = raw.match(/X-Spam-Score:\s*([\d.-]+)/i);
+        const spamStatus = raw.match(/X-Spam-Status:\s*(Yes|No)/i);
+        if (spamScore) {
+            const score = parseFloat(spamScore[1]);
+            results.push({ name: 'SPAM SCORE', result: spamScore[1], level: score > 5 ? 'fail' : score > 2 ? 'warn' : 'pass' });
+        }
+        if (spamStatus) {
+            results.push({ name: 'SPAM', result: spamStatus[1].toUpperCase(), level: spamStatus[1].toLowerCase() === 'yes' ? 'fail' : 'pass' });
+        }
+        const tlsM = raw.match(/with\s+(ESMTPS|ESMTPSA|SMTPS)/i);
+        if (tlsM) results.push({ name: 'TLS', result: 'ENCRYPTED', level: 'pass' });
+        else if (raw.match(/with\s+(ESMTP|SMTP)\s/i)) results.push({ name: 'TLS', result: 'PLAINTEXT', level: 'fail' });
+        return results;
+    }
+
+    function authBadgeHTML(item) {
+        let cls = 'eh-auth-none';
+        const r = item.result.toLowerCase();
+        if (item.level) {
+            cls = item.level === 'pass' ? 'eh-auth-pass' : item.level === 'fail' ? 'eh-auth-fail' : 'eh-auth-warn';
+        } else {
+            if (r === 'pass' || r === 'encrypted') cls = 'eh-auth-pass';
+            else if (r === 'fail' || r === 'softfail' || r === 'plaintext') cls = 'eh-auth-fail';
+            else if (r === 'neutral' || r === 'none' || r === 'bestguesspass') cls = 'eh-auth-warn';
+        }
+        return '<span class="eh-auth-badge ' + cls + '">' + item.name + ': ' + item.result.toUpperCase() + '</span>';
+    }
+
+    function delayClass(secs) {
+        if (secs === null || secs === 0) return 'eh-delay-zero';
+        if (secs < 5)  return 'eh-delay-good';
+        if (secs < 30) return 'eh-delay-warn';
+        return 'eh-delay-bad';
+    }
+
+    function formatDelay(secs) {
+        if (secs === null) return '<span class="eh-delay-zero">—</span>';
+        if (secs === 0)    return '<span class="eh-delay-zero">~0s</span>';
+        const cls = delayClass(secs);
+        if (secs < 60)   return '<span class="' + cls + '">' + secs + 's</span>';
+        if (secs < 3600) return '<span class="' + cls + '">' + Math.floor(secs/60) + 'm ' + (secs%60) + 's</span>';
+        return '<span class="' + cls + '">' + Math.floor(secs/3600) + 'h ' + Math.floor((secs%3600)/60) + 'm</span>';
+    }
+
+    function renderEHMap(hops, geoMap) {
+        const mapEl = document.getElementById('ehMap');
+        mapEl.style.display = 'block';
+        if (ehMap) { ehMap.remove(); ehMap = null; }
+        ehMap = L.map('ehMap', { zoomControl: true, worldCopyJump: false, maxBoundsViscosity: 1.0 });
+        ehMap.setMaxBounds([[-90,-180],[90,180]]);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://carto.com/">CARTO</a>', maxZoom: 18, noWrap: true
+        }).addTo(ehMap);
+        const points = [], plotted = [];
+        for (const hop of hops) {
+            if (!hop.ip) continue;
+            const geo = geoMap[hop.ip];
+            if (!geo || !geo.lat) continue;
+            points.push([geo.lat, geo.lon]);
+            plotted.push({ hop, geo });
+        }
+        if (!points.length) { mapEl.style.display = 'none'; return; }
+        if (points.length > 1) L.polyline(points, { color: '#f97316', weight: 2, opacity: 0.8, dashArray: '5,4' }).addTo(ehMap);
+        plotted.forEach(function(item, idx) {
+            var hop = item.hop, geo = item.geo;
+            var isFirst = idx === 0, isLast = idx === plotted.length - 1;
+            var color = isFirst ? '#a855f7' : isLast ? '#00ff66' : '#f97316';
+            var size  = isFirst || isLast ? 13 : 9;
+            var icon  = L.divIcon({
+                className: '',
+                html: '<div style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:' + color + ';border:2px solid #0d1117;box-shadow:0 0 10px ' + color + ';"></div>',
+                iconSize: [size,size], iconAnchor: [size/2,size/2]
+            });
+            var delay = hop.delaySecs !== null && hop.delaySecs > 0 ? '+' + hop.delaySecs + 's' : '~0s';
+            var dc = hop.delaySecs > 30 ? '#ff3333' : hop.delaySecs > 5 ? '#fbbf24' : '#00ff66';
+            var popup = '<div style="font-family:monospace;font-size:11px;color:#e2e8f0;background:#161b22;padding:7px 9px;border-radius:4px;border:1px solid #30363d;min-width:170px;line-height:1.6;">'
+                + '<b style="color:#f97316;">Hop ' + hop.hop + '</b>'
+                + (isFirst ? ' <span style="color:#a855f7;font-size:10px;">● ORIGIN</span>' : isLast ? ' <span style="color:#00ff66;font-size:10px;">● DESTINATION</span>' : '') + '<br>'
+                + (hop.hostname ? '<span style="color:#7dd3fc;">' + hop.hostname + '</span><br>' : '')
+                + (hop.ip ? '<span style="color:#94a3b8;font-size:10px;">' + hop.ip + '</span><br>' : '')
+                + (geo.city ? '📍 <span style="color:#94a3b8;">' + geo.city + ', ' + geo.country + '</span><br>' : '')
+                + '⏱ <span style="color:' + dc + ';">delay: ' + delay + '</span>'
+                + '</div>';
+            L.marker([geo.lat, geo.lon], { icon: icon }).bindPopup(popup).addTo(ehMap);
+        });
+        if (points.length === 1) { ehMap.setView(points[0], 5); } else { ehMap.fitBounds(L.latLngBounds(points).pad(0.25)); }
+    }
+
+    async function analyseEmailHeaders() {
+        const raw = document.getElementById('ehInput').value.trim();
+        if (!raw) return;
+
+        const errEl = document.getElementById('ehError');
+        const resEl = document.getElementById('ehResults');
+        const prog  = document.getElementById('ehProgress');
+
+        errEl.style.display = 'none';
+        resEl.style.display = 'none';
+        prog.style.display  = 'block';
+        setEHProgress(5);
+        if (ehMap) { ehMap.remove(); ehMap = null; }
+        document.getElementById('ehMap').style.display = 'none';
+
+        try {
+            const hops = parseReceivedHeaders(raw);
+            if (!hops.length) throw new Error('No Received: headers found — paste the full raw email headers, not just the message body.');
+            setEHProgress(20);
+
+            for (let i = 1; i < hops.length; i++) {
+                if (hops[i].ts && hops[i-1].ts) {
+                    hops[i].delaySecs = Math.max(0, Math.round((hops[i].ts - hops[i-1].ts) / 1000));
+                } else {
+                    hops[i].delaySecs = null;
+                }
+            }
+            hops[0].delaySecs = 0;
+
+            const meta = extractMeta(raw);
+            const auth = parseAuth(raw);
+            setEHProgress(35);
+
+            const ips = [...new Set(hops.map(h => h.ip).filter(Boolean))];
+            const geoMap = await geolocateIPs(ips);
+            setEHProgress(75);
+
+            const metaItems = [
+                { label: 'From',       val: meta.from    || '—' },
+                { label: 'To',         val: meta.to      || '—' },
+                { label: 'Subject',    val: meta.subject || '—' },
+                { label: 'Date Sent',  val: meta.date    || '—' },
+                { label: 'Message-ID', val: meta.msgId   || '—' },
+                { label: 'Mailer',     val: meta.xmailer || '—' },
+            ];
+            document.getElementById('ehMeta').innerHTML = metaItems.map(function(m) {
+                var v = m.val.length > 60 ? m.val.substring(0,58) + '…' : m.val;
+                return '<div class="eh-meta-card"><span class="eh-meta-label">' + m.label + '</span><span class="eh-meta-val">' + v + '</span></div>';
+            }).join('');
+
+            document.getElementById('ehAuth').innerHTML = auth.length
+                ? auth.map(authBadgeHTML).join('')
+                : '<span style="font-size:0.65rem;color:var(--text-dim);">No authentication headers found</span>';
+
+            const first = hops.find(h => h.ts);
+            const last  = [...hops].reverse().find(h => h.ts);
+            const journeyMs = first && last && last.ts > first.ts ? last.ts - first.ts : null;
+            var journeyStr = '—';
+            if (journeyMs !== null) {
+                if (journeyMs < 60000)    journeyStr = Math.round(journeyMs/1000) + 's';
+                else if (journeyMs < 3600000) journeyStr = Math.floor(journeyMs/60000) + 'm ' + Math.round((journeyMs%60000)/1000) + 's';
+                else journeyStr = Math.floor(journeyMs/3600000) + 'h ' + Math.floor((journeyMs%3600000)/60000) + 'm';
+            }
+            document.getElementById('ehHopCount').innerText = hops.length + ' hops · total journey: ' + journeyStr;
+
+            document.getElementById('ehHopBody').innerHTML = hops.map(function(hop) {
+                const geo    = hop.ip ? geoMap[hop.ip] : null;
+                const loc    = geo ? [geo.city, geo.country].filter(Boolean).join(', ') : (hop.ip ? '—' : '');
+                const tsStr  = hop.ts ? hop.ts.toUTCString().replace(' GMT','') : '—';
+                const hnDisp = hop.hostname
+                    ? '<div class="eh-hop-server" title="' + hop.hostname + '">' + hop.hostname + '</div>'
+                    : (hop.by ? '<div class="eh-hop-server" style="color:var(--text-dim);">' + hop.by + '</div>' : '<span style="color:var(--text-dim);">—</span>');
+                const byLine = hop.by && hop.hostname
+                    ? '<div style="font-size:0.55rem;color:var(--text-dim);">→ ' + hop.by + '</div>' : '';
+                return '<tr>'
+                    + '<td class="eh-hop-num">' + hop.hop + '</td>'
+                    + '<td>' + hnDisp + byLine + '</td>'
+                    + '<td class="eh-hop-ip">' + (hop.ip || '—') + '</td>'
+                    + '<td class="eh-hop-loc">' + loc + '</td>'
+                    + '<td>' + formatDelay(hop.delaySecs) + '</td>'
+                    + '<td style="font-size:0.58rem;color:var(--text-dim);white-space:nowrap;">' + tsStr + '</td>'
+                    + '</tr>';
+            }).join('');
+
+            renderEHMap(hops, geoMap);
+            setEHProgress(100);
+
+            const geoCount = hops.filter(h => h.ip && geoMap[h.ip]).length;
+            const slowHops = hops.filter(h => h.delaySecs > 30).length;
+            var noteHtml = hops.length + ' mail servers traced · ' + geoCount + ' geolocated';
+            if (slowHops) noteHtml += ' · <span style="color:var(--red);">⚠ ' + slowHops + ' slow hop' + (slowHops>1?'s':'') + ' detected (&gt;30s delay)</span>';
+            document.getElementById('ehNote').innerHTML = noteHtml;
+
+            resEl.style.display = 'block';
+
+        } catch(e) {
+            errEl.innerText = '✗ ' + e.message;
+            errEl.style.display = 'block';
+        }
+
+        setTimeout(function() { prog.style.display = 'none'; setEHProgress(0); }, 600);
+    }
 </script>
 </body>
 </html>
