@@ -2289,10 +2289,10 @@ Authentication-Results: mx.google.com;
                     const ip = v4.prefix.split('/')[0];
 
                     // Geolocate that IP
-                    const gr = await fetch(`http://ip-api.com/json/${ip}?fields=status,lat,lon,country,city,org,as`);
+                    const gr = await fetch('https://freeipapi.com/api/json/' + ip, { cache: 'no-store' });
                     if (!gr.ok) continue;
                     const gd = await gr.json();
-                    if (gd.status !== 'success' || !gd.lat) continue;
+                    if (!gd.latitude || gd.latitude === -90) continue;
 
                     // Get holder name (use cache if available)
                     let holder = asnNameCache[n.asn] || n.label || null;
@@ -2305,7 +2305,7 @@ Authentication-Results: mx.google.com;
                         }
                     }
 
-                    results.push({ asn: n.asn, ntype: n.ntype, lat: gd.lat, lon: gd.lon, city: gd.city, country: gd.country, holder: holder || `AS${n.asn}` });
+                    results.push({ asn: n.asn, ntype: n.ntype, lat: gd.latitude, lon: gd.longitude, city: gd.cityName, country: gd.countryName, holder: holder || 'AS' + n.asn });
                 } catch(e) {}
             }
         }
@@ -2326,10 +2326,10 @@ Authentication-Results: mx.google.com;
                 const cv4 = (cd.data?.prefixes ?? []).find(p => !p.prefix.includes(':') && !p.prefix.startsWith('10.'));
                 if (cv4) {
                     const cip = cv4.prefix.split('/')[0];
-                    const cgr = await fetch(`http://ip-api.com/json/${cip}?fields=status,lat,lon`);
+                    const cgr = await fetch('https://freeipapi.com/api/json/' + cip, { cache: 'no-store' });
                     if (cgr.ok) {
                         const cgd = await cgr.json();
-                        if (cgd.status === 'success') { centreLat = cgd.lat; centreLon = cgd.lon; }
+                        if (cgd.latitude && cgd.latitude !== -90) { centreLat = cgd.latitude; centreLon = cgd.longitude; }
                     }
                 }
             }
@@ -2662,13 +2662,27 @@ Authentication-Results: mx.google.com;
         if (!valid.length) return {};
         try {
             const body = valid.map(ip => ({ query: ip, fields: 'query,status,country,regionName,city,lat,lon,org,as,isp' }));
-            const r = await fetch('http://ip-api.com/batch?fields=query,status,country,regionName,city,lat,lon,org,as,isp', {
-                method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
-            });
-            if (!r.ok) throw new Error();
-            const data = await r.json();
+            // Use freeipapi.com - HTTPS, CORS open, free, no key
+            // Send individual requests concurrently (no batch on free tier)
             const map = {};
-            for (const d of data) if (d.status==='success') map[d.query]=d;
+            await Promise.allSettled(valid.map(async function(ip) {
+                try {
+                    const r = await fetch('https://freeipapi.com/api/json/' + ip, { cache: 'no-store' });
+                    if (!r.ok) return;
+                    const d = await r.json();
+                    if (d.latitude && d.latitude !== -90) {
+                        map[ip] = {
+                            query: ip, status: 'success',
+                            lat: d.latitude, lon: d.longitude,
+                            city: d.cityName, country: d.countryName,
+                            regionName: d.regionName,
+                            as: d.asNumber ? 'AS' + d.asNumber + ' ' + (d.ipVersion ? '' : '') : '',
+                            org: d.asName || '',
+                            isp: d.asName || ''
+                        };
+                    }
+                } catch(e2) {}
+            }));
             return map;
         } catch(e) {
             const map = {};
@@ -2677,7 +2691,13 @@ Authentication-Results: mx.google.com;
                     const r = await fetch('https://ipapi.co/' + ip + '/json/');
                     const d = await r.json();
                     if (d.latitude) map[ip] = { lat:d.latitude, lon:d.longitude, city:d.city, country:d.country_name, org:d.org, as:d.asn };
-                } catch(e2) {}
+                } catch(e2) {
+                    try {
+                        const r2 = await fetch('https://freeipapi.com/api/json/' + ip, { cache: 'no-store' });
+                        const d2 = await r2.json();
+                        if (d2.latitude && d2.latitude !== -90) map[ip] = { lat:d2.latitude, lon:d2.longitude, city:d2.cityName, country:d2.countryName, org:d2.asName||'', as:'AS'+(d2.asNumber||'') };
+                    } catch(e3) {}
+                }
                 await new Promise(res=>setTimeout(res,80));
             }
             return map;
@@ -3042,7 +3062,7 @@ Authentication-Results: mx.google.com;
         { name: 'AdGuard',         loc: '🇷🇺 Europe',      ip: '94.140.14.14',   url: 'https://dns.adguard-dns.com/dns-query' },
         // ── UK specific ──
         { name: 'JISC / JANET',    loc: '🇬🇧 UK Academic', ip: '193.63.94.20',   url: 'https://dns.jisc.ac.uk/dns-query' },
-        { name: 'DNS4EU (UK node)',loc: '🇬🇧 UK / EU',     ip: '86.54.11.3',     url: 'https://dns4eu-doh.eu/dns-query' },
+        { name: 'Quad9 (EU)',      loc: '🇪🇺 EU / UK',      ip: '9.9.9.11',       url: 'https://dns11.quad9.net/dns-query' },
     ];
 
     // Build checkbox UI on first expand
