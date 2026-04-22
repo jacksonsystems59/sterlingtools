@@ -778,7 +778,7 @@
         .dp-consensus.none-propagated { background: rgba(255,51,51,0.05); color: var(--red); border-color: var(--red); }
 
         .dp-progress { height: 2px; background: var(--border); border-radius: 2px; margin-bottom: 8px; overflow: hidden; display: none; }
-        .dp-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--blue), #22d3ee); border-radius: 2px; transition: width 0.3s; }
+        .dp-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #84cc16, #a3e635); border-radius: 2px; transition: width 0.3s; }
         .dp-error { background: rgba(255,51,51,0.06); border: 1px solid rgba(255,51,51,0.3); border-radius: 4px; padding: 8px 10px; font-size: 0.65rem; color: var(--red); display: none; margin-bottom: 6px; }
     </style>
 </head>
@@ -1126,9 +1126,9 @@ Authentication-Results: mx.google.com;
     <div class="nt-section" style="margin-bottom:6px;">
         <div class="nt-bar" onclick="toggleNT('dnsprop')">
             <div class="nt-bar-left">
-                <span class="nt-dot" style="background:#22d3ee;box-shadow:0 0 7px #22d3ee;"></span>
-                <span class="nt-label" style="color:#22d3ee;">◈ DNS PROPAGATION CHECKER</span>
-                <span class="nt-sub">check if a DNS change has propagated across global resolvers</span>
+                <span class="nt-dot" style="background:#84cc16;box-shadow:0 0 7px #84cc16;"></span>
+                <span class="nt-label" style="color:#84cc16;">◈ DNS PROPAGATION CHECKER</span>
+                <span class="nt-sub">check if a DNS change has propagated across global + UK resolvers</span>
             </div>
             <div class="nt-chevron" id="nt-chevron-dnsprop">▼</div>
         </div>
@@ -1139,9 +1139,9 @@ Authentication-Results: mx.google.com;
                 <div style="display:flex;gap:6px;margin-bottom:10px;">
                     <input type="text" id="dpDomain"
                         placeholder="Domain to check — e.g. example.co.uk"
-                        style="flex:1;background:#0d1117;border:1px solid #22d3ee;border-radius:4px;padding:8px 10px;color:#fff;outline:none;font-weight:bold;font-size:0.8rem;font-family:monospace;"
+                        style="flex:1;background:#0d1117;border:1px solid #84cc16;border-radius:4px;padding:8px 10px;color:#fff;outline:none;font-weight:bold;font-size:0.8rem;font-family:monospace;"
                         onkeyup="if(event.key==='Enter') runDNSProp()">
-                    <button onclick="runDNSProp()" style="background:#22d3ee;color:#000;font-weight:900;padding:7px 18px;">▶ CHECK</button>
+                    <button onclick="runDNSProp()" style="background:#84cc16;color:#000;font-weight:900;padding:7px 18px;">▶ CHECK</button>
                     <button onclick="clearDNSProp()" style="background:#21262d;color:var(--text-dim);padding:7px 12px;">CLEAR</button>
                 </div>
 
@@ -3031,14 +3031,18 @@ Authentication-Results: mx.google.com;
     ];
 
     const DP_RESOLVERS = [
-        { name: 'Cloudflare',      loc: 'Global',       ip: '1.1.1.1',        url: 'https://cloudflare-dns.com/dns-query' },
-        { name: 'Google',          loc: 'Global',       ip: '8.8.8.8',        url: 'https://dns.google/resolve' },
-        { name: 'Quad9',           loc: 'Switzerland',  ip: '9.9.9.9',        url: 'https://dns.quad9.net:5053/dns-query' },
-        { name: 'OpenDNS',         loc: 'USA',          ip: '208.67.222.222', url: 'https://doh.opendns.com/dns-query' },
-        { name: 'AdGuard',         loc: 'Europe',       ip: '94.140.14.14',   url: 'https://dns.adguard-dns.com/dns-query' },
-        { name: 'Cloudflare 1.0.0.1', loc: 'Global',   ip: '1.0.0.1',        url: 'https://one.one.one.one/dns-query' },
-        { name: 'Google 8.8.4.4',  loc: 'Global',      ip: '8.8.4.4',        url: 'https://dns.google/resolve' },
-        { name: 'Mullvad',         loc: 'Sweden',       ip: '194.242.2.2',    url: 'https://doh.mullvad.net/dns-query' },
+        // ── Global / US ──
+        { name: 'Cloudflare',      loc: '🌍 Global',      ip: '1.1.1.1',        url: 'https://cloudflare-dns.com/dns-query' },
+        { name: 'Google',          loc: '🌍 Global',      ip: '8.8.8.8',        url: 'https://dns.google/resolve' },
+        { name: 'Quad9',           loc: '🇨🇭 Switzerland', ip: '9.9.9.9',        url: 'https://dns.quad9.net:5053/dns-query' },
+        { name: 'OpenDNS',         loc: '🇺🇸 USA',         ip: '208.67.222.222', url: 'https://doh.opendns.com/dns-query' },
+        { name: 'Cloudflare Alt',  loc: '🌍 Global',      ip: '1.0.0.1',        url: 'https://one.one.one.one/dns-query' },
+        { name: 'Google Alt',      loc: '🌍 Global',      ip: '8.8.4.4',        url: 'https://dns.google/resolve' },
+        { name: 'Mullvad',         loc: '🇸🇪 Sweden',      ip: '194.242.2.2',    url: 'https://doh.mullvad.net/dns-query' },
+        { name: 'AdGuard',         loc: '🇷🇺 Europe',      ip: '94.140.14.14',   url: 'https://dns.adguard-dns.com/dns-query' },
+        // ── UK specific ──
+        { name: 'JISC / JANET',    loc: '🇬🇧 UK Academic', ip: '193.63.94.20',   url: 'https://dns.jisc.ac.uk/dns-query' },
+        { name: 'DNS4EU (UK node)',loc: '🇬🇧 UK / EU',     ip: '86.54.11.3',     url: 'https://dns4eu-doh.eu/dns-query' },
     ];
 
     // Build checkbox UI on first expand
@@ -3209,38 +3213,42 @@ Authentication-Results: mx.google.com;
             }
             html += '</div>';
 
-            html += '<div class="dp-resolver-grid">';
-            results.forEach(function(r) {
-                const norm = normaliseRecords(r.records);
-                let cardClass = 'pending', statusClass = 'dp-status-pending', statusText = '—';
+            // Split into global and UK resolvers for display
+            const globalResults = results.slice(0, 8);
+            const ukResults = results.slice(8);
 
-                if (r.status === 'error') {
-                    cardClass = 'error'; statusClass = 'dp-status-error'; statusText = 'ERROR';
-                } else if (r.status === 'nxdomain' || (r.status === 'ok' && !r.records.length)) {
-                    cardClass = 'nxdomain'; statusClass = 'dp-status-nxdomain'; statusText = 'NXDOMAIN';
-                } else if (majorityAnswer && norm === majorityAnswer) {
-                    cardClass = 'agree'; statusClass = 'dp-status-agree'; statusText = '✓ MATCH';
-                } else if (r.status === 'ok') {
-                    cardClass = 'differ'; statusClass = 'dp-status-differ'; statusText = '≠ DIFFERS';
-                }
+            function renderResolverCards(list) {
+                return list.map(function(r) {
+                    const norm = normaliseRecords(r.records);
+                    let cardClass = 'pending', statusClass = 'dp-status-pending', statusText = '—';
+                    if (r.status === 'error') { cardClass = 'error'; statusClass = 'dp-status-error'; statusText = 'ERROR'; }
+                    else if (r.status === 'nxdomain' || (r.status === 'ok' && !r.records.length)) { cardClass = 'nxdomain'; statusClass = 'dp-status-nxdomain'; statusText = 'NXDOMAIN'; }
+                    else if (majorityAnswer && norm === majorityAnswer) { cardClass = 'agree'; statusClass = 'dp-status-agree'; statusText = '✓ MATCH'; }
+                    else if (r.status === 'ok') { cardClass = 'differ'; statusClass = 'dp-status-differ'; statusText = '≠ DIFFERS'; }
+                    const recordsHtml = r.records.length
+                        ? r.records.map(rec => '<div>' + rec + '</div>').join('')
+                        : (r.status === 'error' ? '<span style="color:var(--text-dim);">Timeout / unreachable</span>' : '<span style="color:var(--red);">No records</span>');
+                    const ttlHtml = r.ttl !== null ? '<div class="dp-ttl">TTL: ' + r.ttl + 's</div>' : '';
+                    return '<div class="dp-resolver-card ' + cardClass + '">'
+                        + '<div class="dp-resolver-header">'
+                        + '<div><div class="dp-resolver-name">' + r.resolver.name + '</div>'
+                        + '<div class="dp-resolver-loc">' + r.resolver.loc + ' · ' + r.resolver.ip + '</div></div>'
+                        + '<span class="dp-resolver-status ' + statusClass + '">' + statusText + '</span>'
+                        + '</div>'
+                        + '<div class="dp-records">' + recordsHtml + '</div>'
+                        + ttlHtml + '</div>';
+                }).join('');
+            }
 
-                const recordsHtml = r.records.length
-                    ? r.records.map(rec => '<div>' + rec + '</div>').join('')
-                    : (r.status === 'error' ? '<span style="color:var(--text-dim);">Timeout / unreachable</span>' : '<span style="color:var(--red);">No records</span>');
+            html += '<div style="font-size:0.5rem;text-transform:uppercase;color:var(--text-dim);font-weight:900;letter-spacing:0.05em;margin-bottom:4px;">🌍 Global Resolvers</div>';
+            html += '<div class="dp-resolver-grid">' + renderResolverCards(globalResults) + '</div>';
 
-                const ttlHtml = r.ttl !== null ? '<div class="dp-ttl">TTL: ' + r.ttl + 's</div>' : '';
+            if (ukResults.length) {
+                html += '<div style="font-size:0.5rem;text-transform:uppercase;color:#84cc16;font-weight:900;letter-spacing:0.05em;margin:8px 0 4px;">🇬🇧 UK Resolvers</div>';
+                html += '<div class="dp-resolver-grid">' + renderResolverCards(ukResults) + '</div>';
+            }
 
-                html += '<div class="dp-resolver-card ' + cardClass + '">'
-                    + '<div class="dp-resolver-header">'
-                    + '<div><div class="dp-resolver-name">' + r.resolver.name + '</div>'
-                    + '<div class="dp-resolver-loc">' + r.resolver.loc + ' · ' + r.resolver.ip + '</div></div>'
-                    + '<span class="dp-resolver-status ' + statusClass + '">' + statusText + '</span>'
-                    + '</div>'
-                    + '<div class="dp-records">' + recordsHtml + '</div>'
-                    + ttlHtml
-                    + '</div>';
-            });
-            html += '</div></div>';
+            html += '</div>';
         }
 
         resEl.innerHTML = html;
