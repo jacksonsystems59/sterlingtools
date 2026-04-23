@@ -1001,13 +1001,21 @@
             <h1>STERLING TECH // STERLING'S LAB</h1>
             <div class="header-sub">// Network &amp; DNS Intelligence Suite // Hawkins, Indiana //</div>
         </div>
-        <div style="text-align:right;">
-            <div style="font-size:0.55rem;color:var(--text-dim);margin-bottom:3px;">YOUR WAN IP</div>
-            <div class="ip-wrap" style="justify-content:flex-end;">
-                <div class="live-dot"></div>
-                <span id="clientIP" style="font-family:monospace;font-size:0.8rem;font-weight:700;">Loading...</span>
+        <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+            <!-- Clock -->
+            <div>
+                <div id="stClock" style="font-family:'VT323',monospace;font-size:2rem;color:#ff3333;line-height:1;letter-spacing:0.08em;text-shadow:0 0 18px rgba(255,51,51,0.8),0 0 40px rgba(255,51,51,0.4);"></div>
+                <div id="stDate" style="font-family:'VT323',monospace;font-size:0.85rem;color:var(--st-dim);letter-spacing:0.12em;text-align:right;margin-top:2px;"></div>
             </div>
-            <div id="wanAsnBadge" style="display:none;margin-top:3px;font-size:0.6rem;text-align:right;"></div>
+            <!-- WAN IP -->
+            <div>
+                <div style="font-size:0.55rem;color:var(--text-dim);margin-bottom:3px;letter-spacing:0.08em;">YOUR WAN IP</div>
+                <div class="ip-wrap" style="justify-content:flex-end;">
+                    <div class="live-dot"></div>
+                    <span id="clientIP" style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;font-weight:700;">Loading...</span>
+                </div>
+                <div id="wanAsnBadge" style="display:none;margin-top:3px;font-size:0.6rem;text-align:right;"></div>
+            </div>
         </div>
     </div>
 
@@ -3682,6 +3690,32 @@ Authentication-Results: mx.google.com;
             requestAnimationFrame(draw);
         }
         draw();
+    })();
+
+    // ===============================================
+    //  LIVE CLOCK
+    // ===============================================
+    (function() {
+        const days   = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+        const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+
+        function tick() {
+            const now = new Date();
+            const hh  = String(now.getHours()).padStart(2,'0');
+            const mm  = String(now.getMinutes()).padStart(2,'0');
+            const ss  = String(now.getSeconds()).padStart(2,'0');
+            const day = days[now.getDay()];
+            const dd  = String(now.getDate()).padStart(2,'0');
+            const mon = months[now.getMonth()];
+            const yr  = now.getFullYear();
+
+            const clockEl = document.getElementById('stClock');
+            const dateEl  = document.getElementById('stDate');
+            if (clockEl) clockEl.textContent = hh + ':' + mm + ':' + ss;
+            if (dateEl)  dateEl.textContent  = day + ' ' + dd + ' ' + mon + ' ' + yr;
+        }
+        tick();
+        setInterval(tick, 1000);
     })();
 
 </script>
