@@ -7,7 +7,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'SF Pro Display', 'Segoe UI', system-ui, sans-serif; background: var(--bg, #0b0e14); color: var(--text, #e2e8f0); padding: 12px; line-height: 1.2; font-size: 13px; transition: all 0.3s; min-height: 100vh; }
+        body {
+            font-family: 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+            background: #070a10;
+            color: var(--text, #e2e8f0);
+            line-height: 1.2;
+            font-size: 13px;
+            min-height: 100vh;
+            /* subtle grid bg */
+            background-image:
+                linear-gradient(rgba(0,122,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,122,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        /* centred app shell */
+        .app-shell {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 12px 14px 40px;
+        }
         
         :root {
             --green: #00ff66; --red: #ff3333;
@@ -17,11 +35,26 @@
             --glass: blur(12px);
         }
 
-        .header-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-        h1 { font-size: 1.2rem; color: #fff; display: flex; align-items: center; gap: 8px; font-weight: 800; }
-        h1::before { content: ''; width: 3px; height: 16px; background: var(--blue); display: inline-block; }
+        .header-wrap {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 14px; padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        h1 {
+            font-size: 1.15rem; color: #fff;
+            display: flex; align-items: center; gap: 10px; font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+        h1::before { content: ''; width: 3px; height: 18px; background: var(--blue); display: inline-block; border-radius: 2px; }
+        .header-sub { font-size: 0.6rem; color: var(--text-dim); font-weight: 400; margin-top: 2px; }
 
-        .util-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        .util-grid {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        @media (max-width: 600px) { .util-grid { grid-template-columns: 1fr; } }
         .bar { background: #1a1f29; border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; font-size: 0.8rem; border-left: 3px solid var(--blue); }
         .gold-acc { border-left-color: var(--gold); }
         .purple-acc { border-left-color: var(--purple); }
@@ -36,11 +69,38 @@
         
         .tenant-input { background: #0d1117; border: 1px solid var(--border); color: var(--purple); padding: 4px 8px; border-radius: 4px; width: 100%; font-size: 0.7rem; outline: none; margin-top: 4px; }
 
-        .controls { display: flex; gap: 6px; margin-bottom: 12px; padding: 4px; background: linear-gradient(90deg, #161b22 0%, #1a2433 100%); border-radius: 6px; border: 1px solid rgba(0, 122, 255, 0.3); box-shadow: 0 0 15px var(--input-glow); }
-        input#domainInput { flex: 1; background: #0d1117; border: 1px solid var(--blue); border-radius: 4px; padding: 10px 14px; color: #fff; outline: none; font-weight: bold; font-size: 0.9rem; }
+        .controls {
+            display: flex; gap: 6px; margin-bottom: 12px;
+            padding: 4px;
+            background: linear-gradient(90deg, #161b22 0%, #1a2433 100%);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 122, 255, 0.3);
+            box-shadow: 0 0 20px var(--input-glow);
+        }
+        input#domainInput {
+            flex: 1; background: #0d1117;
+            border: 1px solid var(--blue);
+            border-radius: 5px;
+            padding: 11px 14px;
+            color: #fff; outline: none;
+            font-weight: bold; font-size: 0.9rem;
+            min-width: 0;
+        }
+        @media (max-width: 500px) {
+            .controls { flex-wrap: wrap; }
+            input#domainInput { width: 100%; }
+            #runBtn { flex: 1; padding: 11px; }
+        }
         
-        button { border: none; border-radius: 4px; padding: 6px 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem; text-transform: uppercase; }
-        #runBtn { background: var(--blue); color: #fff; min-width: 100px; }
+        button {
+            border: none; border-radius: 5px;
+            padding: 8px 16px;
+            font-weight: 700; cursor: pointer;
+            font-size: 0.75rem; text-transform: uppercase;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        #runBtn { background: var(--blue); color: #fff; min-width: 100px; padding: 11px 18px; font-size: 0.8rem; }
 
         .status-container { display: none; grid-template-columns: 80px 1fr; gap: 10px; margin-bottom: 10px; align-items: center; }
         .score-circle { height: 60px; width: 60px; border-radius: 50%; border: 3px solid; display: flex; align-items: center; justify-content: center; font-weight: 900; background: rgba(0,0,0,0.3); font-size: 1.2rem; }
@@ -69,6 +129,7 @@
 
         .results-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
         .small-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        @media (max-width: 480px) { .small-row { grid-template-columns: 1fr; } }
         .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; border-left: 3px solid var(--blue); position: relative; backdrop-filter: var(--glass); }
         .card.special { border-left-color: var(--gold); }
         .card.card-pass { border-left-color: var(--green); }
@@ -156,6 +217,7 @@
             grid-template-columns: repeat(4, 1fr);
             gap: 8px;
         }
+        @media (max-width: 480px) { .speedtest-metrics { grid-template-columns: repeat(2, 1fr); } }
         .speed-metric {
             background: #0d1117;
             border: 1px solid var(--border);
@@ -233,11 +295,15 @@
 
         /* ── Section headings ── */
         .section-heading {
-            display: flex; align-items: center; gap: 8px;
-            font-size: 0.65rem; font-weight: 900; text-transform: uppercase;
-            color: #fff; letter-spacing: 0.06em;
-            margin-bottom: 8px; padding-bottom: 6px;
-            border-bottom: 1px solid var(--border);
+            font-size: 0.65rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-dim);
+            margin: 16px 0 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         .section-heading-icon { font-size: 0.85rem; }
         .section-heading-sub {
@@ -263,6 +329,7 @@
         .nt-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
         .nt-label { font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; }
         .nt-sub { font-size: 0.55rem; color: var(--text-dim); font-weight: 400; }
+        @media (max-width: 500px) { .nt-sub { display: none; } }
         .nt-chevron { font-size: 0.6rem; color: var(--text-dim); font-weight: 900; transition: transform 0.2s; }
         .nt-chevron.open { transform: rotate(180deg); }
         .nt-panel {
@@ -764,53 +831,58 @@
     </style>
 </head>
 <body onload="initApp()">
+<div class="app-shell">
 
     <div class="header-wrap">
-        <h1>STERLING TECH AUDITOR</h1>
+        <div>
+            <h1>STERLING TECH AUDITOR</h1>
+            <div class="header-sub">Network &amp; DNS Intelligence Suite</div>
+        </div>
+        <div style="text-align:right;">
+            <div style="font-size:0.55rem;color:var(--text-dim);margin-bottom:3px;">YOUR WAN IP</div>
+            <div class="ip-wrap" style="justify-content:flex-end;">
+                <div class="live-dot"></div>
+                <span id="clientIP" style="font-family:monospace;font-size:0.8rem;font-weight:700;">Loading...</span>
+            </div>
+            <div id="wanAsnBadge" style="display:none;margin-top:3px;font-size:0.6rem;text-align:right;"></div>
+        </div>
     </div>
 
-    <!-- ═══ TOP ROW: WAN IP + SPEED TEST ═══ -->
-    <div style="display:grid;grid-template-columns:220px 1fr;gap:10px;margin-bottom:12px;">
-        <div class="bar" style="display:flex;flex-direction:column;justify-content:center;">
-            <span style="font-size:0.55rem; display:block; color:var(--text-dim)">LOCAL WAN IP</span>
-            <div class="ip-wrap"><div class="live-dot"></div><span id="clientIP">Loading...</span></div>
-            <div id="wanAsnBadge" style="display:none; margin-top:4px; font-size:0.65rem;"></div>
+    <!-- SPEED TEST -->
+    <div class="speedtest-bar" id="speedtestWidget" style="margin-bottom:14px;">
+        <div class="speedtest-header">
+            <div class="speedtest-title">
+                ◈ CONNECTION SPEED TEST
+                <span>via Cloudflare — download, upload, latency &amp; jitter</span>
+            </div>
+            <button id="speedRunBtn" onclick="runSpeedTest()">RUN TEST</button>
         </div>
-        <div class="speedtest-bar" id="speedtestWidget" style="margin-bottom:0;">
-            <div class="speedtest-header">
-                <div class="speedtest-title">
-                    ◈ CONNECTION SPEED TEST
-                    <span>via Cloudflare — tests download, latency &amp; jitter from your location</span>
-                </div>
-                <button id="speedRunBtn" onclick="runSpeedTest()">RUN TEST</button>
-            </div>
-            <div class="speedtest-progress" id="speedProgress">
-                <div class="speedtest-progress-fill" id="speedProgressFill"></div>
-            </div>
-            <div class="speedtest-metrics">
-                <div class="speed-metric">
-                    <span class="speed-metric-label">Download</span>
-                    <span class="speed-metric-value" id="smDown">—</span>
-                    <span class="speed-metric-unit">Mbps</span>
-                </div>
-                <div class="speed-metric">
-                    <span class="speed-metric-label">Upload</span>
-                    <span class="speed-metric-value" id="smUp">—</span>
-                    <span class="speed-metric-unit">Mbps</span>
-                </div>
-                <div class="speed-metric">
-                    <span class="speed-metric-label">Latency</span>
-                    <span class="speed-metric-value" id="smLatency">—</span>
-                    <span class="speed-metric-unit">ms</span>
-                </div>
-                <div class="speed-metric">
-                    <span class="speed-metric-label">Jitter</span>
-                    <span class="speed-metric-value" id="smJitter">—</span>
-                    <span class="speed-metric-unit">ms</span>
-                </div>
-            </div>
-            <div class="speedtest-verdict" id="speedVerdict"></div>
+        <div class="speedtest-progress" id="speedProgress">
+            <div class="speedtest-progress-fill" id="speedProgressFill"></div>
         </div>
+        <div class="speedtest-metrics">
+            <div class="speed-metric">
+                <span class="speed-metric-label">Download</span>
+                <span class="speed-metric-value" id="smDown">—</span>
+                <span class="speed-metric-unit">Mbps</span>
+            </div>
+            <div class="speed-metric">
+                <span class="speed-metric-label">Upload</span>
+                <span class="speed-metric-value" id="smUp">—</span>
+                <span class="speed-metric-unit">Mbps</span>
+            </div>
+            <div class="speed-metric">
+                <span class="speed-metric-label">Latency</span>
+                <span class="speed-metric-value" id="smLatency">—</span>
+                <span class="speed-metric-unit">ms</span>
+            </div>
+            <div class="speed-metric">
+                <span class="speed-metric-label">Jitter</span>
+                <span class="speed-metric-value" id="smJitter">—</span>
+                <span class="speed-metric-unit">ms</span>
+            </div>
+        </div>
+        <div class="speedtest-verdict" id="speedVerdict"></div>
     </div>
 
     <!-- ═══ DOMAIN AUDITOR ═══ -->
@@ -1188,7 +1260,9 @@ Authentication-Results: mx.google.com;
         </div>
     </div>
 
-    <footer>&copy; 2026 Sterling Tech</footer>
+    <footer style="text-align:center;padding:20px 0 6px;font-size:0.6rem;color:var(--text-dim);">&copy; 2026 Sterling Tech &mdash; sterlingtools.jacksontech.co.uk</footer>
+
+</div><!-- /app-shell -->
 
 
 <script>
