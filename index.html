@@ -705,52 +705,7 @@
         .eh-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #f97316, #fbbf24); border-radius: 2px; transition: width 0.3s ease; }
 
         /* ── DNS PROPAGATION CHECKER ── */
-        .dp-resolver-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 6px;
-            margin-bottom: 8px;
-        }
-        .dp-resolver-card {
-            background: #0d1117;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 7px 9px;
-            border-left: 3px solid var(--border);
-            transition: border-color 0.2s;
-        }
-        .dp-resolver-card.agree  { border-left-color: var(--green); }
-        .dp-resolver-card.differ { border-left-color: var(--gold); }
-        .dp-resolver-card.nxdomain { border-left-color: var(--red); }
-        .dp-resolver-card.pending { border-left-color: #30363d; }
-        .dp-resolver-card.error  { border-left-color: var(--red); opacity: 0.6; }
-
-        .dp-resolver-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 4px;
-        }
-        .dp-resolver-name { font-size: 0.65rem; font-weight: 900; color: #e2e8f0; }
-        .dp-resolver-loc  { font-size: 0.55rem; color: var(--text-dim); }
-        .dp-resolver-status {
-            font-size: 0.55rem; font-weight: 900; padding: 1px 5px;
-            border-radius: 3px; border: 1px solid;
-        }
-        .dp-status-agree   { color: var(--green); border-color: var(--green); background: rgba(0,255,102,0.08); }
-        .dp-status-differ  { color: var(--gold);  border-color: var(--gold);  background: rgba(251,191,36,0.08); }
-        .dp-status-nxdomain{ color: var(--red);   border-color: var(--red);   background: rgba(255,51,51,0.08); }
-        .dp-status-pending { color: var(--text-dim); border-color: var(--border); background: transparent; }
-        .dp-status-error   { color: var(--red);   border-color: var(--red);   background: rgba(255,51,51,0.06); }
-
-        .dp-records {
-            font-family: monospace; font-size: 0.6rem;
-            color: #7dd3fc; word-break: break-all; line-height: 1.5;
-        }
-        .dp-ttl { font-size: 0.55rem; color: var(--text-dim); margin-top: 2px; }
-
-        .dp-type-grid {
-            display: flex; flex-wrap: wrap; gap: 6px;
-            margin-bottom: 10px;
-        }
+        .dp-type-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
         .dp-type-label {
             display: flex; align-items: center; gap: 4px;
             font-size: 0.65rem; font-weight: 700; cursor: pointer;
@@ -760,13 +715,37 @@
             user-select: none; color: var(--text-dim);
         }
         .dp-type-label input[type="checkbox"] { display: none; }
-        .dp-type-label.checked {
-            background: rgba(0,122,255,0.15);
-            border-color: var(--blue);
-            color: #fff;
-        }
+        .dp-type-label.checked { background: rgba(132,204,22,0.12); border-color: #84cc16; color: #fff; }
         .dp-type-label .dp-check-icon { font-size: 0.6rem; display: none; }
-        .dp-type-label.checked .dp-check-icon { display: inline; color: var(--blue); }
+        .dp-type-label.checked .dp-check-icon { display: inline; color: #84cc16; }
+
+        /* Main layout: table left, map right */
+        .dp-layout { display: grid; grid-template-columns: 1fr 340px; gap: 10px; align-items: start; }
+        @media (max-width: 900px) { .dp-layout { grid-template-columns: 1fr; } }
+
+        /* whatsmydns-style row table */
+        .dp-table { width: 100%; border-collapse: collapse; font-size: 0.63rem; }
+        .dp-table thead tr { background: #0d1117; }
+        .dp-table thead th { padding: 5px 8px; text-align: left; font-size: 0.55rem; text-transform: uppercase; color: var(--text-dim); font-weight: 900; border-bottom: 1px solid var(--border); white-space: nowrap; }
+        .dp-table tbody tr { border-bottom: 1px solid rgba(48,54,61,0.5); transition: background 0.1s; }
+        .dp-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+        .dp-table tbody tr.dp-section-header { background: #0d1117; }
+        .dp-table tbody tr.dp-section-header td { font-size: 0.5rem; font-weight: 900; text-transform: uppercase; padding: 4px 8px; color: var(--text-dim); letter-spacing: 0.06em; }
+        .dp-table td { padding: 5px 8px; vertical-align: middle; }
+        .dp-loc-flag { font-size: 1rem; line-height: 1; }
+        .dp-loc-city { font-weight: 700; color: #e2e8f0; font-size: 0.65rem; }
+        .dp-loc-isp  { font-size: 0.55rem; color: var(--text-dim); }
+        .dp-record-val { font-family: monospace; color: #7dd3fc; font-size: 0.6rem; word-break: break-all; max-width: 280px; }
+        .dp-record-none { color: var(--text-dim); font-style: italic; font-size: 0.6rem; }
+        .dp-ttl-cell { font-size: 0.55rem; color: var(--text-dim); white-space: nowrap; }
+        .dp-tick { font-size: 1rem; line-height: 1; }
+        .dp-tick.pass  { color: var(--green); }
+        .dp-tick.fail  { color: var(--red); }
+        .dp-tick.warn  { color: var(--gold); }
+        .dp-tick.pend  { color: var(--border); }
+
+        /* Map */
+        #dpMap { height: 300px; border-radius: 4px; border: 1px solid var(--border); background: #0d1117; }
 
         .dp-consensus {
             display: none; padding: 8px 12px; border-radius: 4px;
@@ -780,6 +759,8 @@
         .dp-progress { height: 2px; background: var(--border); border-radius: 2px; margin-bottom: 8px; overflow: hidden; display: none; }
         .dp-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #84cc16, #a3e635); border-radius: 2px; transition: width 0.3s; }
         .dp-error { background: rgba(255,51,51,0.06); border: 1px solid rgba(255,51,51,0.3); border-radius: 4px; padding: 8px 10px; font-size: 0.65rem; color: var(--red); display: none; margin-bottom: 6px; }
+        .dp-records { font-family: monospace; font-size: 0.6rem; color: #7dd3fc; word-break: break-all; line-height: 1.5; }
+        .dp-ttl { font-size: 0.55rem; color: var(--text-dim); margin-top: 2px; }
     </style>
 </head>
 <body onload="initApp()">
@@ -1181,8 +1162,28 @@ Authentication-Results: mx.google.com;
                 <!-- Consensus banner -->
                 <div class="dp-consensus" id="dpConsensus"></div>
 
-                <!-- Results -->
-                <div id="dpResults"></div>
+                <!-- Results: table + map side by side -->
+                <div id="dpResults" style="display:none;">
+                    <div class="dp-layout">
+                        <div>
+                            <table class="dp-table" id="dpTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width:28px;"></th>
+                                        <th>Location / ISP</th>
+                                        <th>Record Value</th>
+                                        <th>TTL</th>
+                                        <th style="width:28px;text-align:center;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dpTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div>
+                            <div id="dpMap" style="display:none;"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -3082,37 +3083,49 @@ Authentication-Results: mx.google.com;
         { type: 'PTR',   checked: false },
     ];
 
+    // Resolvers with geo coords for map plotting
+    // Grouped: UK first, then US major, then global
     const DP_RESOLVERS = [
-        // -- Global / US --
-        { name: 'Cloudflare',      loc: '🌍 Global',      ip: '1.1.1.1',        url: 'https://cloudflare-dns.com/dns-query' },
-        { name: 'Google',          loc: '🌍 Global',      ip: '8.8.8.8',        url: 'https://dns.google/resolve' },
-        { name: 'Quad9',           loc: '🇨🇭 Switzerland', ip: '9.9.9.9',        url: 'https://dns.quad9.net:5053/dns-query' },
-        { name: 'OpenDNS',         loc: '🇺🇸 USA',         ip: '208.67.222.222', url: 'https://doh.opendns.com/dns-query' },
-        { name: 'Cloudflare Alt',  loc: '🌍 Global',      ip: '1.0.0.1',        url: 'https://one.one.one.one/dns-query' },
-        { name: 'Google Alt',      loc: '🌍 Global',      ip: '8.8.4.4',        url: 'https://dns.google/resolve' },
-        { name: 'Mullvad',         loc: '🇸🇪 Sweden',      ip: '194.242.2.2',    url: 'https://doh.mullvad.net/dns-query' },
-        { name: 'AdGuard',         loc: '🇷🇺 Europe',      ip: '94.140.14.14',   url: 'https://dns.adguard-dns.com/dns-query' },
-        // -- UK specific --
-        { name: 'JISC / JANET',    loc: '🇬🇧 UK Academic', ip: '193.63.94.20',   url: 'https://dns.jisc.ac.uk/dns-query' },
-        { name: 'Quad9 (EU)',      loc: '🇪🇺 EU / UK',      ip: '9.9.9.11',       url: 'https://dns11.quad9.net/dns-query' },
+        // UK
+        { name: 'JISC / JANET',   city: 'London, UK',           isp: 'JISC Academic Network', flag: '🇬🇧', lat: 51.51,  lon: -0.12,   url: 'https://dns.jisc.ac.uk/dns-query',           ip: '193.63.94.20'   },
+        { name: 'Cloudflare LON', city: 'London, UK',           isp: 'Cloudflare (London PoP)',flag: '🇬🇧', lat: 51.50,  lon: -0.10,   url: 'https://cloudflare-dns.com/dns-query',       ip: '1.1.1.1'        },
+        { name: 'Google LON',     city: 'London, UK',           isp: 'Google (London PoP)',   flag: '🇬🇧', lat: 51.52,  lon: -0.08,   url: 'https://dns.google/resolve',                ip: '8.8.8.8'        },
+        // US - Major roots / cities
+        { name: 'Google NYC',     city: 'New York, USA',        isp: 'Google',                flag: '🇺🇸', lat: 40.71,  lon: -74.01,  url: 'https://dns.google/resolve',                ip: '8.8.4.4'        },
+        { name: 'Cloudflare LA', city: 'Los Angeles, USA',     isp: 'Cloudflare',            flag: '🇺🇸', lat: 34.05,  lon: -118.24, url: 'https://one.one.one.one/dns-query',          ip: '1.0.0.1'        },
+        { name: 'OpenDNS CHI',   city: 'Chicago, USA',         isp: 'OpenDNS / Cisco',       flag: '🇺🇸', lat: 41.88,  lon: -87.63,  url: 'https://doh.opendns.com/dns-query',          ip: '208.67.222.222' },
+        { name: 'Google DAL',    city: 'Dallas TX, USA',       isp: 'Google',                flag: '🇺🇸', lat: 32.78,  lon: -96.80,  url: 'https://dns.google/resolve',                ip: '8.8.8.8'        },
+        { name: 'Cloudflare SEA',city: 'Seattle WA, USA',      isp: 'Cloudflare',            flag: '🇺🇸', lat: 47.61,  lon: -122.33, url: 'https://cloudflare-dns.com/dns-query',       ip: '1.1.1.1'        },
+        // Europe
+        { name: 'Quad9 ZRH',    city: 'Zurich, Switzerland',  isp: 'Quad9',                 flag: '🇨🇭', lat: 47.38,  lon: 8.54,    url: 'https://dns.quad9.net:5053/dns-query',       ip: '9.9.9.9'        },
+        { name: 'AdGuard AMS',  city: 'Amsterdam, Netherlands',isp: 'AdGuard',               flag: '🇳🇱', lat: 52.37,  lon: 4.90,    url: 'https://dns.adguard-dns.com/dns-query',     ip: '94.140.14.14'   },
+        { name: 'Mullvad STO',  city: 'Stockholm, Sweden',    isp: 'Mullvad VPN',            flag: '🇸🇪', lat: 59.33,  lon: 18.07,   url: 'https://doh.mullvad.net/dns-query',          ip: '194.242.2.2'    },
+        { name: 'Quad9 EU',     city: 'Frankfurt, Germany',   isp: 'Quad9 EU node',          flag: '🇩🇪', lat: 50.11,  lon: 8.68,    url: 'https://dns11.quad9.net/dns-query',          ip: '9.9.9.11'       },
+        // Asia-Pacific
+        { name: 'Google SIN',   city: 'Singapore',            isp: 'Google',                 flag: '🇸🇬', lat: 1.35,   lon: 103.82,  url: 'https://dns.google/resolve',                ip: '8.8.8.8'        },
+        { name: 'Cloudflare TOK',city: 'Tokyo, Japan',        isp: 'Cloudflare',             flag: '🇯🇵', lat: 35.68,  lon: 139.69,  url: 'https://cloudflare-dns.com/dns-query',       ip: '1.1.1.1'        },
+        { name: 'Google SYD',   city: 'Sydney, Australia',    isp: 'Google',                 flag: '🇦🇺', lat: -33.87, lon: 151.21,  url: 'https://dns.google/resolve',                ip: '8.8.4.4'        },
+        // Others
+        { name: 'Cloudflare SAO',city: 'Sao Paulo, Brazil',   isp: 'Cloudflare',             flag: '🇧🇷', lat: -23.55, lon: -46.63,  url: 'https://cloudflare-dns.com/dns-query',       ip: '1.1.1.1'        },
+        { name: 'Google JNB',   city: 'Johannesburg, S.Africa',isp: 'Google',                flag: '🇿🇦', lat: -26.20, lon: 28.04,   url: 'https://dns.google/resolve',                ip: '8.8.8.8'        },
+        { name: 'Cloudflare DXB',city: 'Dubai, UAE',          isp: 'Cloudflare',             flag: '🇦🇪', lat: 25.20,  lon: 55.27,   url: 'https://cloudflare-dns.com/dns-query',       ip: '1.1.1.1'        },
     ];
 
-    // Build checkbox UI on first expand
+    let dpMap = null;
     let dpTypesBuilt = false;
+
     function ensureDPTypes() {
         if (dpTypesBuilt) return;
         dpTypesBuilt = true;
         const grid = document.getElementById('dpTypeGrid');
-        grid.innerHTML = DP_TYPES.map(t => `
-            <label class="dp-type-label${t.checked ? ' checked' : ''}" id="dp-type-label-${t.type}" onclick="toggleDPType('${t.type}', this)">
-                <input type="checkbox" ${t.checked ? 'checked' : ''} id="dp-cb-${t.type}">
-                <span class="dp-check-icon">✓</span>
-                ${t.type}
-            </label>
-        `).join('');
+        grid.innerHTML = DP_TYPES.map(t =>
+            '<label class="dp-type-label' + (t.checked ? ' checked' : '') + '" id="dp-type-label-' + t.type + '" onclick="toggleDPType(\'' + t.type + '\', this)">'
+            + '<input type="checkbox" ' + (t.checked ? 'checked' : '') + ' id="dp-cb-' + t.type + '">'
+            + '<span class="dp-check-icon">✓</span> ' + t.type
+            + '</label>'
+        ).join('');
     }
 
-    // Hook toggleNT to build types on first open
     const _origToggleNT = toggleNT;
     toggleNT = function(id) {
         _origToggleNT(id);
@@ -3121,11 +3134,8 @@ Authentication-Results: mx.google.com;
 
     function toggleDPType(type, label) {
         const cb = document.getElementById('dp-cb-' + type);
-        // The click already toggled it before we get here via label click
-        // but since we intercept onclick on label, we toggle manually
         cb.checked = !cb.checked;
         label.classList.toggle('checked', cb.checked);
-        // prevent double-toggle since label click would normally fire checkbox
         return false;
     }
 
@@ -3142,43 +3152,30 @@ Authentication-Results: mx.google.com;
 
     function clearDNSProp() {
         document.getElementById('dpDomain').value = '';
-        document.getElementById('dpResults').innerHTML = '';
+        document.getElementById('dpResults').style.display = 'none';
+        document.getElementById('dpTableBody').innerHTML = '';
         document.getElementById('dpConsensus').style.display = 'none';
         document.getElementById('dpError').style.display = 'none';
         document.getElementById('dpProgress').style.display = 'none';
+        document.getElementById('dpMap').style.display = 'none';
+        if (dpMap) { dpMap.remove(); dpMap = null; }
     }
 
     async function queryResolver(resolver, domain, type) {
         try {
             const url = resolver.url + '?name=' + encodeURIComponent(domain) + '&type=' + type;
-            const r = await fetch(url, {
-                headers: { 'Accept': 'application/dns-json' },
-                cache: 'no-store'
-            });
+            const r = await fetch(url, { headers: { 'Accept': 'application/dns-json' }, cache: 'no-store' });
             if (!r.ok) return { status: 'error', records: [], ttl: null };
             const d = await r.json();
-            // Status 3 = NXDOMAIN, 0 = NOERROR
             if (d.Status === 3) return { status: 'nxdomain', records: [], ttl: null };
             const dnsTypeMap = { A:1, AAAA:28, MX:15, TXT:16, CNAME:5, NS:2, SOA:6, CAA:257, SRV:33, PTR:12 };
-            const requestedTypeNum = dnsTypeMap[type];
             const allAnswers = d.Answer || [];
-
-            // First try: only matching type numbers
-            let answers = allAnswers.filter(a => a.type === requestedTypeNum);
-
-            // Fallback: if nothing matched (e.g. CNAME chain), take everything
+            let answers = allAnswers.filter(a => a.type === dnsTypeMap[type]);
             if (!answers.length && allAnswers.length) answers = allAnswers;
-
-            // Still nothing Try Authority section for NS/SOA
-            if (!answers.length) {
-                const auth = d.Authority || [];
-                if (auth.length) answers = auth;
-            }
-
+            if (!answers.length) { const auth = d.Authority || []; if (auth.length) answers = auth; }
             if (!answers.length) return { status: 'nxdomain', records: [], ttl: null };
-
             const records = answers.map(a => (a.data || '').replace(/"/g, '').trim()).filter(Boolean);
-            const ttl = answers[0]?.TTL ?? null;
+            const ttl = answers[0] ? answers[0].TTL : null;
             return { status: 'ok', records, ttl };
         } catch(e) {
             return { status: 'error', records: [], ttl: null };
@@ -3193,6 +3190,41 @@ Authentication-Results: mx.google.com;
         }).sort().join('|');
     }
 
+    function dpRenderMap(resolvers, results, majorityAnswer) {
+        const mapEl = document.getElementById('dpMap');
+        mapEl.style.display = 'block';
+        if (dpMap) { dpMap.remove(); dpMap = null; }
+        dpMap = L.map('dpMap', { zoomControl: true, worldCopyJump: false, maxBoundsViscosity: 1.0 });
+        dpMap.setMaxBounds([[-90,-180],[90,180]]);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://carto.com/">CARTO</a>', maxZoom: 18, noWrap: true
+        }).addTo(dpMap);
+
+        resolvers.forEach(function(resolver, idx) {
+            const res = results[idx];
+            const norm = res ? normaliseRecords(res.records) : '';
+            const isMatch = res && res.status === 'ok' && majorityAnswer && norm === majorityAnswer;
+            const isErr   = !res || res.status === 'error';
+            const isNX    = res && res.status === 'nxdomain';
+            const color = isMatch ? '#00ff66' : isErr ? '#94a3b8' : isNX ? '#ff3333' : '#fbbf24';
+            const symbol = isMatch ? '✓' : isErr ? '?' : isNX ? '✗' : '≠';
+            const icon = L.divIcon({
+                className: '',
+                html: '<div style="width:20px;height:20px;border-radius:50%;background:' + color + ';border:2px solid #0d1117;box-shadow:0 0 8px ' + color + ';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#000;">' + symbol + '</div>',
+                iconSize: [20,20], iconAnchor: [10,10]
+            });
+            const recText = res && res.records.length ? res.records.join(', ').substring(0, 60) : (isNX ? 'NXDOMAIN' : 'No response');
+            const popup = '<div style="font-family:monospace;font-size:11px;color:#e2e8f0;background:#161b22;padding:7px 9px;border-radius:4px;border:1px solid #30363d;min-width:180px;line-height:1.6;">'
+                + '<b style="color:#84cc16;">' + resolver.city + '</b><br>'
+                + '<span style="color:#94a3b8;font-size:10px;">' + resolver.isp + '</span><br>'
+                + '<span style="color:#7dd3fc;font-size:10px;">' + recText + '</span>'
+                + (res && res.ttl ? '<br><span style="color:#4a5568;font-size:10px;">TTL: ' + res.ttl + 's</span>' : '')
+                + '</div>';
+            L.marker([resolver.lat, resolver.lon], { icon: icon }).bindPopup(popup).addTo(dpMap);
+        });
+        dpMap.fitBounds(L.latLngBounds(resolvers.map(r => [r.lat, r.lon])).pad(0.15));
+    }
+
     async function runDNSProp() {
         ensureDPTypes();
         const domain = document.getElementById('dpDomain').value.trim().toLowerCase();
@@ -3201,7 +3233,7 @@ Authentication-Results: mx.google.com;
         const types = getSelectedTypes();
         if (!types.length) {
             const errEl = document.getElementById('dpError');
-            errEl.innerText = '✗ Please select at least one record type.';
+            errEl.innerText = 'Please select at least one record type.';
             errEl.style.display = 'block';
             return;
         }
@@ -3212,122 +3244,142 @@ Authentication-Results: mx.google.com;
         const conEl  = document.getElementById('dpConsensus');
 
         errEl.style.display  = 'none';
-        resEl.innerHTML      = '';
+        resEl.style.display  = 'none';
         conEl.style.display  = 'none';
         progEl.style.display = 'block';
         setDPProgress(5);
+        document.getElementById('dpMap').style.display = 'none';
+        if (dpMap) { dpMap.remove(); dpMap = null; }
 
-        // For each selected type, query all resolvers in parallel
-        const allResults = {}; // type -> [ { resolver, status, records, ttl } ]
+        const allResults = {};
         const total = types.length * DP_RESOLVERS.length;
         let done = 0;
 
-        await Promise.all(types.map(async (type) => {
-            allResults[type] = await Promise.all(DP_RESOLVERS.map(async (resolver) => {
+        await Promise.all(types.map(async function(type) {
+            allResults[type] = await Promise.all(DP_RESOLVERS.map(async function(resolver) {
                 const result = await queryResolver(resolver, domain, type);
                 done++;
-                setDPProgress(5 + Math.round((done / total) * 90));
-                return { resolver, ...result };
+                setDPProgress(5 + Math.round((done / total) * 88));
+                return result;
             }));
         }));
 
-        setDPProgress(100);
+        setDPProgress(98);
 
-        // Render results grouped by record type
-        let html = '';
+        // Render one type at a time (show first selected type on map)
+        const tbody = document.getElementById('dpTableBody');
+        tbody.innerHTML = '';
         let totalResolvers = 0, totalAgree = 0;
+        let firstTypeMajority = null, firstTypeResults = null;
 
-        for (const type of types) {
+        types.forEach(function(type, ti) {
             const results = allResults[type];
-
-            // Find the majority answer for comparison
-            const okResults = results.filter(r => r.status === 'ok' && r.records.length);
+            const okResults = results.filter(function(r) { return r.status === 'ok' && r.records.length; });
             const normCounts = {};
-            okResults.forEach(r => {
+            okResults.forEach(function(r) {
                 const k = normaliseRecords(r.records);
                 normCounts[k] = (normCounts[k] || 0) + 1;
             });
-            const majorityAnswer = Object.keys(normCounts).sort((a,b) => normCounts[b] - normCounts[a])[0] || null;
+            const majorityAnswer = Object.keys(normCounts).sort(function(a,b) { return normCounts[b]-normCounts[a]; })[0] || null;
             const agreeCount = majorityAnswer ? normCounts[majorityAnswer] : 0;
-
             totalResolvers += DP_RESOLVERS.length;
             totalAgree += agreeCount;
 
-            html += '<div style="margin-bottom:12px;">';
-            html += '<div style="font-size:0.6rem;font-weight:900;text-transform:uppercase;color:#22d3ee;margin-bottom:6px;display:flex;align-items:center;gap:8px;">';
-            html += type + ' Records';
-            html += '<span style="color:var(--text-dim);font-weight:400;">for ' + domain + '</span>';
+            if (ti === 0) { firstTypeMajority = majorityAnswer; firstTypeResults = results; }
 
-            if (majorityAnswer) {
-                const pct = Math.round((agreeCount / DP_RESOLVERS.length) * 100);
-                const pctColor = pct === 100 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--red)';
-                html += '<span style="color:' + pctColor + ';font-weight:900;">' + agreeCount + '/' + DP_RESOLVERS.length + ' agree (' + pct + '%)</span>';
-            }
-            html += '</div>';
+            // Section header row
+            const pct = DP_RESOLVERS.length > 0 ? Math.round((agreeCount / DP_RESOLVERS.length) * 100) : 0;
+            const pctColor = pct === 100 ? '#00ff66' : pct >= 50 ? '#fbbf24' : '#ff3333';
+            const hdr = document.createElement('tr');
+            hdr.className = 'dp-section-header';
+            hdr.innerHTML = '<td colspan="5" style="color:#84cc16;">'
+                + type + ' Records for <span style="color:#e2e8f0;">' + domain + '</span>'
+                + ' <span style="color:' + pctColor + ';margin-left:8px;">' + agreeCount + '/' + DP_RESOLVERS.length + ' consistent (' + pct + '%)</span>'
+                + '</td>';
+            tbody.appendChild(hdr);
 
-            // Split into global and UK resolvers for display
-            const globalResults = results.slice(0, 8);
-            const ukResults = results.slice(8);
+            // UK section label
+            const ukHdr = document.createElement('tr');
+            ukHdr.className = 'dp-section-header';
+            ukHdr.innerHTML = '<td colspan="5" style="color:#84cc16;padding:2px 8px 2px 16px;font-size:0.48rem;">🇬🇧 United Kingdom</td>';
+            tbody.appendChild(ukHdr);
 
-            function renderResolverCards(list) {
-                return list.map(function(r) {
-                    const norm = normaliseRecords(r.records);
-                    let cardClass = 'pending', statusClass = 'dp-status-pending', statusText = '-';
-                    if (r.status === 'error') { cardClass = 'error'; statusClass = 'dp-status-error'; statusText = 'ERROR'; }
-                    else if (r.status === 'nxdomain' || (r.status === 'ok' && !r.records.length)) { cardClass = 'nxdomain'; statusClass = 'dp-status-nxdomain'; statusText = 'NXDOMAIN'; }
-                    else if (majorityAnswer && norm === majorityAnswer) { cardClass = 'agree'; statusClass = 'dp-status-agree'; statusText = '✓ MATCH'; }
-                    else if (r.status === 'ok') { cardClass = 'differ'; statusClass = 'dp-status-differ'; statusText = '≠ DIFFERS'; }
-                    const recordsHtml = r.records.length
-                        ? r.records.map(rec => '<div>' + rec + '</div>').join('')
-                        : (r.status === 'error' ? '<span style="color:var(--text-dim);">Timeout / unreachable</span>' : '<span style="color:var(--red);">No records</span>');
-                    const ttlHtml = r.ttl !== null ? '<div class="dp-ttl">TTL: ' + r.ttl + 's</div>' : '';
-                    return '<div class="dp-resolver-card ' + cardClass + '">'
-                        + '<div class="dp-resolver-header">'
-                        + '<div><div class="dp-resolver-name">' + r.resolver.name + '</div>'
-                        + '<div class="dp-resolver-loc">' + r.resolver.loc + ' . ' + r.resolver.ip + '</div></div>'
-                        + '<span class="dp-resolver-status ' + statusClass + '">' + statusText + '</span>'
-                        + '</div>'
-                        + '<div class="dp-records">' + recordsHtml + '</div>'
-                        + ttlHtml + '</div>';
-                }).join('');
-            }
+            // Rows
+            DP_RESOLVERS.forEach(function(resolver, idx) {
+                // Section dividers
+                if (idx === 3) {
+                    const div = document.createElement('tr');
+                    div.className = 'dp-section-header';
+                    div.innerHTML = '<td colspan="5" style="color:var(--text-dim);padding:2px 8px 2px 16px;font-size:0.48rem;">🇺🇸 United States</td>';
+                    tbody.appendChild(div);
+                }
+                if (idx === 8) {
+                    const div = document.createElement('tr');
+                    div.className = 'dp-section-header';
+                    div.innerHTML = '<td colspan="5" style="color:var(--text-dim);padding:2px 8px 2px 16px;font-size:0.48rem;">🌍 Europe</td>';
+                    tbody.appendChild(div);
+                }
+                if (idx === 12) {
+                    const div = document.createElement('tr');
+                    div.className = 'dp-section-header';
+                    div.innerHTML = '<td colspan="5" style="color:var(--text-dim);padding:2px 8px 2px 16px;font-size:0.48rem;">🌏 Asia-Pacific &amp; Other</td>';
+                    tbody.appendChild(div);
+                }
 
-            html += '<div style="font-size:0.5rem;text-transform:uppercase;color:var(--text-dim);font-weight:900;letter-spacing:0.05em;margin-bottom:4px;">🌍 Global Resolvers</div>';
-            html += '<div class="dp-resolver-grid">' + renderResolverCards(globalResults) + '</div>';
+                const res = results[idx];
+                const norm = normaliseRecords(res.records);
+                const isMatch  = res.status === 'ok' && majorityAnswer && norm === majorityAnswer;
+                const isErr    = res.status === 'error';
+                const isNX     = res.status === 'nxdomain';
+                const isDiffer = res.status === 'ok' && !isMatch;
 
-            if (ukResults.length) {
-                html += '<div style="font-size:0.5rem;text-transform:uppercase;color:#84cc16;font-weight:900;letter-spacing:0.05em;margin:8px 0 4px;">🇬🇧 UK Resolvers</div>';
-                html += '<div class="dp-resolver-grid">' + renderResolverCards(ukResults) + '</div>';
-            }
+                let tickClass = 'pend', tickSymbol = '●';
+                if (isMatch)  { tickClass = 'pass'; tickSymbol = '✓'; }
+                if (isDiffer) { tickClass = 'warn'; tickSymbol = '≠'; }
+                if (isNX)     { tickClass = 'fail'; tickSymbol = '✗'; }
+                if (isErr)    { tickClass = 'pend'; tickSymbol = '?'; }
 
-            html += '</div>';
+                const recHtml = res.records.length
+                    ? '<div class="dp-record-val">' + res.records.map(function(v) { return v.length > 55 ? v.substring(0,53)+'...' : v; }).join('<br>') + '</div>'
+                    : (isNX ? '<span class="dp-record-none">NXDOMAIN</span>' : '<span class="dp-record-none">' + (isErr ? 'No response' : 'No records') + '</span>');
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td class="dp-loc-flag">' + resolver.flag + '</td>'
+                    + '<td><div class="dp-loc-city">' + resolver.city + '</div><div class="dp-loc-isp">' + resolver.isp + '</div></td>'
+                    + '<td>' + recHtml + '</td>'
+                    + '<td class="dp-ttl-cell">' + (res.ttl !== null ? res.ttl + 's' : '') + '</td>'
+                    + '<td class="dp-tick ' + tickClass + '" style="text-align:center;font-size:1.1rem;">' + tickSymbol + '</td>';
+                tbody.appendChild(tr);
+            });
+        });
+
+        setDPProgress(100);
+        resEl.style.display = 'block';
+
+        // Render map for first record type
+        if (firstTypeResults) {
+            dpRenderMap(DP_RESOLVERS, firstTypeResults, firstTypeMajority);
         }
 
-        resEl.innerHTML = html;
-
-        // Overall consensus banner
+        // Consensus banner
         const overallPct = totalResolvers ? Math.round((totalAgree / totalResolvers) * 100) : 0;
         conEl.style.display = 'block';
         if (overallPct === 100) {
             conEl.className = 'dp-consensus all-agree';
-            conEl.innerHTML = '✓ ALL RESOLVERS CONSISTENT - Every resolver queried returned the same answer. If you just made a change, it has fully propagated.';
+            conEl.innerHTML = '✓ FULLY CONSISTENT - All ' + DP_RESOLVERS.length + ' resolvers worldwide return the same answer.';
         } else if (overallPct >= 75) {
             conEl.className = 'dp-consensus partial';
-            conEl.innerHTML = '⚠ MOSTLY CONSISTENT - ' + totalAgree + '/' + totalResolvers + ' resolver checks agree (' + overallPct + '%). A small number of resolvers are returning different results - this may indicate a recent change still propagating, or a filtered resolver behaving differently.';
+            conEl.innerHTML = '(!) MOSTLY CONSISTENT - ' + totalAgree + '/' + totalResolvers + ' checks agree (' + overallPct + '%). A small number of resolvers differ.';
         } else if (overallPct >= 50) {
             conEl.className = 'dp-consensus partial';
-            conEl.innerHTML = '⚠ INCONSISTENT - ' + totalAgree + '/' + totalResolvers + ' resolver checks agree (' + overallPct + '%). If you recently made a DNS change, it is still propagating. If this is an established domain, some resolvers may be returning stale cache.';
+            conEl.innerHTML = '(!) PROPAGATING - ' + totalAgree + '/' + totalResolvers + ' checks agree (' + overallPct + '%). Still spreading globally.';
         } else {
             conEl.className = 'dp-consensus none-propagated';
-            conEl.innerHTML = '✗ RESOLVERS DISAGREE - Only ' + overallPct + '% of resolver checks are consistent. If you just made a DNS change it may take up to 48h to propagate globally depending on TTL. If this is an existing domain, check the records manually.';
+            conEl.innerHTML = '(X) INCONSISTENT - Only ' + overallPct + '% of resolver checks agree. If recently changed, allow up to 48h based on TTL.';
         }
 
         setTimeout(function() { progEl.style.display = 'none'; setDPProgress(0); }, 600);
     }
-
-    // ===============================================
-
-
 </script>
 </body>
 </html>
