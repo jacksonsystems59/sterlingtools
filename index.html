@@ -101,6 +101,11 @@
             animation: titleFlicker 8s infinite;
         }
         h1::before { display: none; }
+        
+        @keyframes termBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
         @keyframes titleFlicker {
             0%,95%,100% { opacity: 1; text-shadow: 0 0 20px var(--st-red), 0 0 40px rgba(204,26,26,0.4); }
             96% { opacity: 0.85; text-shadow: 0 0 30px var(--st-red), 0 0 60px rgba(204,26,26,0.6); }
@@ -1151,10 +1156,11 @@
             ℹ Scanned at <span id="auditTimestamp" style="color:var(--blue);font-family:monospace;"></span> — DNS records are live at time of scan and may differ from cached results on other resolvers. DKIM checks selector1 only (Microsoft 365 default).
         </div>
     </div>
-    <div class="section-heading" style="margin-top:16px;">
-        <span class="section-heading-icon" style="font-size:1.2rem;">▶</span>
-        // NERD TOOLS //
-        <span class="section-heading-sub" style="font-size:0.55rem;color:var(--st-dim);font-family:'Share Tech Mono',monospace;letter-spacing:0.08em;">BGP, traceroute, FQDN gen, MS tenant lookup — expand a tool to use it</span>
+    <div class="section-heading" style="margin-top:16px;display:block;">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#444;margin-bottom:4px;">jacksonsystems59@sterlinglab:~$</div>
+        <div style="display:flex;align-items:center;gap:0;">
+            <span id="ntTermText" style="font-family:'VT323',monospace;font-size:1.1rem;color:var(--st-red);letter-spacing:0.1em;text-shadow:0 0 10px rgba(204,26,26,0.6);white-space:pre;"></span><span id="ntTermCursor" style="color:var(--st-red);font-size:1.1rem;animation:termBlink 1s step-end infinite;">█</span>
+        </div>
     </div>
 
     <!-- ── FQDN Generator ── -->
@@ -1480,7 +1486,7 @@ Authentication-Results: mx.google.com;
         </div>
     </div>
 
-    <footer style="text-align:center;padding:24px 0 8px;font-family:'VT323',monospace;font-size:0.9rem;color:var(--st-dim);letter-spacing:0.1em;text-shadow:0 0 8px rgba(204,26,26,0.3);">&copy; 2026 STERLING TECH // HULL, ENGLAND // CLASSIFIED</footer>
+    <footer style="padding:24px 0 8px;text-align:center;font-family:'VT323',monospace;font-size:0.9rem;color:var(--st-dim);letter-spacing:0.1em;text-shadow:0 0 8px rgba(204,26,26,0.3);">&copy; 2026 STERLING TECH // HULL, ENGLAND // CLASSIFIED</footer>
 
 </div><!-- /app-shell -->
 
@@ -3765,6 +3771,61 @@ Authentication-Results: mx.google.com;
         }
         tick();
         setInterval(tick, 1000);
+    })();
+
+    // ===============================================
+    //  NERD TOOLS TERMINAL TYPEWRITER
+    // ===============================================
+    (function() {
+        const commands = [
+            './nerdtools --load',
+            'ls -la /tools/',
+            'cat /tools/bgp.sh | grep active',
+            './traceroute --global --probes=18',
+            'dig +short sterlingtech.co.uk MX',
+            './dns-prop --check --resolvers=12',
+            'ssh hawkins@sterlinglab.net -p 22',
+            './email-headers --parse --geo',
+            'nmap -sV -p 1-1024 target.host',
+            './nerdtools --status',
+        ];
+
+        const el = document.getElementById('ntTermText');
+        if (!el) return;
+
+        let cmdIdx  = 0;
+        let charIdx = 0;
+        let deleting = false;
+
+        const TYPE_SPEED   = 68;
+        const DELETE_SPEED = 28;
+        const END_PAUSE    = 2200;
+        const NEXT_PAUSE   = 400;
+
+        function type() {
+            const target = commands[cmdIdx];
+            if (!deleting) {
+                charIdx++;
+                el.textContent = target.substring(0, charIdx);
+                if (charIdx >= target.length) {
+                    setTimeout(function() { deleting = true; type(); }, END_PAUSE);
+                    return;
+                }
+            } else {
+                charIdx--;
+                el.textContent = target.substring(0, charIdx);
+                if (charIdx <= 0) {
+                    deleting = false;
+                    charIdx  = 0;
+                    cmdIdx   = (cmdIdx + 1) % commands.length;
+                    setTimeout(type, NEXT_PAUSE);
+                    return;
+                }
+            }
+            setTimeout(type, deleting ? DELETE_SPEED : TYPE_SPEED);
+        }
+
+        setTimeout(type, 800);
     })();
 
 </script>
