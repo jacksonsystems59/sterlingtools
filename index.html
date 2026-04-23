@@ -3086,29 +3086,23 @@ Authentication-Results: mx.google.com;
     // Resolvers with geo coords for map plotting
     // Grouped: UK first, then US major, then global
     const DP_RESOLVERS = [
-        // UK
-        { name: 'JISC / JANET',   city: 'London, UK',           isp: 'JISC Academic Network', flag: '🇬🇧', lat: 51.51,  lon: -0.12,   url: 'https://dns.jisc.ac.uk/dns-query',           ip: '193.63.94.20'   },
-        { name: 'Cloudflare LON', city: 'London, UK',           isp: 'Cloudflare (London PoP)',flag: '🇬🇧', lat: 51.50,  lon: -0.10,   url: 'https://cloudflare-dns.com/dns-query',       ip: '1.1.1.1'        },
-        { name: 'Google LON',     city: 'London, UK',           isp: 'Google (London PoP)',   flag: '🇬🇧', lat: 51.52,  lon: -0.08,   url: 'https://dns.google/resolve',                ip: '8.8.8.8'        },
-        // US - Major roots / cities
-        { name: 'Google NYC',     city: 'New York, USA',        isp: 'Google',                flag: '🇺🇸', lat: 40.71,  lon: -74.01,  url: 'https://dns.google/resolve',                ip: '8.8.4.4'        },
-        { name: 'Cloudflare LA', city: 'Los Angeles, USA',     isp: 'Cloudflare',            flag: '🇺🇸', lat: 34.05,  lon: -118.24, url: 'https://one.one.one.one/dns-query',          ip: '1.0.0.1'        },
-        { name: 'OpenDNS CHI',   city: 'Chicago, USA',         isp: 'OpenDNS / Cisco',       flag: '🇺🇸', lat: 41.88,  lon: -87.63,  url: 'https://doh.opendns.com/dns-query',          ip: '208.67.222.222' },
-        { name: 'Google DAL',    city: 'Dallas TX, USA',       isp: 'Google',                flag: '🇺🇸', lat: 32.78,  lon: -96.80,  url: 'https://dns.google/resolve',                ip: '8.8.8.8'        },
-        { name: 'Cloudflare SEA',city: 'Seattle WA, USA',      isp: 'Cloudflare',            flag: '🇺🇸', lat: 47.61,  lon: -122.33, url: 'https://cloudflare-dns.com/dns-query',       ip: '1.1.1.1'        },
+        // UK -- distinct providers with real UK presence
+        { name: 'JISC / JANET',  city: 'London, UK',            isp: 'JISC Academic Network',  flag: '🇬🇧', lat: 51.51,  lon: -0.12,   url: 'https://dns.jisc.ac.uk/dns-query',       ip: '193.63.94.20'   },
+        { name: 'Cloudflare',    city: 'London, UK',            isp: 'Cloudflare 1.1.1.1',     flag: '🇬🇧', lat: 51.50,  lon: -0.10,   url: 'https://cloudflare-dns.com/dns-query',   ip: '1.1.1.1'        },
+        { name: 'Google',        city: 'London, UK',            isp: 'Google 8.8.8.8',         flag: '🇬🇧', lat: 51.52,  lon: -0.08,   url: 'https://dns.google/resolve',             ip: '8.8.8.8'        },
+        // US
+        { name: 'OpenDNS',       city: 'Ashburn VA, USA',       isp: 'OpenDNS / Cisco',        flag: '🇺🇸', lat: 39.04,  lon: -77.49,  url: 'https://doh.opendns.com/dns-query',      ip: '208.67.222.222' },
+        { name: 'Cloudflare',    city: 'Los Angeles, USA',      isp: 'Cloudflare 1.0.0.1',     flag: '🇺🇸', lat: 34.05,  lon: -118.24, url: 'https://one.one.one.one/dns-query',      ip: '1.0.0.1'        },
+        { name: 'Google',        city: 'Dallas TX, USA',        isp: 'Google 8.8.4.4',         flag: '🇺🇸', lat: 32.78,  lon: -96.80,  url: 'https://dns.google/resolve',             ip: '8.8.4.4'        },
         // Europe
-        { name: 'Quad9 ZRH',    city: 'Zurich, Switzerland',  isp: 'Quad9',                 flag: '🇨🇭', lat: 47.38,  lon: 8.54,    url: 'https://dns.quad9.net:5053/dns-query',       ip: '9.9.9.9'        },
-        { name: 'AdGuard AMS',  city: 'Amsterdam, Netherlands',isp: 'AdGuard',               flag: '🇳🇱', lat: 52.37,  lon: 4.90,    url: 'https://dns.adguard-dns.com/dns-query',     ip: '94.140.14.14'   },
-        { name: 'Mullvad STO',  city: 'Stockholm, Sweden',    isp: 'Mullvad VPN',            flag: '🇸🇪', lat: 59.33,  lon: 18.07,   url: 'https://doh.mullvad.net/dns-query',          ip: '194.242.2.2'    },
-        { name: 'Quad9 EU',     city: 'Frankfurt, Germany',   isp: 'Quad9 EU node',          flag: '🇩🇪', lat: 50.11,  lon: 8.68,    url: 'https://dns11.quad9.net/dns-query',          ip: '9.9.9.11'       },
+        { name: 'Quad9',         city: 'Zurich, Switzerland',   isp: 'Quad9 9.9.9.9',          flag: '🇨🇭', lat: 47.38,  lon: 8.54,    url: 'https://dns.quad9.net:5053/dns-query',   ip: '9.9.9.9'        },
+        { name: 'AdGuard',       city: 'Amsterdam, Netherlands', isp: 'AdGuard DNS',            flag: '🇳🇱', lat: 52.37,  lon: 4.90,    url: 'https://dns.adguard-dns.com/dns-query',  ip: '94.140.14.14'   },
         // Asia-Pacific
-        { name: 'Google SIN',   city: 'Singapore',            isp: 'Google',                 flag: '🇸🇬', lat: 1.35,   lon: 103.82,  url: 'https://dns.google/resolve',                ip: '8.8.8.8'        },
-        { name: 'Cloudflare TOK',city: 'Tokyo, Japan',        isp: 'Cloudflare',             flag: '🇯🇵', lat: 35.68,  lon: 139.69,  url: 'https://cloudflare-dns.com/dns-query',       ip: '1.1.1.1'        },
-        { name: 'Google SYD',   city: 'Sydney, Australia',    isp: 'Google',                 flag: '🇦🇺', lat: -33.87, lon: 151.21,  url: 'https://dns.google/resolve',                ip: '8.8.4.4'        },
-        // Others
-        { name: 'Cloudflare SAO',city: 'Sao Paulo, Brazil',   isp: 'Cloudflare',             flag: '🇧🇷', lat: -23.55, lon: -46.63,  url: 'https://cloudflare-dns.com/dns-query',       ip: '1.1.1.1'        },
-        { name: 'Google JNB',   city: 'Johannesburg, S.Africa',isp: 'Google',                flag: '🇿🇦', lat: -26.20, lon: 28.04,   url: 'https://dns.google/resolve',                ip: '8.8.8.8'        },
-        { name: 'Cloudflare DXB',city: 'Dubai, UAE',          isp: 'Cloudflare',             flag: '🇦🇪', lat: 25.20,  lon: 55.27,   url: 'https://cloudflare-dns.com/dns-query',       ip: '1.1.1.1'        },
+        { name: 'Cloudflare',    city: 'Singapore',             isp: 'Cloudflare 1.1.1.1',     flag: '🇸🇬', lat: 1.35,   lon: 103.82,  url: 'https://cloudflare-dns.com/dns-query',   ip: '1.1.1.1'        },
+        { name: 'Google',        city: 'Sydney, Australia',     isp: 'Google 8.8.8.8',         flag: '🇦🇺', lat: -33.87, lon: 151.21,  url: 'https://dns.google/resolve',             ip: '8.8.8.8'        },
+        // Americas + Africa
+        { name: 'Cloudflare',    city: 'Sao Paulo, Brazil',     isp: 'Cloudflare 1.1.1.1',     flag: '🇧🇷', lat: -23.55, lon: -46.63,  url: 'https://cloudflare-dns.com/dns-query',   ip: '1.1.1.1'        },
+        { name: 'Google',        city: 'Johannesburg, S.Africa',isp: 'Google 8.8.8.8',         flag: '🇿🇦', lat: -26.20, lon: 28.04,   url: 'https://dns.google/resolve',             ip: '8.8.8.8'        },
     ];
 
     let dpMap = null;
@@ -3162,9 +3156,17 @@ Authentication-Results: mx.google.com;
     }
 
     async function queryResolver(resolver, domain, type) {
+        const TIMEOUT_MS = 3000;
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
         try {
             const url = resolver.url + '?name=' + encodeURIComponent(domain) + '&type=' + type;
-            const r = await fetch(url, { headers: { 'Accept': 'application/dns-json' }, cache: 'no-store' });
+            const r = await fetch(url, {
+                headers: { 'Accept': 'application/dns-json' },
+                cache: 'no-store',
+                signal: controller.signal
+            });
+            clearTimeout(timer);
             if (!r.ok) return { status: 'error', records: [], ttl: null };
             const d = await r.json();
             if (d.Status === 3) return { status: 'nxdomain', records: [], ttl: null };
@@ -3178,6 +3180,7 @@ Authentication-Results: mx.google.com;
             const ttl = answers[0] ? answers[0].TTL : null;
             return { status: 'ok', records, ttl };
         } catch(e) {
+            clearTimeout(timer);
             return { status: 'error', records: [], ttl: null };
         }
     }
@@ -3313,16 +3316,16 @@ Authentication-Results: mx.google.com;
                     div.innerHTML = '<td colspan="5" style="color:var(--text-dim);padding:2px 8px 2px 16px;font-size:0.48rem;">🇺🇸 United States</td>';
                     tbody.appendChild(div);
                 }
-                if (idx === 8) {
+                if (idx === 6) {
                     const div = document.createElement('tr');
                     div.className = 'dp-section-header';
                     div.innerHTML = '<td colspan="5" style="color:var(--text-dim);padding:2px 8px 2px 16px;font-size:0.48rem;">🌍 Europe</td>';
                     tbody.appendChild(div);
                 }
-                if (idx === 12) {
+                if (idx === 8) {
                     const div = document.createElement('tr');
                     div.className = 'dp-section-header';
-                    div.innerHTML = '<td colspan="5" style="color:var(--text-dim);padding:2px 8px 2px 16px;font-size:0.48rem;">🌏 Asia-Pacific &amp; Other</td>';
+                    div.innerHTML = '<td colspan="5" style="color:var(--text-dim);padding:2px 8px 2px 16px;font-size:0.48rem;">🌏 Asia-Pacific &amp; Americas</td>';
                     tbody.appendChild(div);
                 }
 
