@@ -1562,6 +1562,7 @@ Authentication-Results: mx.google.com;
                 <div id="snPanel4">
                     <div class="sn-input-row">
                         <input class="sn-input" id="snIP4" placeholder="e.g. 192.168.1.0" style="flex:1;min-width:140px;" onkeyup="if(event.key==='Enter')calcSubnet4()">
+                        <button class="sn-btn" onclick="genRandomIPv4()" style="white-space:nowrap;border-color:#a855f7;color:#a855f7;background:rgba(168,85,247,0.08);" title="Generate random IP and prefix">&#x2605; RANDOM</button>
                         <select class="sn-select" id="snPrefix4">
                             <option>/8  — Class A</option>
                             <option>/9</option><option>/10</option><option>/11</option><option>/12</option>
@@ -1586,6 +1587,33 @@ Authentication-Results: mx.google.com;
                             <table class="sn-split-table" id="snSplitTable4">
                                 <thead><tr><th>Prefix</th><th>Subnets</th><th>Hosts/Subnet</th><th>First Network</th><th>Last Network</th></tr></thead>
                                 <tbody id="snSplitBody4"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- IPv4 Subnet Planner -->
+                    <div style="margin-top:10px;background:#0a0708;border:1px solid var(--border);border-radius:2px;padding:10px;">
+                        <span style="font-family:'VT323',monospace;font-size:0.95rem;color:#00d4ff;letter-spacing:0.08em;display:block;margin-bottom:8px;">// IPv4 Subnet Planner</span>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                            <div>
+                                <div style="font-size:0.55rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">I need this many HOSTS</div>
+                                <div style="display:flex;gap:6px;">
+                                    <input class="sn-input" id="v4NeedHosts" placeholder="e.g. 50" style="flex:1;" onkeyup="if(event.key==='Enter')v4PlanHosts()">
+                                    <button class="sn-btn" onclick="v4PlanHosts()">FIND</button>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size:0.55rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">I need this many SUBNETS</div>
+                                <div style="display:flex;gap:6px;">
+                                    <input class="sn-input" id="v4NeedSubnets" placeholder="e.g. 8" style="flex:1;" onkeyup="if(event.key==='Enter')v4PlanSubnets()">
+                                    <button class="sn-btn" onclick="v4PlanSubnets()">FIND</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="v4PlanResults" style="display:none;">
+                            <table class="sn-split-table" id="v4PlanTable">
+                                <thead><tr><th>Prefix</th><th>Subnet Mask</th><th>Usable Hosts</th><th>Subnets in /24</th><th>Subnets in /16</th><th>Best for</th></tr></thead>
+                                <tbody id="v4PlanBody"></tbody>
                             </table>
                         </div>
                     </div>
@@ -1616,6 +1644,44 @@ Authentication-Results: mx.google.com;
                         <div class="sn-error" id="snError6"></div>
                         <div class="sn-results" id="snResults6">
                             <div class="sn-grid" id="snGrid6"></div>
+                            <!-- Full address expand -->
+                            <div id="snV6FullSection" style="display:none;margin-top:8px;">
+                                <button class="sn-btn" onclick="toggleV6Full()" style="font-size:0.8rem;padding:5px 12px;margin-bottom:6px;" id="snV6FullBtn">&#x25BC; SHOW FULL UNCOMPRESSED ADDRESS</button>
+                                <div id="snV6FullBlock" style="display:none;background:#0a0708;border:1px solid var(--border);border-radius:2px;padding:8px 10px;">
+                                    <div style="font-size:0.5rem;text-transform:uppercase;color:var(--text-dim);letter-spacing:0.08em;margin-bottom:4px;">Full Network Address (uncompressed)</div>
+                                    <div id="snV6FullNet" style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#00d4ff;word-break:break-all;margin-bottom:6px;"></div>
+                                    <div style="font-size:0.5rem;text-transform:uppercase;color:var(--text-dim);letter-spacing:0.08em;margin-bottom:4px;">Full Last Address (uncompressed)</div>
+                                    <div id="snV6FullLast" style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#ff3333;word-break:break-all;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- IPv6 Subnet Planner -->
+                    <div class="sn-v6-section">
+                        <span class="sn-v6-section-title">// IPv6 Subnet Planner <span style="font-size:0.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;">work backwards from what you need</span></span>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                            <div>
+                                <div style="font-size:0.55rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">I need this many HOSTS</div>
+                                <div style="display:flex;gap:6px;">
+                                    <input class="sn-input" id="v6NeedHosts" placeholder="e.g. 500" style="flex:1;" onkeyup="if(event.key==='Enter')v6PlanHosts()">
+                                    <button class="sn-btn" onclick="v6PlanHosts()" style="white-space:nowrap;">FIND PREFIX</button>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size:0.55rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">I need this many SUBNETS</div>
+                                <div style="display:flex;gap:6px;">
+                                    <input class="sn-input" id="v6NeedSubnets" placeholder="e.g. 100" style="flex:1;" onkeyup="if(event.key==='Enter')v6PlanSubnets()">
+                                    <button class="sn-btn" onclick="v6PlanSubnets()" style="white-space:nowrap;">FIND PREFIX</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="v6PlanResults" style="display:none;">
+                            <div class="sn-grid" id="v6PlanGrid"></div>
+                            <table class="sn-split-table" id="v6PlanTable" style="margin-top:6px;">
+                                <thead><tr><th>Prefix</th><th>Subnets (from /48)</th><th>Hosts per Subnet</th><th>Best for</th></tr></thead>
+                                <tbody id="v6PlanBody"></tbody>
+                            </table>
                         </div>
                     </div>
 
@@ -4092,6 +4158,8 @@ Authentication-Results: mx.google.com;
             { label: 'IP Class',           val: ipClass,                    cls: '' },
             { label: 'Scope',              val: isPrivate ? 'Private (RFC1918)' : 'Public', cls: isPrivate ? 'amber' : 'green' },
             { label: 'Binary Mask',        val: prefix4ToMask(prefix).toString(2).replace(/(.{8})/g, '$1 ').trim(), cls: 'purple' },
+            { label: 'Recommended Gateway', val: prefix >= 31 ? intToIP4(firstHost) + ' (P2P — no gateway)' : intToIP4(firstHost) + ' (first usable — conventional)', cls: 'green' },
+            { label: 'Alt Gateway Option',  val: prefix >= 31 ? 'N/A' : intToIP4(lastHost) + ' (last usable — also common)', cls: 'amber' },
         ];
 
         document.getElementById('snGrid4').innerHTML = cards.map(c =>
@@ -4238,15 +4306,49 @@ Authentication-Results: mx.google.com;
         else if ((firstGroup & 0xFF00) === 0xFF00) scope = 'Multicast';
         else if (addrInt === BigInt(1)) scope = 'Loopback (::1)';
 
+        // Hosts per /64 subnet (usable — minus network + anycast)
+        const hostBits   = 128 - 64; // always /64 for host addressing
+        const hostsPerSubnet = BigInt(2) ** BigInt(64) - BigInt(2);
+
+        // If the prefix is itself a /64, total addresses ARE the hosts
+        const effectiveHosts = prefix >= 64
+            ? (prefix === 128 ? BigInt(1) : totalAddr - BigInt(2))
+            : hostsPerSubnet;
+
+        // Subnet count (how many /64s fit)
+        let subnetCount64 = null;
+        if (prefix < 64) subnetCount64 = BigInt(1) << BigInt(64 - prefix);
+
         const cards = [
-            { label: 'Network Address',    val: compressIPv6(networkGroups) + '/' + prefix, cls: 'green' },
-            { label: 'Full Network',       val: formatIPv6Full(networkGroups),               cls: '' },
-            { label: 'Last Address',       val: compressIPv6(lastGroups),                    cls: 'red' },
-            { label: 'Prefix Length',      val: '/' + prefix + ' (' + prefix + ' bits)',     cls: '' },
-            { label: 'Host Bits',          val: (128 - prefix) + ' bits',                   cls: '' },
-            { label: 'Total Addresses',    val: formatBigInt(totalAddr),                     cls: 'green' },
-            { label: 'Scope',              val: scope,                                        cls: scope.includes('ULA') ? 'amber' : 'green' },
+            { label: 'Network Address',      val: compressIPv6(networkGroups) + '/' + prefix, cls: 'green' },
+            { label: 'Last Address',         val: compressIPv6(lastGroups),                    cls: 'red' },
+            { label: 'Prefix Length',        val: '/' + prefix + ' (' + prefix + ' bits)',     cls: '' },
+            { label: 'Host Bits',            val: (128 - prefix) + ' bits',                   cls: '' },
+            { label: 'Total Addresses',      val: formatBigInt(totalAddr),                     cls: 'green' },
+            { label: 'Hosts per /64 Subnet', val: formatBigInt(hostsPerSubnet) + ' usable',   cls: 'green' },
+            { label: 'Scope',                val: scope,                                        cls: scope.includes('ULA') ? 'amber' : 'green' },
         ];
+
+        // Gateway / host recommendations
+        // For a /64, gateway is ::1, first host ::2, last usable is ffff:ffff:ffff:fffe
+        const netCompressed = compressIPv6(networkGroups);
+        const netBase = netCompressed.replace(/::$/, '').replace(/:$/, '');
+        if (prefix <= 64) {
+            const gwAddr   = netBase + '::1';
+            const firstH   = netBase + '::2';
+            const lastH    = compressIPv6(networkGroups.slice(0,4).concat(['ffff','ffff','ffff','fffe']));
+            cards.push({ label: 'Recommended Gateway',     val: gwAddr  + '  (::1 — router convention)', cls: 'green' });
+            cards.push({ label: 'First Usable Host',       val: firstH  + '  (::2)',                      cls: 'green' });
+            cards.push({ label: 'Last Usable Host',        val: lastH   + '  (::fffe)',                   cls: 'amber' });
+            cards.push({ label: 'Gateway Note',            val: 'Hosts use SLAAC or DHCPv6 — link-local (fe80::1) also commonly used as gateway on Cisco/Juniper', cls: 'purple' });
+        } else if (prefix < 128) {
+            // Smaller than /64 — not recommended for host assignment but show what we can
+            cards.push({ label: 'Gateway Note', val: 'Prefixes longer than /64 are not recommended for host subnets — SLAAC requires exactly /64', cls: 'red' });
+        }
+        if (subnetCount64) {
+            cards.push({ label: '/64 Subnets Available', val: formatBigInt(subnetCount64) + ' subnets', cls: 'purple' });
+            cards.push({ label: 'Total Usable Hosts',    val: formatBigInt(subnetCount64 * hostsPerSubnet), cls: 'green' });
+        }
         if (subnetInfo) cards.push({ label: 'Subnet Capacity', val: subnetInfo, cls: 'purple' });
 
         document.getElementById('snGrid6').innerHTML = cards.map(c =>
@@ -4255,6 +4357,15 @@ Authentication-Results: mx.google.com;
             + '<span class="sn-card-val">' + c.val + '</span>'
             + '</div>'
         ).join('');
+
+        // Show full address toggle section
+        const fullNet  = formatIPv6Full(networkGroups);
+        const fullLast = formatIPv6Full(lastGroups);
+        document.getElementById('snV6FullSection').style.display = 'block';
+        document.getElementById('snV6FullNet').textContent  = fullNet  + '/' + prefix;
+        document.getElementById('snV6FullLast').textContent = fullLast;
+        document.getElementById('snV6FullBlock').style.display = 'none'; // hidden until toggled
+
         resEl.style.display = 'block';
     }
 
@@ -4287,12 +4398,17 @@ Authentication-Results: mx.google.com;
             { label: 'Available /64s',     val: '65,536 subnets', cls: 'amber' },
             { label: 'Scope',              val: 'Unique Local (RFC 4193) — not routable on internet', cls: 'amber' },
             { label: 'Global ID (random)', val: g1.slice(2) + g2 + g3, cls: 'purple' },
+            { label: 'Recommended Gateway',val: g1 + ':' + g2 + ':' + g3 + ':0001::1  (first /64, ::1)', cls: 'green' },
+            { label: 'First Usable Host',  val: g1 + ':' + g2 + ':' + g3 + ':0001::2  (::2)', cls: 'green' },
+            { label: 'Gateway Note',       val: 'Assign ::1 as router on each /64 subnet — hosts use SLAAC or DHCPv6 from ::2 onwards', cls: 'purple' },
         ] : [
             { label: '/64 ULA Subnet',     val: g1 + ':' + g2 + ':' + g3 + ':0001::/64', cls: 'green' },
-            { label: 'First Host',         val: g1 + ':' + g2 + ':' + g3 + ':1::1', cls: 'green' },
-            { label: 'Last Host',          val: g1 + ':' + g2 + ':' + g3 + ':1:ffff:ffff:ffff:fffe', cls: 'amber' },
+            { label: 'Recommended Gateway',val: g1 + ':' + g2 + ':' + g3 + ':1::1  (::1 — router)', cls: 'green' },
+            { label: 'First Usable Host',  val: g1 + ':' + g2 + ':' + g3 + ':1::2  (::2)', cls: 'green' },
+            { label: 'Last Usable Host',   val: g1 + ':' + g2 + ':' + g3 + ':1:ffff:ffff:ffff:fffe', cls: 'amber' },
             { label: 'Hosts',              val: '18,446,744,073,709,551,614', cls: 'green' },
             { label: 'Scope',              val: 'Unique Local (RFC 4193) — not routable on internet', cls: 'amber' },
+            { label: 'Gateway Note',       val: 'Use fe80::1 (link-local) as gateway on Cisco/Juniper — or assign ULA ::1 explicitly', cls: 'purple' },
         ];
 
         document.getElementById('ulaGrid').innerHTML = cards.map(c =>
@@ -4357,6 +4473,234 @@ Authentication-Results: mx.google.com;
             + '</div>'
         ).join('');
         document.getElementById('euiResults').style.display = 'block';
+    }
+
+    function toggleV6Full() {
+        const block = document.getElementById('snV6FullBlock');
+        const btn   = document.getElementById('snV6FullBtn');
+        const showing = block.style.display !== 'none';
+        block.style.display = showing ? 'none' : 'block';
+        btn.innerHTML = showing
+            ? '&#x25BC; SHOW FULL UNCOMPRESSED ADDRESS'
+            : '&#x25B2; HIDE FULL ADDRESS';
+    }
+
+    // ===============================================
+    //  SUBNET PLANNER — IPv4 + IPv6
+    // ===============================================
+
+    // ── IPv4 Random Generator ────────────────────
+    function genRandomIPv4() {
+        // Pick a random private range: 10.x, 172.16-31.x, 192.168.x
+        const ranges = [
+            { base: [10, 0, 0, 0],     prefixes: [8,12,16,20,24] },
+            { base: [172, 16, 0, 0],   prefixes: [12,16,20,24] },
+            { base: [192, 168, 0, 0],  prefixes: [16,24,25,26,27,28] },
+        ];
+        const range = ranges[Math.floor(Math.random() * ranges.length)];
+        const prefix = range.prefixes[Math.floor(Math.random() * range.prefixes.length)];
+        const ip = range.base.slice();
+        // Randomise host octets within the range
+        if (prefix <= 8)  { ip[1] = Math.floor(Math.random()*256); ip[2] = Math.floor(Math.random()*256); ip[3] = 0; }
+        else if (prefix <= 16) { ip[2] = Math.floor(Math.random()*256); ip[3] = 0; }
+        else if (prefix <= 24) { ip[3] = 0; }
+        else { ip[3] = 0; }
+
+        document.getElementById('snIP4').value = ip.join('.');
+
+        // Set the dropdown to match
+        const sel = document.getElementById('snPrefix4');
+        for (let i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value.startsWith('/' + prefix + ' ') || sel.options[i].value === '/' + prefix) {
+                sel.selectedIndex = i; break;
+            }
+        }
+        // Auto calculate
+        calcSubnet4();
+    }
+
+    // ── IPv4 Planner — by hosts ───────────────────
+    function v4PlanHosts() {
+        const need = parseInt(document.getElementById('v4NeedHosts').value.trim(), 10);
+        if (!need || need < 1) return;
+        const resEl = document.getElementById('v4PlanResults');
+        const body  = document.getElementById('v4PlanBody');
+
+        // Find best-fit prefix (smallest subnet that fits the hosts)
+        const rows = [];
+        for (let prefix = 30; prefix >= 8; prefix--) {
+            const usable = prefix >= 31 ? Math.pow(2, 32-prefix) : Math.pow(2, 32-prefix) - 2;
+            const subnetsIn24 = prefix <= 24 ? 1 : Math.pow(2, prefix - 24);
+            const subnetsIn16 = prefix <= 16 ? 1 : Math.pow(2, prefix - 16);
+            const mask = intToIP4(prefix4ToMask(prefix));
+            let bestFor = '';
+            if (prefix === 30)      bestFor = 'Point-to-point links';
+            else if (prefix === 29) bestFor = 'Tiny office / lab';
+            else if (prefix === 28) bestFor = 'Very small office';
+            else if (prefix === 27) bestFor = 'Small office (30 hosts)';
+            else if (prefix === 26) bestFor = 'Medium office (62 hosts)';
+            else if (prefix === 25) bestFor = 'Large office (126 hosts)';
+            else if (prefix === 24) bestFor = 'Typical LAN / Class C';
+            else if (prefix === 23) bestFor = 'Medium site';
+            else if (prefix === 22) bestFor = 'Large site';
+            else if (prefix <= 20)  bestFor = 'Enterprise / campus';
+            else if (prefix <= 16)  bestFor = 'Large enterprise / ISP block';
+            else                    bestFor = 'Very large network / ISP';
+
+            const fits = usable >= need;
+            const isBest = fits && (prefix === 30 || Math.pow(2, 32-(prefix+1)) - 2 < need);
+
+            rows.push({ prefix, mask, usable, subnetsIn24, subnetsIn16, bestFor, fits, isBest });
+        }
+
+        // Show best match + a few alternatives
+        const best = rows.find(r => r.isBest) || rows.find(r => r.fits);
+        const shown = best ? rows.filter(r => r.fits && r.prefix >= best.prefix - 3 && r.prefix <= best.prefix + 2) : rows.filter(r => r.fits).slice(0, 6);
+
+        body.innerHTML = shown.map(r =>
+            '<tr style="' + (r.isBest ? 'background:rgba(0,212,255,0.08);' : '') + '">'
+            + '<td style="' + (r.isBest ? 'color:#00d4ff;font-weight:900;' : '') + '">/' + r.prefix + (r.isBest ? ' &#x2605; BEST FIT' : '') + '</td>'
+            + '<td>' + r.mask + '</td>'
+            + '<td style="color:var(--green);">' + r.usable.toLocaleString() + '</td>'
+            + '<td>' + (r.subnetsIn24 >= 1 ? r.subnetsIn24 : 1) + '</td>'
+            + '<td>' + r.subnetsIn16.toLocaleString() + '</td>'
+            + '<td style="color:var(--text-dim);">' + r.bestFor + '</td>'
+            + '</tr>'
+        ).join('') || '<tr><td colspan="6" style="color:var(--red);">No standard subnet can accommodate ' + need.toLocaleString() + ' hosts</td></tr>';
+
+        resEl.style.display = 'block';
+    }
+
+    // ── IPv4 Planner — by subnets ─────────────────
+    function v4PlanSubnets() {
+        const need = parseInt(document.getElementById('v4NeedSubnets').value.trim(), 10);
+        if (!need || need < 1) return;
+        const resEl = document.getElementById('v4PlanResults');
+        const body  = document.getElementById('v4PlanBody');
+
+        const rows = [];
+        for (let prefix = 8; prefix <= 30; prefix++) {
+            const usable = prefix >= 31 ? Math.pow(2, 32-prefix) : Math.pow(2, 32-prefix) - 2;
+            const subnetsIn24 = prefix <= 24 ? 1 : Math.pow(2, prefix - 24);
+            const subnetsIn16 = prefix <= 16 ? 1 : Math.pow(2, prefix - 16);
+            const mask = intToIP4(prefix4ToMask(prefix));
+            let bestFor = '';
+            if (prefix === 30)      bestFor = 'Point-to-point links';
+            else if (prefix >= 28)  bestFor = 'Tiny segments';
+            else if (prefix >= 25)  bestFor = 'Small office segments';
+            else if (prefix === 24) bestFor = 'Standard LAN';
+            else if (prefix >= 22)  bestFor = 'Department / floor';
+            else if (prefix >= 20)  bestFor = 'Building / site';
+            else                    bestFor = 'Campus / enterprise';
+
+            rows.push({ prefix, mask, usable, subnetsIn24, subnetsIn16, bestFor });
+        }
+
+        // Find smallest prefix where subnetsIn24 or subnetsIn16 >= need
+        const best24 = rows.find(r => r.subnetsIn24 >= need);
+        const best16 = rows.find(r => r.subnetsIn16 >= need);
+        const best   = best24 || best16;
+
+        const shown = rows.filter(r =>
+            (r.subnetsIn24 >= need || r.subnetsIn16 >= need) &&
+            r.prefix >= (best ? best.prefix - 1 : 0) &&
+            r.prefix <= (best ? best.prefix + 4 : 30)
+        ).slice(0, 6);
+
+        body.innerHTML = shown.map(r => {
+            const fitIn24 = r.subnetsIn24 >= need;
+            const fitIn16 = r.subnetsIn16 >= need;
+            const isBest  = r === best;
+            return '<tr style="' + (isBest ? 'background:rgba(0,212,255,0.08);' : '') + '">'
+                + '<td style="' + (isBest ? 'color:#00d4ff;font-weight:900;' : '') + '">/' + r.prefix + (isBest ? ' &#x2605; BEST FIT' : '') + '</td>'
+                + '<td>' + r.mask + '</td>'
+                + '<td style="color:var(--green);">' + r.usable.toLocaleString() + '</td>'
+                + '<td style="' + (fitIn24 ? 'color:var(--green);' : 'color:var(--red);') + '">' + r.subnetsIn24 + (fitIn24 ? ' ✓' : ' ✗') + '</td>'
+                + '<td style="' + (fitIn16 ? 'color:var(--green);' : 'color:var(--red);') + '">' + r.subnetsIn16.toLocaleString() + (fitIn16 ? ' ✓' : ' ✗') + '</td>'
+                + '<td style="color:var(--text-dim);">' + r.bestFor + '</td>'
+                + '</tr>';
+        }).join('') || '<tr><td colspan="6" style="color:var(--red);">Enter a number of subnets to find the right prefix</td></tr>';
+
+        resEl.style.display = 'block';
+    }
+
+    // ── IPv6 Planner — by hosts ───────────────────
+    function v6PlanHosts() {
+        const need = BigInt(document.getElementById('v6NeedHosts').value.trim() || '0');
+        if (need <= BigInt(0)) return;
+
+        const rows = [];
+        const prefixes = [64, 60, 56, 52, 48, 44, 40, 32];
+        prefixes.forEach(function(prefix) {
+            const hostBits    = 128 - prefix;
+            const totalAddrs  = BigInt(1) << BigInt(hostBits);
+            const hostsPerSub = BigInt(1) << BigInt(64); // /64 always used for host space
+            const sub64count  = prefix <= 64 ? (BigInt(1) << BigInt(64 - prefix)) : BigInt(1);
+            const totalHosts  = sub64count * (hostsPerSub - BigInt(2));
+            let bestFor = '';
+            if (prefix === 128)     bestFor = 'Single host / loopback';
+            else if (prefix === 64) bestFor = 'Single LAN subnet';
+            else if (prefix === 60) bestFor = 'Small site (16 subnets)';
+            else if (prefix === 56) bestFor = 'Home / small office (256 subnets)';
+            else if (prefix === 48) bestFor = 'Site / enterprise (65K subnets)';
+            else if (prefix === 32) bestFor = 'ISP customer allocation';
+            rows.push({ prefix, totalHosts, hostsPerSub, sub64count, bestFor });
+        });
+
+        const best = rows.find(r => r.sub64count * (r.hostsPerSub - BigInt(2)) >= need);
+        const body = document.getElementById('v6PlanBody');
+
+        body.innerHTML = rows.map(r => {
+            const fits   = r.totalHosts >= need;
+            const isBest = r === best;
+            return '<tr style="' + (isBest ? 'background:rgba(0,212,255,0.08);' : '') + (fits?'':'opacity:0.4;') + '">'
+                + '<td style="' + (isBest ? 'color:#00d4ff;font-weight:900;' : '') + '">/' + r.prefix + (isBest ? ' &#x2605; BEST FIT' : '') + '</td>'
+                + '<td>' + formatBigInt(r.sub64count) + ' x /64</td>'
+                + '<td style="color:var(--green);">' + formatBigInt(r.hostsPerSub - BigInt(2)) + ' per subnet</td>'
+                + '<td style="color:var(--text-dim);">' + r.bestFor + '</td>'
+                + '</tr>';
+        }).join('');
+
+        document.getElementById('v6PlanResults').style.display = 'block';
+    }
+
+    // ── IPv6 Planner — by subnets ─────────────────
+    function v6PlanSubnets() {
+        const need = BigInt(document.getElementById('v6NeedSubnets').value.trim() || '0');
+        if (need <= BigInt(0)) return;
+
+        const prefixes = [64, 60, 56, 52, 48, 44, 40, 32];
+        const rows = [];
+        prefixes.forEach(function(prefix) {
+            const sub64count = prefix <= 64 ? (BigInt(1) << BigInt(64 - prefix)) : BigInt(1);
+            const hostsPerSub = (BigInt(1) << BigInt(64)) - BigInt(2);
+            let bestFor = '';
+            if (prefix === 64)      bestFor = 'Single subnet';
+            else if (prefix === 60) bestFor = 'Small site';
+            else if (prefix === 56) bestFor = 'Home / SOHO';
+            else if (prefix === 52) bestFor = 'Medium office';
+            else if (prefix === 48) bestFor = 'Enterprise site';
+            else if (prefix === 44) bestFor = 'Large enterprise';
+            else if (prefix === 40) bestFor = 'Regional / ISP';
+            else if (prefix === 32) bestFor = 'ISP allocation';
+            rows.push({ prefix, sub64count, hostsPerSub, bestFor });
+        });
+
+        const best = rows.find(r => r.sub64count >= need);
+        const body = document.getElementById('v6PlanBody');
+
+        body.innerHTML = rows.map(r => {
+            const fits   = r.sub64count >= need;
+            const isBest = r === best;
+            return '<tr style="' + (isBest ? 'background:rgba(0,212,255,0.08);' : '') + (fits?'':'opacity:0.4;') + '">'
+                + '<td style="' + (isBest ? 'color:#00d4ff;font-weight:900;' : '') + '">/' + r.prefix + (isBest ? ' &#x2605; BEST FIT' : '') + '</td>'
+                + '<td style="color:' + (fits ? 'var(--green)' : 'var(--red)') + ';">' + formatBigInt(r.sub64count) + ' subnets' + (fits ? ' ✓' : ' ✗') + '</td>'
+                + '<td style="color:var(--green);">' + formatBigInt(r.hostsPerSub) + ' hosts/subnet</td>'
+                + '<td style="color:var(--text-dim);">' + r.bestFor + '</td>'
+                + '</tr>';
+        }).join('');
+
+        document.getElementById('v6PlanResults').style.display = 'block';
     }
 
 </script>
