@@ -1697,6 +1697,12 @@ Authentication-Results: mx.google.com;
                         </div>
                         <div id="ulaResults" style="display:none;">
                             <div class="sn-grid" id="ulaGrid"></div>
+                            <div id="ulaFullSection" style="display:none;margin-top:6px;">
+                                <button class="sn-btn" onclick="toggleULAFull()" id="ulaFullBtn" style="font-size:0.8rem;padding:5px 12px;margin-bottom:6px;">&#x25BC; SHOW FULL UNCOMPRESSED ADDRESSES</button>
+                                <div id="ulaFullBlock" style="display:none;background:#0a0708;border:1px solid var(--border);border-radius:2px;padding:8px 10px;">
+                                    <div id="ulaFullContent" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:#00d4ff;line-height:2;word-break:break-all;"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -4418,6 +4424,51 @@ Authentication-Results: mx.google.com;
             + '</div>'
         ).join('');
         document.getElementById('ulaResults').style.display = 'block';
+
+        // Build full uncompressed address list
+        function fullGroup(h) { return parseInt(h,16).toString(16).padStart(4,'0'); }
+        function expand(addr) {
+            // expand any compressed v6 to 8 full groups
+            var grps = parseIPv6(addr.replace(/\/\d+$/,'').replace(/::$/,'') || addr.replace(/::$/,'') );
+            if (!grps) return addr;
+            return grps.join(':');
+        }
+
+        var fullLines = [];
+        if (isSlash48) {
+            fullLines.push({ label: '/48 Prefix (full)',       val: g1.padStart(4,'0') + ':' + g2.padStart(4,'0') + ':' + g3.padStart(4,'0') + ':0000:0000:0000:0000:0000/48' });
+            fullLines.push({ label: 'Example /64 Subnet 1',   val: g1.padStart(4,'0') + ':' + g2.padStart(4,'0') + ':' + g3.padStart(4,'0') + ':0001:0000:0000:0000:0000/64' });
+            fullLines.push({ label: 'Example /64 Subnet 2',   val: g1.padStart(4,'0') + ':' + g2.padStart(4,'0') + ':' + g3.padStart(4,'0') + ':0002:0000:0000:0000:0000/64' });
+            fullLines.push({ label: 'Recommended Gateway',    val: g1.padStart(4,'0') + ':' + g2.padStart(4,'0') + ':' + g3.padStart(4,'0') + ':0001:0000:0000:0000:0001' });
+            fullLines.push({ label: 'First Usable Host',      val: g1.padStart(4,'0') + ':' + g2.padStart(4,'0') + ':' + g3.padStart(4,'0') + ':0001:0000:0000:0000:0002' });
+            fullLines.push({ label: 'Last Usable Host',       val: g1.padStart(4,'0') + ':' + g2.padStart(4,'0') + ':' + g3.padStart(4,'0') + ':0001:ffff:ffff:ffff:fffe' });
+        } else {
+            fullLines.push({ label: '/64 Subnet (full)',       val: g1.padStart(4,'0') + ':' + g2.padStart(4,'0') + ':' + g3.padStart(4,'0') + ':0001:0000:0000:0000:0000/64' });
+            fullLines.push({ label: 'Recommended Gateway',    val: g1.padStart(4,'0') + ':' + g2.padStart(4,'0') + ':' + g3.padStart(4,'0') + ':0001:0000:0000:0000:0001' });
+            fullLines.push({ label: 'First Usable Host',      val: g1.padStart(4,'0') + ':' + g2.padStart(4,'0') + ':' + g3.padStart(4,'0') + ':0001:0000:0000:0000:0002' });
+            fullLines.push({ label: 'Last Usable Host',       val: g1.padStart(4,'0') + ':' + g2.padStart(4,'0') + ':' + g3.padStart(4,'0') + ':0001:ffff:ffff:ffff:fffe' });
+        }
+
+        document.getElementById('ulaFullContent').innerHTML = fullLines.map(function(l) {
+            return '<div style="margin-bottom:4px;">'
+                + '<span style="font-size:0.48rem;text-transform:uppercase;color:var(--text-dim);letter-spacing:0.08em;display:block;">' + l.label + '</span>'
+                + '<span style="color:#00d4ff;">' + l.val + '</span>'
+                + '</div>';
+        }).join('');
+
+        document.getElementById('ulaFullSection').style.display = 'block';
+        document.getElementById('ulaFullBlock').style.display = 'none';
+        document.getElementById('ulaFullBtn').innerHTML = '&#x25BC; SHOW FULL UNCOMPRESSED ADDRESSES';
+    }
+
+    function toggleULAFull() {
+        var block = document.getElementById('ulaFullBlock');
+        var btn   = document.getElementById('ulaFullBtn');
+        var showing = block.style.display !== 'none';
+        block.style.display = showing ? 'none' : 'block';
+        btn.innerHTML = showing
+            ? '&#x25BC; SHOW FULL UNCOMPRESSED ADDRESSES'
+            : '&#x25B2; HIDE FULL ADDRESSES';
     }
 
     // ── EUI-64 Generator ─────────────────────────
