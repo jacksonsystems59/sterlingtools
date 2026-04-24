@@ -1057,13 +1057,13 @@
         .sn-input-row { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
         .sn-input {
             background:#0a0708; border:1px solid var(--border); border-radius:2px;
-            padding:8px 10px; color:#e8d4d4; font-family:'Share Tech Mono',monospace;
+            padding:8px 10px; color:#e8d4d4; font-family:monospace;
             font-size:0.85rem; outline:none; transition:border-color 0.15s;
         }
         .sn-input:focus { border-color:#00d4ff; box-shadow:0 0 8px rgba(0,212,255,0.2); }
         .sn-select {
             background:#0a0708; border:1px solid var(--border); border-radius:2px;
-            padding:8px 10px; color:#e8d4d4; font-family:'Share Tech Mono',monospace;
+            padding:8px 10px; color:#e8d4d4; font-family:monospace;
             font-size:0.85rem; outline:none; cursor:pointer;
         }
         .sn-btn {
@@ -1079,7 +1079,7 @@
             padding:8px 10px; border-left:2px solid #00d4ff;
         }
         .sn-card-label { font-size:0.52rem; text-transform:uppercase; color:var(--text-dim); letter-spacing:0.08em; display:block; margin-bottom:3px; }
-        .sn-card-val { font-family:'Share Tech Mono',monospace; font-size:0.75rem; color:#00d4ff; word-break:break-all; }
+        .sn-card-val { font-family:monospace; font-size:0.75rem; color:#00d4ff; word-break:break-all; }
         .sn-card.green { border-left-color:var(--green); } .sn-card.green .sn-card-val { color:var(--green); }
         .sn-card.amber { border-left-color:var(--gold); }  .sn-card.amber .sn-card-val { color:var(--gold); }
         .sn-card.red   { border-left-color:var(--red); }   .sn-card.red   .sn-card-val { color:var(--red); }
@@ -1088,14 +1088,14 @@
         .sn-usable-fill { height:100%; background:linear-gradient(90deg,#00d4ff,#00ff88); border-radius:3px; }
         .sn-split-table { width:100%; border-collapse:collapse; font-size:0.62rem; margin-top:6px; }
         .sn-split-table th { background:#0d1117; color:var(--text-dim); font-size:0.52rem; text-transform:uppercase; padding:4px 7px; text-align:left; border-bottom:1px solid var(--border); }
-        .sn-split-table td { padding:4px 7px; border-bottom:1px solid rgba(48,54,61,0.4); font-family:'Share Tech Mono',monospace; font-size:0.62rem; color:#7dd3fc; }
+        .sn-split-table td { padding:4px 7px; border-bottom:1px solid rgba(48,54,61,0.4); font-family:monospace; font-size:0.62rem; color:#7dd3fc; }
         .sn-split-table tr:last-child td { border-bottom:none; }
-        .sn-error { color:var(--red); font-size:0.65rem; padding:6px 0; font-family:'Share Tech Mono',monospace; display:none; }
+        .sn-error { color:var(--red); font-size:0.65rem; padding:6px 0; font-family:monospace; display:none; }
 
         /* IPv6 specific */
         .sn-v6-section { background:#0a0708; border:1px solid var(--border); border-radius:2px; padding:10px; margin-bottom:8px; }
         .sn-v6-section-title { font-family:'VT323',monospace; font-size:0.95rem; color:#a855f7; letter-spacing:0.08em; margin-bottom:8px; display:block; }
-        .sn-v6-addr { font-family:'Share Tech Mono',monospace; font-size:0.7rem; color:#00d4ff; word-break:break-all; line-height:1.6; }
+        .sn-v6-addr { font-family:monospace; font-size:0.7rem; color:#00d4ff; word-break:break-all; line-height:1.6; }
     </style>
 </head>
 <body onload="initApp()">
@@ -1118,7 +1118,7 @@
                 <div style="font-size:0.55rem;color:var(--text-dim);margin-bottom:3px;letter-spacing:0.08em;">YOUR WAN IP</div>
                 <div class="ip-wrap" style="justify-content:flex-end;">
                     <div class="live-dot"></div>
-                    <span id="clientIP" style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;font-weight:700;">Loading...</span>
+                    <span id="clientIP" style="font-family:monospace;font-size:0.8rem;font-weight:700;">Loading...</span>
                 </div>
                 <div id="wanAsnBadge" style="display:none;margin-top:3px;font-size:0.6rem;text-align:right;"></div>
             </div>
@@ -1166,7 +1166,7 @@
     <div class="section-heading">
         <span class="section-heading-icon" style="font-size:1.2rem;">▶</span>
         // DOMAIN AUDITOR //
-        <span class="section-heading-sub" style="font-size:0.55rem;color:var(--st-dim);font-family:'Share Tech Mono',monospace;letter-spacing:0.08em;">DNS health, email auth &amp; registration check</span>
+        <span class="section-heading-sub" style="font-size:0.55rem;color:var(--st-dim);font-family:monospace;letter-spacing:0.08em;">DNS health, email auth &amp; registration check</span>
     </div>
 
     <div class="controls">
@@ -1209,7 +1209,7 @@
         </div>
     </div>
     <div class="section-heading" style="margin-top:16px;display:block;">
-        <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#00ff88;margin-bottom:4px;text-shadow:0 0 8px rgba(0,255,136,0.5);">sterlingtools<span style="color:#ffffff;">:</span><span style="color:#6699ff;">~</span><span style="color:#ffffff;">$</span></div>
+        <div style="font-family:monospace;font-size:0.7rem;color:#00ff88;margin-bottom:4px;text-shadow:0 0 8px rgba(0,255,136,0.5);">sterlingtools<span style="color:#ffffff;">:</span><span style="color:#6699ff;">~</span><span style="color:#ffffff;">$</span></div>
         <div style="display:flex;align-items:center;gap:0;">
             <span id="ntTermText" style="font-family:'VT323',monospace;font-size:1.1rem;color:var(--st-red);letter-spacing:0.1em;text-shadow:0 0 10px rgba(204,26,26,0.6);white-space:pre;"></span><span id="ntTermCursor" style="color:var(--st-red);font-size:1.1rem;animation:termBlink 1s step-end infinite;">█</span>
         </div>
@@ -1617,6 +1617,55 @@ Authentication-Results: mx.google.com;
                             </table>
                         </div>
                     </div>
+                    <!-- VLAN Planner -->
+                    <div style="margin-top:10px;background:#0a0708;border:1px solid #a855f7;border-radius:2px;padding:10px;box-shadow:0 0 12px rgba(168,85,247,0.1);">
+                        <span style="font-family:'VT323',monospace;font-size:0.95rem;color:#a855f7;letter-spacing:0.08em;display:block;margin-bottom:8px;">// VLAN SUBNET PLANNER <span style="font-size:0.6rem;color:var(--text-dim);font-family:monospace;letter-spacing:0.04em;">allocate subnets across VLANs from a parent network</span></span>
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+                            <div>
+                                <div style="font-size:0.52rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Parent Network</div>
+                                <input class="sn-input" id="vlanParent" placeholder="e.g. 192.168.1.0/24" style="width:100%;" onkeyup="if(event.key==='Enter')calcVLAN()">
+                            </div>
+                            <div>
+                                <div style="font-size:0.52rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Number of VLANs</div>
+                                <input class="sn-input" id="vlanCount" placeholder="e.g. 3" type="number" min="1" max="64" style="width:100%;" onkeyup="if(event.key==='Enter')calcVLAN()">
+                            </div>
+                            <div>
+                                <div style="font-size:0.52rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Hosts per VLAN (max needed)</div>
+                                <input class="sn-input" id="vlanHosts" placeholder="e.g. 50" type="number" min="1" style="width:100%;" onkeyup="if(event.key==='Enter')calcVLAN()">
+                            </div>
+                        </div>
+                        <div style="margin-bottom:8px;">
+                            <div style="font-size:0.52rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">VLAN Names / Labels (optional, comma separated)</div>
+                            <input class="sn-input" id="vlanNames" placeholder="e.g. Management, Servers, WiFi, CCTV, VoIP" style="width:100%;">
+                        </div>
+                        <div style="display:flex;gap:6px;">
+                            <button class="sn-btn" onclick="calcVLAN()" style="border-color:#a855f7;color:#a855f7;background:rgba(168,85,247,0.1);">&#x25B6; PLAN VLANS</button>
+                            <button class="sn-btn" onclick="clearVLAN()" style="border-color:var(--border);color:var(--text-dim);background:transparent;">CLEAR</button>
+                        </div>
+                        <div class="sn-error" id="vlanError" style="margin-top:6px;"></div>
+                        <div id="vlanResults" style="display:none;margin-top:10px;">
+                            <!-- Summary cards -->
+                            <div class="sn-grid" id="vlanSummary" style="margin-bottom:8px;"></div>
+                            <!-- VLAN table -->
+                            <table class="sn-split-table" style="border:1px solid rgba(168,85,247,0.2);">
+                                <thead>
+                                    <tr style="background:rgba(168,85,247,0.08);">
+                                        <th style="color:#a855f7;">VLAN</th>
+                                        <th style="color:#a855f7;">Name / Label</th>
+                                        <th style="color:#a855f7;">Subnet</th>
+                                        <th style="color:#a855f7;">Mask</th>
+                                        <th style="color:#a855f7;">Gateway</th>
+                                        <th style="color:#a855f7;">First Host</th>
+                                        <th style="color:#a855f7;">Last Host</th>
+                                        <th style="color:#a855f7;">Broadcast</th>
+                                        <th style="color:#a855f7;">Usable Hosts</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="vlanTableBody"></tbody>
+                            </table>
+                            <div id="vlanWarning" style="display:none;margin-top:6px;font-size:0.62rem;color:var(--gold);font-family:monospace;"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- IPv6 Panel -->
@@ -1649,9 +1698,9 @@ Authentication-Results: mx.google.com;
                                 <button class="sn-btn" onclick="toggleV6Full()" style="font-size:0.8rem;padding:5px 12px;margin-bottom:6px;" id="snV6FullBtn">&#x25BC; SHOW FULL UNCOMPRESSED ADDRESS</button>
                                 <div id="snV6FullBlock" style="display:none;background:#0a0708;border:1px solid var(--border);border-radius:2px;padding:8px 10px;">
                                     <div style="font-size:0.5rem;text-transform:uppercase;color:var(--text-dim);letter-spacing:0.08em;margin-bottom:4px;">Full Network Address (uncompressed)</div>
-                                    <div id="snV6FullNet" style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#00d4ff;word-break:break-all;margin-bottom:6px;"></div>
+                                    <div id="snV6FullNet" style="font-family:monospace;font-size:0.7rem;color:#00d4ff;word-break:break-all;margin-bottom:6px;"></div>
                                     <div style="font-size:0.5rem;text-transform:uppercase;color:var(--text-dim);letter-spacing:0.08em;margin-bottom:4px;">Full Last Address (uncompressed)</div>
-                                    <div id="snV6FullLast" style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#ff3333;word-break:break-all;"></div>
+                                    <div id="snV6FullLast" style="font-family:monospace;font-size:0.7rem;color:#ff3333;word-break:break-all;"></div>
                                 </div>
                             </div>
                         </div>
@@ -1659,7 +1708,7 @@ Authentication-Results: mx.google.com;
 
                     <!-- IPv6 Subnet Planner -->
                     <div class="sn-v6-section">
-                        <span class="sn-v6-section-title">// IPv6 Subnet Planner <span style="font-size:0.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;">work backwards from what you need</span></span>
+                        <span class="sn-v6-section-title">// IPv6 Subnet Planner <span style="font-size:0.6rem;color:var(--text-dim);font-family:monospace;">work backwards from what you need</span></span>
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
                             <div>
                                 <div style="font-size:0.55rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">I need this many HOSTS</div>
@@ -1687,7 +1736,7 @@ Authentication-Results: mx.google.com;
 
                     <!-- ULA Generator -->
                     <div class="sn-v6-section">
-                        <span class="sn-v6-section-title">// ULA Generator <span style="font-size:0.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;">Unique Local Address — RFC 4193 · private IPv6 space (fc00::/7)</span></span>
+                        <span class="sn-v6-section-title">// ULA Generator <span style="font-size:0.6rem;color:var(--text-dim);font-family:monospace;">Unique Local Address — RFC 4193 · private IPv6 space (fc00::/7)</span></span>
                         <div class="sn-input-row" style="margin-bottom:6px;">
                             <select class="sn-select" id="ulaPrefix">
                                 <option>/48 — Site prefix (recommended)</option>
@@ -1700,7 +1749,7 @@ Authentication-Results: mx.google.com;
                             <div id="ulaFullSection" style="display:none;margin-top:6px;">
                                 <button class="sn-btn" onclick="toggleULAFull()" id="ulaFullBtn" style="font-size:0.8rem;padding:5px 12px;margin-bottom:6px;">&#x25BC; SHOW FULL UNCOMPRESSED ADDRESSES</button>
                                 <div id="ulaFullBlock" style="display:none;background:#0a0708;border:1px solid var(--border);border-radius:2px;padding:8px 10px;">
-                                    <div id="ulaFullContent" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:#00d4ff;line-height:2;word-break:break-all;"></div>
+                                    <div id="ulaFullContent" style="font-family:monospace;font-size:0.65rem;color:#00d4ff;line-height:2;word-break:break-all;"></div>
                                 </div>
                             </div>
                         </div>
@@ -1708,7 +1757,7 @@ Authentication-Results: mx.google.com;
 
                     <!-- EUI-64 Generator -->
                     <div class="sn-v6-section">
-                        <span class="sn-v6-section-title">// EUI-64 Interface ID Generator <span style="font-size:0.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;">MAC address → IPv6 interface identifier</span></span>
+                        <span class="sn-v6-section-title">// EUI-64 Interface ID Generator <span style="font-size:0.6rem;color:var(--text-dim);font-family:monospace;">MAC address → IPv6 interface identifier</span></span>
                         <div class="sn-input-row">
                             <input class="sn-input" id="snMAC" placeholder="MAC — e.g. 00:1A:2B:3C:4D:5E" style="flex:1;" onkeyup="if(event.key==='Enter')calcEUI64()">
                             <input class="sn-input" id="snPrefix64" placeholder="Prefix — e.g. 2001:db8:1:1::" style="flex:1;">
@@ -4752,6 +4801,157 @@ Authentication-Results: mx.google.com;
         }).join('');
 
         document.getElementById('v6PlanResults').style.display = 'block';
+    }
+
+    // ===============================================
+    //  VLAN SUBNET PLANNER
+    // ===============================================
+
+    function clearVLAN() {
+        document.getElementById('vlanParent').value = '';
+        document.getElementById('vlanCount').value  = '';
+        document.getElementById('vlanHosts').value  = '';
+        document.getElementById('vlanNames').value  = '';
+        document.getElementById('vlanResults').style.display = 'none';
+        document.getElementById('vlanError').style.display   = 'none';
+    }
+
+    function calcVLAN() {
+        var errEl  = document.getElementById('vlanError');
+        var resEl  = document.getElementById('vlanResults');
+        errEl.style.display = 'none';
+        resEl.style.display = 'none';
+
+        // Parse parent network
+        var parentRaw = document.getElementById('vlanParent').value.trim();
+        var vlanCount = parseInt(document.getElementById('vlanCount').value.trim(), 10);
+        var hostsNeed = parseInt(document.getElementById('vlanHosts').value.trim(), 10);
+        var namesRaw  = document.getElementById('vlanNames').value.trim();
+
+        // Validate
+        var parentMatch = parentRaw.match(/^(\d+\.\d+\.\d+\.\d+)\/(\d+)$/);
+        if (!parentMatch) {
+            errEl.textContent = 'Enter parent network in CIDR format — e.g. 192.168.1.0/24';
+            errEl.style.display = 'block'; return;
+        }
+        if (!vlanCount || vlanCount < 1 || vlanCount > 64) {
+            errEl.textContent = 'Enter number of VLANs between 1 and 64';
+            errEl.style.display = 'block'; return;
+        }
+        if (!hostsNeed || hostsNeed < 1) {
+            errEl.textContent = 'Enter the maximum number of hosts needed per VLAN';
+            errEl.style.display = 'block'; return;
+        }
+
+        var parentIP     = parentMatch[1];
+        var parentPrefix = parseInt(parentMatch[2], 10);
+        var parentInt    = ip4ToInt(parentIP);
+        if (parentInt === null) {
+            errEl.textContent = 'Invalid IP address in parent network';
+            errEl.style.display = 'block'; return;
+        }
+
+        // Network address of parent
+        var parentMask    = prefix4ToMask(parentPrefix);
+        var parentNetwork = (parentInt & parentMask) >>> 0;
+        var parentSize    = Math.pow(2, 32 - parentPrefix);
+
+        // Find the right subnet prefix for required hosts
+        // Need usable hosts >= hostsNeed, find smallest subnet that fits
+        var subPrefix = 30;
+        for (var p = 30; p >= parentPrefix + 1; p--) {
+            var usable = Math.pow(2, 32 - p) - 2;
+            if (usable >= hostsNeed) { subPrefix = p; break; }
+        }
+        // If even /30 doesn't fit
+        if (Math.pow(2, 32 - subPrefix) - 2 < hostsNeed) {
+            errEl.textContent = 'Required hosts per VLAN (' + hostsNeed + ') is too large for any subnet within this parent network';
+            errEl.style.display = 'block'; return;
+        }
+
+        var subSize      = Math.pow(2, 32 - subPrefix);
+        var subMask      = intToIP4(prefix4ToMask(subPrefix));
+        var usableHosts  = subSize - 2;
+        var totalSubnets = Math.floor(parentSize / subSize);
+
+        // Check we have enough room for requested VLANs
+        var warnEl = document.getElementById('vlanWarning');
+        warnEl.style.display = 'none';
+        if (vlanCount > totalSubnets) {
+            errEl.textContent = 'Not enough space: ' + vlanCount + ' VLANs x /' + subPrefix + ' (' + subSize + ' addresses each) exceeds parent /' + parentPrefix + ' (' + parentSize + ' addresses). Try a smaller parent prefix or fewer hosts per VLAN.';
+            errEl.style.display = 'block'; return;
+        }
+
+        // Parse VLAN names
+        var names = namesRaw ? namesRaw.split(',').map(function(n) { return n.trim(); }) : [];
+
+        // Build VLAN rows
+        var rows = [];
+        for (var i = 0; i < vlanCount; i++) {
+            var netInt    = (parentNetwork + i * subSize) >>> 0;
+            var bcast     = (netInt + subSize - 1) >>> 0;
+            var gateway   = (netInt + 1) >>> 0;
+            var firstHost = (netInt + 2) >>> 0;
+            var lastHost  = (bcast - 1) >>> 0;
+            var vlanId    = (i + 1) * 10; // VLAN 10, 20, 30...
+            var label     = names[i] || ('VLAN ' + vlanId);
+            rows.push({
+                vlanId, label,
+                network:   intToIP4(netInt),
+                mask:      subMask,
+                gateway:   intToIP4(gateway),
+                firstHost: intToIP4(firstHost),
+                lastHost:  intToIP4(lastHost),
+                broadcast: intToIP4(bcast),
+                cidr:      intToIP4(netInt) + '/' + subPrefix,
+                usable:    usableHosts
+            });
+        }
+
+        // Summary cards
+        var spareSubnets = totalSubnets - vlanCount;
+        var parentUsedEnd = (parentNetwork + vlanCount * subSize - 1) >>> 0;
+        document.getElementById('vlanSummary').innerHTML = [
+            { label: 'Parent Network',    val: intToIP4(parentNetwork) + '/' + parentPrefix, cls: '' },
+            { label: 'Subnet Size',       val: '/' + subPrefix + ' (' + usableHosts + ' usable hosts each)', cls: 'green' },
+            { label: 'Subnet Mask',       val: subMask, cls: '' },
+            { label: 'VLANs Planned',     val: vlanCount + ' VLANs', cls: 'green' },
+            { label: 'Spare Subnets',     val: spareSubnets + ' x /' + subPrefix + ' available', cls: spareSubnets > 0 ? 'amber' : 'red' },
+            { label: 'Address Space Used',val: (vlanCount * subSize) + ' / ' + parentSize + ' addresses', cls: '' },
+        ].map(function(c) {
+            return '<div class="sn-card ' + c.cls + '" style="border-left-color:#a855f7;">'
+                + '<span class="sn-card-label">' + c.label + '</span>'
+                + '<span class="sn-card-val" style="color:#a855f7;">' + c.val + '</span>'
+                + '</div>';
+        }).join('');
+
+        // VLAN table
+        var colors = ['#00d4ff','#00ff88','#f97316','#a855f7','#fbbf24','#ff3333','#22d3ee','#84cc16'];
+        document.getElementById('vlanTableBody').innerHTML = rows.map(function(r, idx) {
+            var col = colors[idx % colors.length];
+            return '<tr style="border-left:3px solid ' + col + ';">'
+                + '<td style="color:' + col + ';font-weight:900;font-family:VT323,monospace;font-size:1rem;">VLAN ' + r.vlanId + '</td>'
+                + '<td style="color:#e2e8f0;font-weight:700;">' + r.label + '</td>'
+                + '<td style="color:' + col + ';font-family:monospace;">' + r.cidr + '</td>'
+                + '<td style="color:var(--text-dim);">' + r.mask + '</td>'
+                + '<td style="color:var(--green);font-family:monospace;">' + r.gateway + '</td>'
+                + '<td style="color:#7dd3fc;font-family:monospace;">' + r.firstHost + '</td>'
+                + '<td style="color:#7dd3fc;font-family:monospace;">' + r.lastHost + '</td>'
+                + '<td style="color:var(--red);font-family:monospace;">' + r.broadcast + '</td>'
+                + '<td style="color:var(--green);font-weight:900;">' + r.usable.toLocaleString() + '</td>'
+                + '</tr>';
+        }).join('');
+
+        // Spare subnets warning
+        if (spareSubnets > 0) {
+            var spareStart = (parentNetwork + vlanCount * subSize) >>> 0;
+            warnEl.innerHTML = '&#9432; ' + spareSubnets + ' unused subnet' + (spareSubnets > 1 ? 's' : '') + ' remaining in parent — next available: '
+                + intToIP4(spareStart) + '/' + subPrefix
+                + (spareSubnets > 1 ? ' through ' + intToIP4((parentNetwork + parentSize - subSize) >>> 0) + '/' + subPrefix : '');
+            warnEl.style.display = 'block';
+        }
+
+        resEl.style.display = 'block';
     }
 
 </script>
