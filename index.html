@@ -1044,6 +1044,58 @@
         .dp-error { background: rgba(255,51,51,0.06); border: 1px solid rgba(255,51,51,0.3); border-radius: 4px; padding: 8px 10px; font-size: 0.65rem; color: var(--red); display: none; margin-bottom: 6px; }
         .dp-records { font-family: monospace; font-size: 0.6rem; color: #7dd3fc; word-break: break-all; line-height: 1.5; }
         .dp-ttl { font-size: 0.55rem; color: var(--text-dim); margin-top: 2px; }
+
+        /* ── SUBNET CALCULATOR ── */
+        .sn-tabs { display:flex; gap:4px; margin-bottom:10px; }
+        .sn-tab {
+            font-family:'VT323',monospace; font-size:1rem; letter-spacing:0.06em;
+            padding:5px 16px; border-radius:2px; cursor:pointer;
+            border:1px solid var(--border); background:rgba(14,11,11,0.9);
+            color:var(--text-dim); transition:all 0.15s;
+        }
+        .sn-tab.active { border-color:#00d4ff; color:#00d4ff; background:rgba(0,212,255,0.08); box-shadow:0 0 10px rgba(0,212,255,0.2); }
+        .sn-input-row { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+        .sn-input {
+            background:#0a0708; border:1px solid var(--border); border-radius:2px;
+            padding:8px 10px; color:#e8d4d4; font-family:'Share Tech Mono',monospace;
+            font-size:0.85rem; outline:none; transition:border-color 0.15s;
+        }
+        .sn-input:focus { border-color:#00d4ff; box-shadow:0 0 8px rgba(0,212,255,0.2); }
+        .sn-select {
+            background:#0a0708; border:1px solid var(--border); border-radius:2px;
+            padding:8px 10px; color:#e8d4d4; font-family:'Share Tech Mono',monospace;
+            font-size:0.85rem; outline:none; cursor:pointer;
+        }
+        .sn-btn {
+            background:rgba(0,212,255,0.12); border:1px solid #00d4ff; color:#00d4ff;
+            font-family:'VT323',monospace; font-size:1rem; letter-spacing:0.08em;
+            padding:8px 18px; border-radius:2px; cursor:pointer; transition:all 0.15s;
+        }
+        .sn-btn:hover { background:rgba(0,212,255,0.22); box-shadow:0 0 12px rgba(0,212,255,0.3); }
+        .sn-results { display:none; }
+        .sn-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:6px; margin-bottom:8px; }
+        .sn-card {
+            background:#0a0708; border:1px solid var(--border); border-radius:2px;
+            padding:8px 10px; border-left:2px solid #00d4ff;
+        }
+        .sn-card-label { font-size:0.52rem; text-transform:uppercase; color:var(--text-dim); letter-spacing:0.08em; display:block; margin-bottom:3px; }
+        .sn-card-val { font-family:'Share Tech Mono',monospace; font-size:0.75rem; color:#00d4ff; word-break:break-all; }
+        .sn-card.green { border-left-color:var(--green); } .sn-card.green .sn-card-val { color:var(--green); }
+        .sn-card.amber { border-left-color:var(--gold); }  .sn-card.amber .sn-card-val { color:var(--gold); }
+        .sn-card.red   { border-left-color:var(--red); }   .sn-card.red   .sn-card-val { color:var(--red); }
+        .sn-card.purple{ border-left-color:var(--purple); }.sn-card.purple .sn-card-val { color:var(--purple); }
+        .sn-usable-bar { height:6px; background:var(--border); border-radius:3px; margin:6px 0; overflow:hidden; }
+        .sn-usable-fill { height:100%; background:linear-gradient(90deg,#00d4ff,#00ff88); border-radius:3px; }
+        .sn-split-table { width:100%; border-collapse:collapse; font-size:0.62rem; margin-top:6px; }
+        .sn-split-table th { background:#0d1117; color:var(--text-dim); font-size:0.52rem; text-transform:uppercase; padding:4px 7px; text-align:left; border-bottom:1px solid var(--border); }
+        .sn-split-table td { padding:4px 7px; border-bottom:1px solid rgba(48,54,61,0.4); font-family:'Share Tech Mono',monospace; font-size:0.62rem; color:#7dd3fc; }
+        .sn-split-table tr:last-child td { border-bottom:none; }
+        .sn-error { color:var(--red); font-size:0.65rem; padding:6px 0; font-family:'Share Tech Mono',monospace; display:none; }
+
+        /* IPv6 specific */
+        .sn-v6-section { background:#0a0708; border:1px solid var(--border); border-radius:2px; padding:10px; margin-bottom:8px; }
+        .sn-v6-section-title { font-family:'VT323',monospace; font-size:0.95rem; color:#a855f7; letter-spacing:0.08em; margin-bottom:8px; display:block; }
+        .sn-v6-addr { font-family:'Share Tech Mono',monospace; font-size:0.7rem; color:#00d4ff; word-break:break-all; line-height:1.6; }
     </style>
 </head>
 <body onload="initApp()">
@@ -1482,6 +1534,121 @@ Authentication-Results: mx.google.com;
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ── Subnet Calculator ── -->
+    <div class="nt-section" style="margin-bottom:6px;">
+        <div class="nt-bar" onclick="toggleNT('subnet')">
+            <div class="nt-bar-left">
+                <span class="nt-dot" style="background:#00d4ff;box-shadow:0 0 7px #00d4ff;"></span>
+                <span class="nt-label" style="color:#00d4ff;">◈ SUBNET CALCULATOR</span>
+                <span class="nt-sub">IPv4 &amp; IPv6 subnet calculation · CIDR ranges · ULA generator · EUI-64</span>
+            </div>
+            <div class="nt-chevron" id="nt-chevron-subnet">▼</div>
+        </div>
+        <div class="nt-panel" id="nt-panel-subnet">
+            <div style="padding:10px 12px;">
+
+                <!-- Tabs -->
+                <div class="sn-tabs">
+                    <div class="sn-tab active" id="snTab4" onclick="snSwitchTab(4)">IPv4</div>
+                    <div class="sn-tab" id="snTab6" onclick="snSwitchTab(6)">IPv6</div>
+                </div>
+
+                <!-- IPv4 Panel -->
+                <div id="snPanel4">
+                    <div class="sn-input-row">
+                        <input class="sn-input" id="snIP4" placeholder="e.g. 192.168.1.0" style="flex:1;min-width:140px;" onkeyup="if(event.key==='Enter')calcSubnet4()">
+                        <select class="sn-select" id="snPrefix4">
+                            <option>/8  — Class A</option>
+                            <option>/9</option><option>/10</option><option>/11</option><option>/12</option>
+                            <option>/13</option><option>/14</option><option>/15</option>
+                            <option>/16 — Class B</option>
+                            <option>/17</option><option>/18</option><option>/19</option><option>/20</option>
+                            <option>/21</option><option>/22</option><option>/23</option>
+                            <option>/24 — Class C</option>
+                            <option>/25</option><option>/26</option><option>/27</option><option>/28</option>
+                            <option>/29</option><option>/30</option><option>/31</option><option>/32 — Host</option>
+                        </select>
+                        <button class="sn-btn" onclick="calcSubnet4()">CALCULATE</button>
+                        <button class="sn-btn" onclick="clearSubnet4()" style="border-color:var(--border);color:var(--text-dim);background:transparent;">CLEAR</button>
+                    </div>
+                    <div class="sn-error" id="snError4"></div>
+                    <div class="sn-results" id="snResults4">
+                        <div class="sn-grid" id="snGrid4"></div>
+                        <div style="font-size:0.52rem;text-transform:uppercase;color:var(--text-dim);letter-spacing:0.08em;margin-bottom:4px;">Address Space Usage</div>
+                        <div class="sn-usable-bar"><div class="sn-usable-fill" id="snBar4" style="width:0%"></div></div>
+                        <div id="snSplitSection4" style="margin-top:8px;display:none;">
+                            <div style="font-size:0.52rem;text-transform:uppercase;color:var(--text-dim);letter-spacing:0.08em;margin-bottom:4px;">Subnet Split Options</div>
+                            <table class="sn-split-table" id="snSplitTable4">
+                                <thead><tr><th>Prefix</th><th>Subnets</th><th>Hosts/Subnet</th><th>First Network</th><th>Last Network</th></tr></thead>
+                                <tbody id="snSplitBody4"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IPv6 Panel -->
+                <div id="snPanel6" style="display:none;">
+                    <!-- Calculator -->
+                    <div class="sn-v6-section">
+                        <span class="sn-v6-section-title">// IPv6 Subnet Calculator</span>
+                        <div class="sn-input-row">
+                            <input class="sn-input" id="snIP6" placeholder="e.g. 2001:db8::" style="flex:1;min-width:180px;" onkeyup="if(event.key==='Enter')calcSubnet6()">
+                            <select class="sn-select" id="snPrefix6">
+                                <option>/32  — ISP Block</option>
+                                <option>/40</option>
+                                <option>/44</option>
+                                <option>/48  — Site Prefix</option>
+                                <option>/52</option>
+                                <option>/56  — Subnet Block</option>
+                                <option>/60</option>
+                                <option selected>/64  — LAN Subnet</option>
+                                <option>/96</option>
+                                <option>/128 — Host</option>
+                            </select>
+                            <button class="sn-btn" onclick="calcSubnet6()">CALCULATE</button>
+                            <button class="sn-btn" onclick="clearSubnet6()" style="border-color:var(--border);color:var(--text-dim);background:transparent;">CLEAR</button>
+                        </div>
+                        <div class="sn-error" id="snError6"></div>
+                        <div class="sn-results" id="snResults6">
+                            <div class="sn-grid" id="snGrid6"></div>
+                        </div>
+                    </div>
+
+                    <!-- ULA Generator -->
+                    <div class="sn-v6-section">
+                        <span class="sn-v6-section-title">// ULA Generator <span style="font-size:0.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;">Unique Local Address — RFC 4193 · private IPv6 space (fc00::/7)</span></span>
+                        <div class="sn-input-row" style="margin-bottom:6px;">
+                            <select class="sn-select" id="ulaPrefix">
+                                <option>/48 — Site prefix (recommended)</option>
+                                <option>/64 — Single subnet</option>
+                            </select>
+                            <button class="sn-btn" onclick="genULA()">GENERATE</button>
+                        </div>
+                        <div id="ulaResults" style="display:none;">
+                            <div class="sn-grid" id="ulaGrid"></div>
+                        </div>
+                    </div>
+
+                    <!-- EUI-64 Generator -->
+                    <div class="sn-v6-section">
+                        <span class="sn-v6-section-title">// EUI-64 Interface ID Generator <span style="font-size:0.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;">MAC address → IPv6 interface identifier</span></span>
+                        <div class="sn-input-row">
+                            <input class="sn-input" id="snMAC" placeholder="MAC — e.g. 00:1A:2B:3C:4D:5E" style="flex:1;" onkeyup="if(event.key==='Enter')calcEUI64()">
+                            <input class="sn-input" id="snPrefix64" placeholder="Prefix — e.g. 2001:db8:1:1::" style="flex:1;">
+                            <button class="sn-btn" onclick="calcEUI64()">GENERATE</button>
+                        </div>
+                        <div class="sn-error" id="snErrorEUI"></div>
+                        <div id="euiResults" style="display:none;">
+                            <div class="sn-grid" id="euiGrid"></div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -3827,6 +3994,370 @@ Authentication-Results: mx.google.com;
 
         setTimeout(type, 800);
     })();
+
+    // ===============================================
+    //  SUBNET CALCULATOR — IPv4 + IPv6
+    // ===============================================
+
+    function snSwitchTab(v) {
+        document.getElementById('snPanel4').style.display = v === 4 ? 'block' : 'none';
+        document.getElementById('snPanel6').style.display = v === 6 ? 'block' : 'none';
+        document.getElementById('snTab4').classList.toggle('active', v === 4);
+        document.getElementById('snTab6').classList.toggle('active', v === 6);
+    }
+
+    // ── IPv4 helpers ─────────────────────────────
+    function ip4ToInt(ip) {
+        const p = ip.trim().split('.');
+        if (p.length !== 4) return null;
+        const n = p.reduce((acc, oct) => {
+            const v = parseInt(oct, 10);
+            if (isNaN(v) || v < 0 || v > 255) return null;
+            return acc === null ? null : (acc * 256 + v);
+        }, 0);
+        return n;
+    }
+
+    function intToIP4(n) {
+        return [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.');
+    }
+
+    function prefix4ToMask(prefix) {
+        return prefix === 0 ? 0 : (0xFFFFFFFF << (32 - prefix)) >>> 0;
+    }
+
+    function formatHosts(n) {
+        if (n >= 1000000) return (n / 1000000).toFixed(2) + 'M';
+        if (n >= 1000)    return (n / 1000).toFixed(1) + 'K';
+        return n.toString();
+    }
+
+    function clearSubnet4() {
+        document.getElementById('snIP4').value = '';
+        document.getElementById('snResults4').style.display = 'none';
+        document.getElementById('snError4').style.display = 'none';
+        document.getElementById('snSplitSection4').style.display = 'none';
+    }
+
+    function calcSubnet4() {
+        const ipRaw   = document.getElementById('snIP4').value.trim();
+        const selText = document.getElementById('snPrefix4').value;
+        const prefix  = parseInt(selText.replace(/\/(\d+).*/, '$1'), 10);
+        const errEl   = document.getElementById('snError4');
+        const resEl   = document.getElementById('snResults4');
+
+        errEl.style.display = 'none';
+        resEl.style.display = 'none';
+
+        const ipInt = ip4ToInt(ipRaw);
+        if (ipInt === null) {
+            errEl.textContent = 'Invalid IPv4 address — use dotted decimal e.g. 192.168.1.0';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        const mask      = prefix4ToMask(prefix);
+        const network   = (ipInt & mask) >>> 0;
+        const broadcast = (network | (~mask >>> 0)) >>> 0;
+        const wildcard  = (~mask) >>> 0;
+        const totalHosts = Math.pow(2, 32 - prefix);
+        const usableHosts = prefix >= 31 ? totalHosts : Math.max(0, totalHosts - 2);
+        const firstHost = prefix >= 31 ? network : network + 1;
+        const lastHost  = prefix >= 31 ? broadcast : broadcast - 1;
+
+        // Determine IP class
+        const firstOctet = (network >>> 24) & 255;
+        let ipClass = 'N/A';
+        if (firstOctet < 128)       ipClass = 'Class A (Large Enterprise)';
+        else if (firstOctet < 192)  ipClass = 'Class B (Mid-size Network)';
+        else if (firstOctet < 224)  ipClass = 'Class C (Small Network)';
+        else if (firstOctet < 240)  ipClass = 'Class D (Multicast)';
+        else                        ipClass = 'Class E (Reserved)';
+
+        // Private range check
+        const isPrivate = (network >= ip4ToInt('10.0.0.0') && network <= ip4ToInt('10.255.255.255')) ||
+                          (network >= ip4ToInt('172.16.0.0') && network <= ip4ToInt('172.31.255.255')) ||
+                          (network >= ip4ToInt('192.168.0.0') && network <= ip4ToInt('192.168.255.255'));
+
+        const cards = [
+            { label: 'Network Address',    val: intToIP4(network),          cls: 'green' },
+            { label: 'Subnet Mask',        val: intToIP4(mask),             cls: '' },
+            { label: 'Wildcard Mask',      val: intToIP4(wildcard),         cls: '' },
+            { label: 'CIDR Notation',      val: intToIP4(network) + '/' + prefix, cls: '' },
+            { label: 'Broadcast Address',  val: intToIP4(broadcast),        cls: 'red' },
+            { label: 'First Usable Host',  val: prefix >= 31 ? intToIP4(firstHost) + ' (P2P)' : intToIP4(firstHost), cls: 'green' },
+            { label: 'Last Usable Host',   val: prefix >= 31 ? intToIP4(lastHost)  + ' (P2P)' : intToIP4(lastHost),  cls: 'amber' },
+            { label: 'Total Hosts',        val: formatHosts(totalHosts),    cls: '' },
+            { label: 'Usable Hosts',       val: formatHosts(usableHosts),   cls: 'green' },
+            { label: 'IP Class',           val: ipClass,                    cls: '' },
+            { label: 'Scope',              val: isPrivate ? 'Private (RFC1918)' : 'Public', cls: isPrivate ? 'amber' : 'green' },
+            { label: 'Binary Mask',        val: prefix4ToMask(prefix).toString(2).replace(/(.{8})/g, '$1 ').trim(), cls: 'purple' },
+        ];
+
+        document.getElementById('snGrid4').innerHTML = cards.map(c =>
+            '<div class="sn-card ' + c.cls + '">'
+            + '<span class="sn-card-label">' + c.label + '</span>'
+            + '<span class="sn-card-val">' + c.val + '</span>'
+            + '</div>'
+        ).join('');
+
+        // Usage bar - what fraction of /32 space this network covers
+        const barPct = Math.max(1, Math.min(100, (totalHosts / Math.pow(2, 32)) * 100 * 1000));
+        document.getElementById('snBar4').style.width = Math.max(2, (32 - prefix) / 32 * 100) + '%';
+        resEl.style.display = 'block';
+
+        // Split table - show larger subnets that can fit inside, and smaller splits
+        const splitEl = document.getElementById('snSplitSection4');
+        const splitBody = document.getElementById('snSplitBody4');
+        if (prefix < 30) {
+            const rows = [];
+            const start = Math.max(prefix + 1, prefix + 1);
+            const end   = Math.min(prefix + 5, 30);
+            for (let p = start; p <= end; p++) {
+                const count     = Math.pow(2, p - prefix);
+                const subHosts  = Math.pow(2, 32 - p) - 2;
+                const lastNet   = network + (count - 1) * Math.pow(2, 32 - p);
+                rows.push('<tr>'
+                    + '<td>/' + p + '</td>'
+                    + '<td>' + formatHosts(count) + '</td>'
+                    + '<td>' + formatHosts(subHosts) + '</td>'
+                    + '<td>' + intToIP4(network) + '/' + p + '</td>'
+                    + '<td>' + intToIP4(lastNet >>> 0) + '/' + p + '</td>'
+                    + '</tr>');
+            }
+            splitBody.innerHTML = rows.join('');
+            splitEl.style.display = 'block';
+        } else {
+            splitEl.style.display = 'none';
+        }
+    }
+
+    // ── IPv6 helpers ─────────────────────────────
+
+    function parseIPv6(addr) {
+        addr = addr.trim().toLowerCase();
+        // Expand :: shorthand
+        if (addr.includes('::')) {
+            const sides  = addr.split('::');
+            const left   = sides[0] ? sides[0].split(':') : [];
+            const right  = sides[1] ? sides[1].split(':') : [];
+            const missing = 8 - left.length - right.length;
+            const mid    = Array(missing).fill('0000');
+            return [...left, ...mid, ...right].map(g => g.padStart(4, '0'));
+        }
+        const groups = addr.split(':');
+        if (groups.length !== 8) return null;
+        return groups.map(g => g.padStart(4, '0'));
+    }
+
+    function formatIPv6Full(groups) {
+        return groups.join(':');
+    }
+
+    function compressIPv6(groups) {
+        // Find longest run of 0000 groups
+        let best = { start: -1, len: 0 };
+        let cur  = { start: -1, len: 0 };
+        groups.forEach((g, i) => {
+            if (g === '0000') {
+                if (cur.start === -1) { cur.start = i; cur.len = 1; }
+                else cur.len++;
+                if (cur.len > best.len) best = { ...cur };
+            } else {
+                cur = { start: -1, len: 0 };
+            }
+        });
+        if (best.len < 2) {
+            return groups.map(g => g.replace(/^0+/, '') || '0').join(':');
+        }
+        const left  = groups.slice(0, best.start).map(g => g.replace(/^0+/, '') || '0');
+        const right = groups.slice(best.start + best.len).map(g => g.replace(/^0+/, '') || '0');
+        return (left.join(':') || '') + '::' + (right.join(':') || '');
+    }
+
+    function bigIntToIPv6(n) {
+        const groups = [];
+        for (let i = 0; i < 8; i++) {
+            groups.unshift((Number(n & BigInt(0xFFFF))).toString(16).padStart(4, '0'));
+            n >>= BigInt(16);
+        }
+        return groups;
+    }
+
+    function ipv6GroupsToBigInt(groups) {
+        return groups.reduce((acc, g) => (acc << BigInt(16)) | BigInt(parseInt(g, 16)), BigInt(0));
+    }
+
+    function clearSubnet6() {
+        document.getElementById('snIP6').value = '';
+        document.getElementById('snResults6').style.display = 'none';
+        document.getElementById('snError6').style.display = 'none';
+    }
+
+    function calcSubnet6() {
+        const raw    = document.getElementById('snIP6').value.trim();
+        const selText = document.getElementById('snPrefix6').value;
+        const prefix = parseInt(selText.replace(/\/(\d+).*/, '$1'), 10);
+        const errEl  = document.getElementById('snError6');
+        const resEl  = document.getElementById('snResults6');
+        errEl.style.display = 'none';
+        resEl.style.display = 'none';
+
+        const groups = parseIPv6(raw);
+        if (!groups || groups.length !== 8) {
+            errEl.textContent = 'Invalid IPv6 address — try e.g. 2001:db8:: or fd00::';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        const addrInt     = ipv6GroupsToBigInt(groups);
+        const prefixBits  = BigInt(128 - prefix);
+        const mask        = prefix === 0 ? BigInt(0) : ((BigInt(1) << BigInt(prefix)) - BigInt(1)) << prefixBits;
+        const networkInt  = addrInt & mask;
+        const lastInt     = networkInt | ((BigInt(1) << prefixBits) - BigInt(1));
+        const totalAddr   = BigInt(1) << prefixBits;
+
+        const networkGroups = bigIntToIPv6(networkInt);
+        const lastGroups    = bigIntToIPv6(lastInt);
+
+        // Subnet counts for common splits
+        let subnetInfo = '';
+        if (prefix <= 48) {
+            const sub64count = BigInt(1) << BigInt(64 - prefix);
+            subnetInfo = '/' + prefix + ' contains ' + formatBigInt(sub64count) + ' x /64 subnets';
+        } else if (prefix < 64) {
+            const sub64count = BigInt(1) << BigInt(64 - prefix);
+            subnetInfo = '/' + prefix + ' contains ' + sub64count.toString() + ' x /64 subnets';
+        }
+
+        // Scope detection
+        const firstGroup = parseInt(groups[0], 16);
+        let scope = 'Global Unicast';
+        if ((firstGroup & 0xFE00) === 0xFC00) scope = 'Unique Local (ULA) — Private';
+        else if ((firstGroup & 0xFF00) === 0xFE80) scope = 'Link-Local';
+        else if ((firstGroup & 0xFF00) === 0xFF00) scope = 'Multicast';
+        else if (addrInt === BigInt(1)) scope = 'Loopback (::1)';
+
+        const cards = [
+            { label: 'Network Address',    val: compressIPv6(networkGroups) + '/' + prefix, cls: 'green' },
+            { label: 'Full Network',       val: formatIPv6Full(networkGroups),               cls: '' },
+            { label: 'Last Address',       val: compressIPv6(lastGroups),                    cls: 'red' },
+            { label: 'Prefix Length',      val: '/' + prefix + ' (' + prefix + ' bits)',     cls: '' },
+            { label: 'Host Bits',          val: (128 - prefix) + ' bits',                   cls: '' },
+            { label: 'Total Addresses',    val: formatBigInt(totalAddr),                     cls: 'green' },
+            { label: 'Scope',              val: scope,                                        cls: scope.includes('ULA') ? 'amber' : 'green' },
+        ];
+        if (subnetInfo) cards.push({ label: 'Subnet Capacity', val: subnetInfo, cls: 'purple' });
+
+        document.getElementById('snGrid6').innerHTML = cards.map(c =>
+            '<div class="sn-card ' + c.cls + '">'
+            + '<span class="sn-card-label">' + c.label + '</span>'
+            + '<span class="sn-card-val">' + c.val + '</span>'
+            + '</div>'
+        ).join('');
+        resEl.style.display = 'block';
+    }
+
+    function formatBigInt(n) {
+        if (n >= BigInt('1000000000000000000')) return (Number(n / BigInt('1000000000000000000'))).toFixed(0) + ' quintillion+';
+        if (n >= BigInt(1000000000000))  return (Number(n) / 1e12).toFixed(2) + ' trillion';
+        if (n >= BigInt(1000000000))     return (Number(n) / 1e9).toFixed(2) + ' billion';
+        if (n >= BigInt(1000000))        return (Number(n) / 1e6).toFixed(2) + ' million';
+        if (n >= BigInt(1000))           return (Number(n) / 1000).toFixed(1) + 'K';
+        return n.toString();
+    }
+
+    // ── ULA Generator ────────────────────────────
+    function genULA() {
+        // RFC 4193 ULA: fd00::/8 with random 40-bit Global ID
+        const isSlash48 = document.getElementById('ulaPrefix').value.includes('/48');
+        const rnd = new Uint8Array(5);
+        crypto.getRandomValues(rnd);
+        const g1 = 'fd' + rnd[0].toString(16).padStart(2, '0');
+        const g2 = (rnd[1].toString(16).padStart(2, '0') + rnd[2].toString(16).padStart(2, '0'));
+        const g3 = (rnd[3].toString(16).padStart(2, '0') + rnd[4].toString(16).padStart(2, '0'));
+
+        const prefix48 = g1 + ':' + g2 + ':' + g3 + '::';
+        const prefix64 = g1 + ':' + g2 + ':' + g3 + ':0001::';
+
+        const cards = isSlash48 ? [
+            { label: '/48 ULA Prefix',     val: g1 + ':' + g2 + ':' + g3 + '::/48', cls: 'green' },
+            { label: 'Example /64 Subnet', val: g1 + ':' + g2 + ':' + g3 + ':0001::/64', cls: '' },
+            { label: 'Example /64 Subnet', val: g1 + ':' + g2 + ':' + g3 + ':0002::/64', cls: '' },
+            { label: 'Available /64s',     val: '65,536 subnets', cls: 'amber' },
+            { label: 'Scope',              val: 'Unique Local (RFC 4193) — not routable on internet', cls: 'amber' },
+            { label: 'Global ID (random)', val: g1.slice(2) + g2 + g3, cls: 'purple' },
+        ] : [
+            { label: '/64 ULA Subnet',     val: g1 + ':' + g2 + ':' + g3 + ':0001::/64', cls: 'green' },
+            { label: 'First Host',         val: g1 + ':' + g2 + ':' + g3 + ':1::1', cls: 'green' },
+            { label: 'Last Host',          val: g1 + ':' + g2 + ':' + g3 + ':1:ffff:ffff:ffff:fffe', cls: 'amber' },
+            { label: 'Hosts',              val: '18,446,744,073,709,551,614', cls: 'green' },
+            { label: 'Scope',              val: 'Unique Local (RFC 4193) — not routable on internet', cls: 'amber' },
+        ];
+
+        document.getElementById('ulaGrid').innerHTML = cards.map(c =>
+            '<div class="sn-card ' + c.cls + '">'
+            + '<span class="sn-card-label">' + c.label + '</span>'
+            + '<span class="sn-card-val">' + c.val + '</span>'
+            + '</div>'
+        ).join('');
+        document.getElementById('ulaResults').style.display = 'block';
+    }
+
+    // ── EUI-64 Generator ─────────────────────────
+    function calcEUI64() {
+        const mac    = document.getElementById('snMAC').value.trim();
+        const prefix = document.getElementById('snPrefix64').value.trim();
+        const errEl  = document.getElementById('snErrorEUI');
+        errEl.style.display = 'none';
+        document.getElementById('euiResults').style.display = 'none';
+
+        // Parse MAC - accept : - or no separator
+        const cleaned = mac.replace(/[:\-\.]/g, '');
+        if (!/^[0-9a-fA-F]{12}$/.test(cleaned)) {
+            errEl.textContent = 'Invalid MAC address — use format 00:1A:2B:3C:4D:5E';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        const bytes = cleaned.match(/.{2}/g).map(h => parseInt(h, 16));
+        // Insert FF:FE in the middle and flip bit 7 of first byte
+        const eui64 = [
+            bytes[0] ^ 0x02, bytes[1], bytes[2],
+            0xFF, 0xFE,
+            bytes[3], bytes[4], bytes[5]
+        ];
+
+        const ifid = eui64.slice(0,2).map(b=>b.toString(16).padStart(2,'0')).join('')
+            + ':' + eui64.slice(2,4).map(b=>b.toString(16).padStart(2,'0')).join('')
+            + ':' + eui64.slice(4,6).map(b=>b.toString(16).padStart(2,'0')).join('')
+            + ':' + eui64.slice(6,8).map(b=>b.toString(16).padStart(2,'0')).join('');
+
+        let fullAddr = '(enter a /64 prefix above to see full address)';
+        if (prefix) {
+            const pfxGroups = parseIPv6(prefix.replace(/\/\d+$/, '').replace(/::$/, ''));
+            if (pfxGroups) {
+                const pfx = pfxGroups.slice(0,4).map(g => g.replace(/^0+/,'') || '0').join(':');
+                fullAddr  = pfx + ':' + ifid;
+            }
+        }
+
+        const cards = [
+            { label: 'MAC Address (input)',   val: bytes.map(b=>b.toString(16).padStart(2,'0')).join(':'), cls: '' },
+            { label: 'EUI-64 Interface ID',   val: ifid,     cls: 'green' },
+            { label: 'Full IPv6 Address',     val: fullAddr, cls: fullAddr.includes('enter') ? '' : 'green' },
+            { label: 'Universal/Local bit',   val: (bytes[0] & 0x02) ? 'Locally Administered (U=1)' : 'Globally Unique (U=0) — flipped to 1', cls: 'purple' },
+            { label: 'Multicast bit',         val: (bytes[0] & 0x01) ? 'Multicast — unusual for EUI-64' : 'Unicast', cls: '' },
+        ];
+
+        document.getElementById('euiGrid').innerHTML = cards.map(c =>
+            '<div class="sn-card ' + c.cls + '">'
+            + '<span class="sn-card-label">' + c.label + '</span>'
+            + '<span class="sn-card-val">' + c.val + '</span>'
+            + '</div>'
+        ).join('');
+        document.getElementById('euiResults').style.display = 'block';
+    }
 
 </script>
 </body>
