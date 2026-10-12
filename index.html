@@ -1109,6 +1109,32 @@
     .tool-focus-close { position:sticky; top:-47px; float:right; z-index:8; background:#260d0d; color:#fff; border:1px solid #f55; padding:7px 15px; }
     body.tool-focus-open { overflow:hidden; }
     @media(max-width:700px){ .tool-focus-frame { inset:0; padding:44px 10px 15px; } .tool-focus-frame .sn-input { min-width:0; } }
+
+    /* Readability pass: retain retro display type but use clear practical text sizes. */
+    body { font-size:14px; line-height:1.5; --text-dim:#ad9797; --st-dim:#ad9797; }
+    .app-shell { max-width:1120px; }
+    .nt-label,.bgp-collapsed-label,.tr-collapsed-label,.section-heading-sub,.nt-sub,
+    .bgp-inline-label,.bgp-updated-tag,.explanation,.title,.sn-card-label,
+    .speed-metric-label,.speed-metric-unit,.tr-note,.tr-hop-host,.sn-error,
+    .bgp-prefix-box-title,.bgp-inline-stat,.record-box,.bgp-asn-meta,
+    .bgp-prefix-item,.bgp-peer-name,.nt-panel,.check-badge,.fail-reason,.warn-reason,
+    .sn-v6-addr,.sn-card-val,.tr-hops-table,.bgp-results,.eh-hop-table,
+    .sn-split-table,.sn-split-table td,.sn-split-table th,
+    .tr-hops-table th,.tr-hops-table td,.asn-hist-table,
+    .asn-hist-table td,.asn-hist-table th,.dp-records,.dp-ttl { font-size:max(0.78rem, 12px) !important; line-height:1.45; }
+    .nt-label,.bgp-collapsed-label,.tr-collapsed-label {font-size:0.92rem !important;}
+    .bgp-route-count {font-size:1rem;}
+    .header-sub,.section-heading-sub,.nt-sub {font-size:0.78rem !important;}
+    input, select, textarea {font-size:0.85rem;}
+    .nt-panel input,.nt-panel textarea,.nt-panel select,.nt-panel button {font-size:max(0.82rem,12px) !important;}
+    .wan-copy-btn {background:rgba(0,212,255,.1);border:1px solid #00d4ff;color:#00d4ff;font-family:'Share Tech Mono',monospace;font-size:0.7rem;padding:3px 7px;margin-left:4px;}
+    .wan-copy-btn:disabled {opacity:.35;cursor:not-allowed;}
+    .bgp-collapsed-left {min-width:0;flex-wrap:wrap;}
+    .tr-collapsed-label {min-width:0;flex-wrap:wrap;}
+    .tool-focus-frame .nt-panel,.tool-focus-frame .bgp-expand-panel,.tool-focus-frame .tr-expand-panel {font-size:15px;}
+    .tool-focus-frame .bgp-collapsed-label,.tool-focus-frame .tr-collapsed-label {font-size:1.1rem !important;}
+    @media(max-width:650px){ .app-shell{padding:10px;} .header-wrap{flex-wrap:wrap;gap:12px;} .bgp-inline-stats{flex-wrap:wrap;} }
+
     </style>
 </head>
 <body onload="initApp()">
@@ -1131,7 +1157,8 @@
                 <div style="font-size:0.55rem;color:var(--text-dim);margin-bottom:3px;letter-spacing:0.08em;">YOUR WAN IP</div>
                 <div class="ip-wrap" style="justify-content:flex-end;">
                     <div class="live-dot"></div>
-                    <span id="clientIP" style="font-family:monospace;font-size:0.8rem;font-weight:700;">Loading...</span>
+                    <span id="clientIP" style="font-family:monospace;font-size:0.9rem;font-weight:700;">Loading...</span>
+                    <button type="button" id="copyWanIP" class="wan-copy-btn" onclick="copyDetectedIP()" title="Copy detected public IP address" aria-label="Copy detected public IP address" disabled>COPY</button>
                 </div>
                 <div id="wanAsnBadge" style="display:none;margin-top:3px;font-size:0.6rem;text-align:right;"></div>
             </div>
@@ -5016,7 +5043,26 @@ Authentication-Results: mx.google.com;
         const backdrop=document.createElement('div'); backdrop.id='toolFocusBackdrop'; backdrop.className='tool-focus-backdrop'; backdrop.onclick=closeToolFocus;
         document.body.append(backdrop,frame);
         const add=(el,anchor)=>{if(!el||!anchor)return; const btn=document.createElement('button');btn.type='button';btn.className='tool-focus-button';btn.textContent='⛶ FOCUS';btn.title='Open only this tool in a larger focused view';btn.onclick=e=>{e.stopPropagation();openToolFocus(el);};anchor.appendChild(btn);};
-        document.querySelectorAll('.nt-section').forEach(el=>add(el,el.querySelector('.nt-bar-left')||el.querySelector('.nt-bar')));
+        document.querySelectorAll('.nt-section').forEach(el=>{
+            const bgp=el.querySelector('#bgpCollapsedBar');
+            const trace=el.querySelector('#trCollapsedBar');
+            if(bgp){
+                const host=bgp.querySelector('.bgp-collapsed-left');
+                add(el,host);
+                const btn=host.querySelector('.tool-focus-button');
+                btn.addEventListener('click',()=>{
+                    if(!document.getElementById('bgpExpandPanel').classList.contains('open')) toggleBGP();
+                });
+            } else if(trace){
+                const host=trace.querySelector('.tr-collapsed-label');
+                add(el,host);
+                const btn=host.querySelector('.tool-focus-button');
+                btn.addEventListener('click',()=>{
+                    if(!document.getElementById('trExpandPanel').classList.contains('open')) toggleTraceroute();
+                    setTimeout(()=>{const map=document.getElementById('trMap'); if(map && map._leaflet_map)map._leaflet_map.invalidateSize();},200);
+                });
+            } else add(el,el.querySelector('.nt-bar-left')||el.querySelector('.nt-bar'));
+        });
         document.querySelectorAll('.sn-v6-section').forEach(el=>add(el,el.querySelector('.sn-v6-section-title')));
         const subnet=document.querySelector('#v6PlanResults')?.closest('.sn-v6-section'); if(subnet) subnet.classList.add('v6-planner-focus');
         add(document.getElementById('speedtestWidget'),document.querySelector('#speedtestWidget .speedtest-header'));
@@ -5027,6 +5073,28 @@ Authentication-Results: mx.google.com;
         document.addEventListener('keydown',e=>{if(e.key==='Escape'&&focusRestore)closeToolFocus();});
     }
     document.addEventListener('DOMContentLoaded',setupToolFocus);
+
+
+    async function copyDetectedIP(){
+        const value=document.getElementById('clientIP').textContent.trim();
+        if(!/^(?:[0-9a-f:.]+)$/i.test(value) || value==='...') return;
+        const btn=document.getElementById('copyWanIP');
+        try{
+            if(navigator.clipboard && window.isSecureContext){await navigator.clipboard.writeText(value);}
+            else {
+                const input=document.createElement('textarea');input.value=value;input.style.position='fixed';input.style.opacity='0';document.body.appendChild(input);input.select();
+                if(!document.execCommand('copy'))throw new Error('Copy unsupported');input.remove();
+            }
+            btn.textContent='COPIED ✓';
+        }catch(e){btn.textContent='SELECT IP'; const ip=document.getElementById('clientIP');const r=document.createRange();r.selectNodeContents(ip);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);}
+        setTimeout(()=>btn.textContent='COPY',1800);
+    }
+    document.addEventListener('DOMContentLoaded',()=>{
+        const ip=document.getElementById('clientIP'),btn=document.getElementById('copyWanIP');
+        if(!ip||!btn)return;
+        const refresh=()=>{btn.disabled=!/^(?=.*[.:])[0-9a-f:.]+$/i.test(ip.textContent.trim());};
+        new MutationObserver(refresh).observe(ip,{childList:true,characterData:true,subtree:true});refresh();
+    });
 
     // Discover published records at the apex and a bounded set of conventional service labels.
     // DNS cannot enumerate arbitrary owner names. AXFR is not attempted.
