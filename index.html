@@ -1096,6 +1096,19 @@
         .sn-v6-section { background:#0a0708; border:1px solid var(--border); border-radius:2px; padding:10px; margin-bottom:8px; }
         .sn-v6-section-title { font-family:'VT323',monospace; font-size:0.95rem; color:#a855f7; letter-spacing:0.08em; margin-bottom:8px; display:block; }
         .sn-v6-addr { font-family:monospace; font-size:0.7rem; color:#00d4ff; word-break:break-all; line-height:1.6; }
+    
+    .tool-focus-button { margin-left:auto; flex-shrink:0; font-family:'Share Tech Mono',monospace; font-size:0.65rem; padding:4px 9px; border:1px solid #22d3ee; color:#22d3ee; background:#051014; border-radius:3px; cursor:pointer; }
+    .tool-focus-button:hover { background:#102831; }
+    .tool-focus-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:9996; display:none; }
+    .tool-focus-backdrop.active { display:block; }
+    .tool-focus-frame { position:fixed; inset:2vh 2vw; background:#090708; border:1px solid #753035; box-shadow:0 0 60px #000; z-index:9997; overflow:auto; padding:50px clamp(12px,3vw,34px) 26px; display:none; font-size:15px; }
+    .tool-focus-frame.active { display:block; }
+    .tool-focus-frame .focus-item { width:100%; max-width:none; }
+    .tool-focus-frame .sn-input, .tool-focus-frame .nt-label, .tool-focus-frame .sn-v6-section-title, .tool-focus-frame .sn-card-val { font-size:clamp(13px,1.2vw,18px) !important; }
+    .tool-focus-frame .sn-split-table { font-size:clamp(12px,1vw,16px); }
+    .tool-focus-close { position:sticky; top:-47px; float:right; z-index:8; background:#260d0d; color:#fff; border:1px solid #f55; padding:7px 15px; }
+    body.tool-focus-open { overflow:hidden; }
+    @media(max-width:700px){ .tool-focus-frame { inset:0; padding:44px 10px 15px; } .tool-focus-frame .sn-input { min-width:0; } }
     </style>
 </head>
 <body onload="initApp()">
@@ -1182,6 +1195,17 @@
     </div>
 
     <div class="results-grid" id="results"></div>
+    <div class="card" id="dnsDiscovery" style="margin-top:10px;">
+        <div class="title">// DNS RECORD DISCOVERY //</div>
+        <div class="explanation">Query common record types and hostnames for the domain above. DNS does not provide a general public directory of all records; this is a best-effort discovery, not a complete zone export.</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;">
+            <button onclick="discoverDNS()" id="dnsDiscoverBtn">DISCOVER RECORDS</button>
+            <button onclick="exportDiscoveredDNS('csv')" id="dnsExportCSV" disabled>EXPORT CSV</button>
+            <button onclick="exportDiscoveredDNS('json')" id="dnsExportJSON" disabled>EXPORT JSON</button>
+        </div>
+        <div id="dnsDiscoverStatus" role="status" style="margin-top:8px;font-size:0.75rem;color:var(--text-dim);"></div>
+        <div style="overflow-x:auto;max-height:420px;overflow-y:auto;"><table class="sn-split-table" id="dnsRecordsTable" style="display:none;margin-top:8px;width:100%;"><thead><tr><th>Name</th><th>Type</th><th>TTL</th><th>Value</th></tr></thead><tbody id="dnsRecordsBody"></tbody></table></div>
+    </div>
 
     <!-- Data sources — shown after audit completes -->
     <div id="auditSources" style="display:none;margin-top:8px;background:rgba(14,11,11,0.92);border:1px solid var(--border);border-radius:6px;padding:8px 12px;border-left:3px solid var(--blue);">
@@ -1725,6 +1749,11 @@ Authentication-Results: mx.google.com;
                                 </div>
                             </div>
                         </div>
+                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+                            <label for="v6BasePrefix" style="font-size:0.65rem;color:var(--text-dim);">Your allocated /48 (optional)</label>
+                            <input class="sn-input" id="v6BasePrefix" placeholder="e.g. 2001:db8:1234::/48" style="flex:1;min-width:185px;" aria-label="Allocated IPv6 prefix">
+                        </div>
+                        <div id="v6PlanExample" class="sn-grid" style="margin:8px 0;display:none;"></div>
                         <div id="v6PlanResults" style="display:none;">
                             <div class="sn-grid" id="v6PlanGrid"></div>
                             <table class="sn-split-table" id="v6PlanTable" style="margin-top:6px;">
@@ -1780,7 +1809,7 @@ Authentication-Results: mx.google.com;
 
 
 <script>
-    const names = ["MERCURY", "MARS", "JUPITER", "VADER", "RIPLEY", "SPOCK", "HADES", "ZEUS", "KRAKEN", "CHIEF"];
+    const names = ["MERCURY","MARS","JUPITER","VADER","RIPLEY","SPOCK","HADES","ZEUS","KRAKEN","CHIEF","ATLAS","ORION","NOVA","NEBULA","PULSAR","QUASAR","PHOENIX","FALCON","RAVEN","EAGLE","LYNX","WOLF","TIGER","COBRA","VIPER","COMET","APOLLO","ARTEMIS","SATURN","NEPTUNE","PLUTO","CERBERUS","TITAN","ODIN","THOR","LOKI","FREYA","VECTOR","CIPHER","NEXUS","PROXY","ROUTER","SWITCH","EDGE","CORE","GATEWAY","BEACON","RADAR","SONAR","NIMBUS","CLOUD","SPARK","EMBER","ONYX","RUBY","JADE","AMBER","FROST","STORM","BLAZE","GHOST","SHADOW","ECHO","DELTA","SIGMA","OMEGA","ALPHA","BRAVO","CHARLIE","TANGO","SIERRA","OSCAR","HOTEL","LIMA","ROMEO","UNIFORM","XRAY","YANKEE","ZULU","HOPPER","DUSTIN","ELEVEN","HAWKINS","DEMOGORGON","UPSIDE","LAB","WILL","MAX","ROBIN","STEVE","NANCY","JOYCE","EDDIE","VECNA","BYERS","MUNSON","HELLFIRE","ARCADIA","TARDIS","ENTERPRISE","GALACTICA","DISCOVERY","VOYAGER","PIONEER","ODYSSEY","HALCYON","FORTRESS","SENTINEL","BASILISK","HYDRA","DRAGON","GRIFFIN","UNICORN","MANTIS","ORBIT","HORIZON","ZENITH","SUMMIT","APEX"];
     let history = new Set();
     const recordMap = {};
 
@@ -4953,6 +4982,130 @@ Authentication-Results: mx.google.com;
 
         resEl.style.display = 'block';
     }
+
+
+    // Focus mode moves the live tool, preserving its inputs, state and event listeners.
+    let focusRestore = null;
+    function openToolFocus(el) {
+        if (focusRestore) return;
+        const frame = document.getElementById('toolFocusFrame');
+        const marker = document.createComment('tool focus return location');
+        el.parentNode.insertBefore(marker, el);
+        focusRestore = {el, marker};
+        frame.appendChild(el);
+        el.classList.add('focus-item');
+        frame.classList.add('active');
+        document.getElementById('toolFocusBackdrop').classList.add('active');
+        document.body.classList.add('tool-focus-open');
+        document.getElementById('toolFocusClose').focus();
+        if (window.trMapInstance && typeof window.trMapInstance.invalidateSize === 'function') setTimeout(() => window.trMapInstance.invalidateSize(),100);
+    }
+    function closeToolFocus() {
+        if (!focusRestore) return;
+        const {el,marker}=focusRestore;
+        marker.parentNode.insertBefore(el,marker); marker.remove();
+        el.classList.remove('focus-item');
+        document.getElementById('toolFocusFrame').classList.remove('active');
+        document.getElementById('toolFocusBackdrop').classList.remove('active');
+        document.body.classList.remove('tool-focus-open');
+        focusRestore=null;
+    }
+    function setupToolFocus() {
+        const frame=document.createElement('div'); frame.id='toolFocusFrame'; frame.className='tool-focus-frame'; frame.setAttribute('role','dialog'); frame.setAttribute('aria-label','Focused tool');
+        const close=document.createElement('button'); close.id='toolFocusClose'; close.className='tool-focus-close'; close.textContent='✕ RETURN TO DASHBOARD'; close.onclick=closeToolFocus; frame.appendChild(close);
+        const backdrop=document.createElement('div'); backdrop.id='toolFocusBackdrop'; backdrop.className='tool-focus-backdrop'; backdrop.onclick=closeToolFocus;
+        document.body.append(backdrop,frame);
+        const add=(el,anchor)=>{if(!el||!anchor)return; const btn=document.createElement('button');btn.type='button';btn.className='tool-focus-button';btn.textContent='⛶ FOCUS';btn.title='Open only this tool in a larger focused view';btn.onclick=e=>{e.stopPropagation();openToolFocus(el);};anchor.appendChild(btn);};
+        document.querySelectorAll('.nt-section').forEach(el=>add(el,el.querySelector('.nt-bar-left')||el.querySelector('.nt-bar')));
+        document.querySelectorAll('.sn-v6-section').forEach(el=>add(el,el.querySelector('.sn-v6-section-title')));
+        const subnet=document.querySelector('#v6PlanResults')?.closest('.sn-v6-section'); if(subnet) subnet.classList.add('v6-planner-focus');
+        add(document.getElementById('speedtestWidget'),document.querySelector('#speedtestWidget .speedtest-header'));
+        const auditHeading=Array.from(document.querySelectorAll('.section-heading')).find(e=>e.textContent.includes('DOMAIN AUDITOR'));
+        const controls=document.querySelector('#domainInput')?.closest('.controls');
+        const last=document.getElementById('auditSources');
+        if(auditHeading&&controls&&last){const wrap=document.createElement('div');wrap.className='audit-focus-section';auditHeading.before(wrap);let node=auditHeading;while(node){const next=node.nextElementSibling;wrap.appendChild(node);if(node===last)break;node=next;} add(wrap,auditHeading);}
+        document.addEventListener('keydown',e=>{if(e.key==='Escape'&&focusRestore)closeToolFocus();});
+    }
+    document.addEventListener('DOMContentLoaded',setupToolFocus);
+
+    // Discover published records at the apex and a bounded set of conventional service labels.
+    // DNS cannot enumerate arbitrary owner names. AXFR is not attempted.
+    const dnsDiscoveryTypes={1:'A',2:'NS',5:'CNAME',6:'SOA',12:'PTR',15:'MX',16:'TXT',28:'AAAA',33:'SRV',43:'DS',44:'SSHFP',48:'DNSKEY',52:'TLSA',64:'SVCB',65:'HTTPS',257:'CAA'};
+    let discoveredDNS=[], discoveredDomain='';
+    function safeText(s){return String(s ?? '');}
+    async function discoverDNS(){
+        const domain=document.getElementById('domainInput').value.trim().replace(/\.$/,'').toLowerCase();
+        const status=document.getElementById('dnsDiscoverStatus');
+        if(!/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(domain)){status.textContent='Enter a valid domain in Domain Auditor first.';return;}
+        const button=document.getElementById('dnsDiscoverBtn');button.disabled=true;
+        discoveredDNS=[];discoveredDomain=domain;
+        document.getElementById('dnsRecordsTable').style.display='none';
+        ['dnsExportCSV','dnsExportJSON'].forEach(id=>document.getElementById(id).disabled=true);
+        status.textContent='Looking up common DNS records…';
+        const checks=[];
+        ['A','AAAA','MX','NS','SOA','TXT','CAA','DS','DNSKEY','HTTPS','SVCB','SSHFP'].forEach(t=>checks.push([domain,t]));
+        ['www','mail','autodiscover','autoconfig','ftp','vpn','remote','portal','sip','lyncdiscover','enterpriseenrollment','enterpriseregistration','msoid','selector1._domainkey','selector2._domainkey','default._domainkey','google._domainkey','_dmarc','_mta-sts','_smtp._tls','_acme-challenge','_sip._tls','_sipfederationtls._tcp','_autodiscover._tcp','_imaps._tcp','_submission._tcp'].forEach(label=>{
+            const name=label+'.'+domain;
+            const types=label.startsWith('_')? ['TXT','SRV','CNAME']:['A','AAAA','CNAME','TXT'];
+            types.forEach(t=>checks.push([name,t]));
+        });
+        let complete=0, failed=0;const records=new Map();
+        async function worker(){while(checks.length){const [name,type]=checks.shift();try{
+            const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),6500);
+            let response;try{response=await fetch('https://cloudflare-dns.com/dns-query?name='+encodeURIComponent(name)+'&type='+encodeURIComponent(type),{headers:{Accept:'application/dns-json'},signal:controller.signal});}finally{clearTimeout(timer);}
+            if(!response.ok)throw Error('Lookup failed');const data=await response.json();
+            for(const a of (data.Answer||[])){const item={name:safeText(a.name),type:dnsDiscoveryTypes[a.type]||String(a.type),ttl:a.TTL??'',value:safeText(a.data)};records.set(JSON.stringify(item),item);}
+        }catch(e){failed++;}complete++;if(complete%12===0)status.textContent='Checked '+complete+' DNS queries; found '+records.size+' records…';}}
+        await Promise.all(Array.from({length:6},worker));
+        discoveredDNS=Array.from(records.values()).sort((a,b)=>a.name.localeCompare(b.name)||a.type.localeCompare(b.type));
+        const body=document.getElementById('dnsRecordsBody');body.replaceChildren();
+        for(const record of discoveredDNS){const tr=document.createElement('tr');[record.name,record.type,record.ttl,record.value].forEach(value=>{const td=document.createElement('td');td.textContent=String(value);td.style.overflowWrap='anywhere';tr.append(td);});body.append(tr);}
+        document.getElementById('dnsRecordsTable').style.display=discoveredDNS.length?'table':'none';
+        ['dnsExportCSV','dnsExportJSON'].forEach(id=>document.getElementById(id).disabled=!discoveredDNS.length);
+        status.textContent=discoveredDNS.length+' records found across '+complete+' queries'+(failed?' ('+failed+' lookup errors)':'')+'. This does NOT represent all DNS records in the zone; undiscovered names and selectors may exist.';
+        button.disabled=false;
+    }
+    function exportDiscoveredDNS(format){if(!discoveredDNS.length)return;
+        let content,mime;
+        if(format==='json'){content=JSON.stringify({domain:discoveredDomain,scannedAt:new Date().toISOString(),scope:'Common DNS names/types only; not a full zone inventory',records:discoveredDNS},null,2);mime='application/json';}
+        else{const rows=[['Name','Type','TTL','Value'],...discoveredDNS.map(r=>[r.name,r.type,r.ttl,r.value])];content='\uFEFF'+rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');mime='text/csv;charset=utf-8';}
+        const blob=new Blob([content],{type:mime});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=discoveredDomain+'-dns-discovery.'+format;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    }
+
+    let privateIPv6Example=null;
+    function getPrivateIPv6Example(){if(privateIPv6Example)return privateIPv6Example;const bytes=new Uint8Array(5);crypto.getRandomValues(bytes);privateIPv6Example='fd'+Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');return privateIPv6Example;}
+    function calculateV6Recommendation(){
+        const hostStr=document.getElementById('v6NeedHosts').value.trim()||'0', subnetStr=document.getElementById('v6NeedSubnets').value.trim()||'1';
+        const el=document.getElementById('v6PlanExample');el.style.display='grid';el.replaceChildren();
+        const add=(label,value)=>{const tile=document.createElement('div');tile.className='sn-card green';const l=document.createElement('span');l.className='sn-card-label';l.textContent=label;const v=document.createElement('span');v.className='sn-card-val';v.textContent=value;v.style.overflowWrap='anywhere';tile.append(l,v);el.append(tile);};
+        if(!/^\d+$/.test(hostStr)||!/^\d+$/.test(subnetStr)){add('Invalid input','Enter whole, positive numbers');return;}
+        const hosts=BigInt(hostStr),nets=BigInt(subnetStr);if(hosts<1n||nets<1n){add('Invalid input','Hosts and subnets must be at least 1');return;}
+        if(hosts>=(1n<<64n)){add('Host count','A standard /64 LAN cannot hold this many interface addresses; divide devices across /64 networks.');return;}
+        if(nets>(1n<<32n)){add('Network count','Request exceeds this planner’s /32 to /64 allocation range.');return;}
+        let parent=64;while((1n<<BigInt(64-parent))<nets)parent--;
+        const raw=document.getElementById('v6BasePrefix').value.trim();let base, label;
+        if(raw){const match=raw.match(/^(.+)\/(\d{1,3})$/);const validAddress=match && /^(?:[0-9a-fA-F:]+)$/.test(match[1]) && (match[1].match(/::/g)||[]).length<=1 && !/:{3,}/.test(match[1]) && match[1].split(':').every(g=>g.length<=4);const groups=validAddress&&parseIPv6(match[1]);const allocated=match?Number(match[2]):-1;
+            if(!groups||groups.length!==8||allocated<0||allocated>64){add('Invalid allocation','Enter a valid IPv6 CIDR prefix, e.g. 2001:db8:1234::/48');return;}
+            if(allocated>parent){add('Allocation too small','Your supplied /'+allocated+' cannot provide '+nets.toString()+' separate /64 networks. A /'+parent+' or shorter parent is needed.');return;}
+            const addr=ipv6GroupsToBigInt(groups), mask=((1n<<128n)-1n) ^ ((1n<<BigInt(128-allocated))-1n);
+            if((addr&mask)!==addr){add('Non-network prefix','Supply an aligned network address for the allocated CIDR.');return;}
+            base=addr;label='Supplied allocation';
+        }else{
+            const random=getPrivateIPv6Example();const groups=[random.slice(0,4),random.slice(4,8),random.slice(8,12),'0','0','0','0','0'];
+            base=ipv6GroupsToBigInt(groups);label='Example only: private RFC 4193 ULA /48';
+            if(parent<48){add('Allocation warning','More than 65,536 LANs require a block larger than one standard /48 ULA allocation; supply a sufficiently large real allocation.');return;}
+        }
+        const network=compressIPv6(bigIntToIPv6(base)), firstSubnet=compressIPv6(bigIntToIPv6(base));
+        const next=compressIPv6(bigIntToIPv6(base+1n));const host=compressIPv6(bigIntToIPv6(base+2n));
+        add('Recommended LAN size','/64 per LAN ('+hosts.toLocaleString('en-GB')+' requested hosts)');
+        add('Minimum site allocation','/'+parent+' ('+(1n<<BigInt(64-parent)).toString()+' × /64 LANs)');
+        add(label,network+'/'+(raw?Number(raw.split('/')[1]):48));
+        add('First example LAN',firstSubnet+'/64');add('Example router / gateway',next+'/64');add('Example host',host+'/64');
+        add('Usage note','Examples are addressing suggestions, not automatically routed or assigned. Do not use example ULA addresses on the public Internet.');
+    }
+    const originalV6Hosts=v6PlanHosts, originalV6Subnets=v6PlanSubnets;
+    v6PlanHosts=function(){try{originalV6Hosts();calculateV6Recommendation();}catch(e){document.getElementById('v6PlanExample').textContent='Please enter a valid whole number.';document.getElementById('v6PlanExample').style.display='block';}};
+    v6PlanSubnets=function(){try{originalV6Subnets();calculateV6Recommendation();}catch(e){document.getElementById('v6PlanExample').textContent='Please enter a valid whole number.';document.getElementById('v6PlanExample').style.display='block';}};
 
 </script>
 </body>
